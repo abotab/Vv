@@ -176,16 +176,21 @@
                     </div>
                 </div>
                 
-                <div class="quick-links">
-                    <h4>ابدأ رحلتك التعليمية</h4>
-                    <button class="quick-link-btn" id="goToCoursesBtn">
-                        <i class="fas fa-play-circle"></i>
-                        <span>استعرض الدورات المجانية</span>
-                    </button>
-                    <button class="quick-link-btn" id="goToToolsBtn">
-                        <i class="fas fa-calculator"></i>
-                        <span>استخدم أدوات التداول</span>
-                    </button>
+                <div class="quick-start-section">
+                    <div class="section-header">
+                        <i class="fas fa-rocket"></i>
+                        <h4>ابدأ رحلتك التعليمية</h4>
+                    </div>
+                    <div class="quick-start-buttons">
+                        <button class="quick-start-btn btn-premium-gradient" id="goToCoursesBtn">
+                            <i class="fas fa-play-circle"></i>
+                            <span>استعرض الدورات المجانية</span>
+                        </button>
+                        <button class="quick-start-btn btn-primary-gradient" id="goToToolsBtn">
+                            <i class="fas fa-calculator"></i>
+                            <span>استخدم أدوات التداول</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -199,7 +204,7 @@
                             <p class="course-author">حيدر الجنابي</p>
                         </div>
                         <div class="course-actions">
-                            <button class="btn btn-primary view-course-btn" data-course="haider">
+                            <button class="btn btn-primary-gradient view-course-btn" data-course="haider">
                                 <i class="fas fa-play"></i>
                                 <span>مشاهدة الدورة</span>
                             </button>
@@ -217,7 +222,7 @@
                             <p class="course-author">الدكتور محمد مهدي</p>
                         </div>
                         <div class="course-actions">
-                            <button class="btn btn-primary view-course-btn" data-course="mohamed">
+                            <button class="btn btn-primary-gradient view-course-btn" data-course="mohamed">
                                 <i class="fas fa-play"></i>
                                 <span>مشاهدة الدورة</span>
                             </button>
@@ -235,7 +240,7 @@
                             <p class="course-author">حيدر تريدنك</p>
                         </div>
                         <div class="course-actions">
-                            <button class="btn btn-primary view-course-btn" data-course="tradaying">
+                            <button class="btn btn-primary-gradient view-course-btn" data-course="tradaying">
                                 <i class="fas fa-play"></i>
                                 <span>مشاهدة الدورة</span>
                             </button>
@@ -269,7 +274,7 @@
                             دورة متكاملة لتعلم مفهوم ICT في التداول من الصفر
                         </p>
                         <div class="premium-actions">
-                            <button class="btn btn-premium" id="viewPremiumCourseBtn">
+                            <button class="btn btn-premium-gradient" id="viewPremiumCourseBtn">
                                 <i class="fas fa-lock"></i>
                                 <span>مشاهدة الدورة (تتطلب تفعيل)</span>
                             </button>
@@ -284,7 +289,7 @@
                             <input type="text" id="activationCode" placeholder="XXXX-XXXX-XXXX-XXXX">
                             <small class="hint">احصل على كود التفعيل من الإدارة</small>
                         </div>
-                        <button class="btn btn-primary" id="activatePremiumBtn">تفعيل الآن</button>
+                        <button class="btn btn-premium-gradient" id="activatePremiumBtn">تفعيل الآن</button>
                         <p class="note">ملاحظة: هذا الكورس مجاني 100% وتم وضعه في خانة البروميوم لتجربة ميزات البروميوم فقط</p>
                     </div>
                 </div>
@@ -304,7 +309,7 @@
                         <p class="tool-description">
                             احسب مستويات فيبوناتشي للقمة والقاعدة
                         </p>
-                        <button class="btn btn-primary" id="fibonacciCalculatorBtn">
+                        <button class="btn btn-primary-gradient" id="fibonacciCalculatorBtn">
                             <i class="fas fa-external-link-alt"></i>
                             <span>فتح الحاسبة</span>
                         </button>
@@ -321,7 +326,7 @@
                         <p class="tool-description">
                             احسب حجم الصفقة ونقاط الوقف بناءً على رأس المال
                         </p>
-                        <button class="btn btn-primary" id="riskManagerBtn">
+                        <button class="btn btn-primary-gradient" id="riskManagerBtn">
                             <i class="fas fa-external-link-alt"></i>
                             <span>فتح المدير</span>
                         </button>
@@ -343,10 +348,131 @@
                     
                     <div class="message-input">
                         <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
-                        <button class="btn btn-primary" id="sendMessageBtn">
+                        <button class="btn btn-primary-gradient" id="sendMessageBtn">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
+                </div>
+            </div>
+            
+            <!-- صفحة سياسة الخصوصية -->
+            <div class="page" id="privacyPage">
+                <div class="policy-content">
+                    <div class="policy-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>سياسة الخصوصية</h3>
+                    </div>
+                    <div class="policy-body">
+                        <div class="policy-section">
+                            <h4>حماية خصوصيتكم</h4>
+                            <p>نحن في تطبيق اكزم لتداول نعتبر خصوصية مستخدمينا أولوية قصوى. نلتزم بحماية بياناتكم الشخصية والمعلومات التي تشاركونها معنا.</p>
+                        </div>
+                        
+                        <div class="policy-section">
+                            <h4>البيانات التي نجمعها</h4>
+                            <p>نجمع فقط المعلومات الضرورية لتقديم خدماتنا:</p>
+                            <ul>
+                                <li>الاسم واسم المستخدم</li>
+                                <li>البريد الإلكتروني</li>
+                                <li>الصورة الشخصية (اختياري)</li>
+                                <li>تاريخ إنشاء الحساب</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="policy-section">
+                            <h4>كيف نستخدم بياناتكم</h4>
+                            <p>نستخدم بياناتكم فقط للأغراض التالية:</p>
+                            <ul>
+                                <li>توفير خدمات التطبيق</li>
+                                <li>تحسين تجربة المستخدم</li>
+                                <li>إرسال إشعارات مهمة</li>
+                                <li>تقديم الدعم الفني</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="policy-section">
+                            <h4>حماية البيانات</h4>
+                            <p>نستخدم تقنيات تشفير متقدمة لحماية بياناتكم. لا نشارك أو نبيع بياناتكم الشخصية لأي طرف ثالث.</p>
+                        </div>
+                        
+                        <div class="policy-section">
+                            <h4>حقوق المستخدم</h4>
+                            <p>لديكم الحق في:</p>
+                            <ul>
+                                <li>الوصول إلى بياناتكم الشخصية</li>
+                                <li>تصحيح البيانات غير الدقيقة</li>
+                                <li>حذف حسابكم وبياناتكم</li>
+                                <li>سحب الموافقة على جمع البيانات</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary-gradient close-policy-btn">
+                        <i class="fas fa-times"></i>
+                        <span>إغلاق</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- صفحة من نحن -->
+            <div class="page" id="aboutPage">
+                <div class="about-content">
+                    <div class="about-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>من نحن</h3>
+                    </div>
+                    <div class="about-body">
+                        <div class="about-section">
+                            <div class="team-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4>فريق اكزم لتداول</h4>
+                            <p>نحن فريق من المطورين والمحترفين في مجال التداول، نعمل بشغف لخدمتكم وتقديم أفضل الخدمات التعليمية في مجال التداول والأسواق المالية.</p>
+                        </div>
+                        
+                        <div class="about-section">
+                            <div class="mission-icon">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                            <h4>رسالتنا</h4>
+                            <p>هدفنا هو تطوير وتعزيز مهارات التداول لدى الجميع من خلال تقديم دورات تعليمية احترافية وأدوات عملية تساعدكم في رحلتكم الاستثمارية.</p>
+                        </div>
+                        
+                        <div class="about-section">
+                            <div class="vision-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <h4>رؤيتنا</h4>
+                            <p>أن نكون المنصة الرائدة في تعليم التداول باللغة العربية، وأن نساهم في بناء جيل جديد من المتداولين الواعيين والمحترفين.</p>
+                        </div>
+                        
+                        <div class="about-section">
+                            <div class="values-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <h4>قيمنا</h4>
+                            <ul>
+                                <li>الجودة والاحترافية في كل ما نقدم</li>
+                                <li>الشفافية والوضوح في التعامل</li>
+                                <li>الابتكار والتطوير المستمر</li>
+                                <li>خدمة العملاء بتميز</li>
+                                <li>الحفاظ على خصوصية المستخدمين</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h4>اتصل بنا</h4>
+                            <p>نحن هنا لمساعدتكم. يمكنكم التواصل معنا عبر:</p>
+                            <div class="contact-info">
+                                <p><i class="fas fa-headset"></i> الدعم الفني: على مدار الساعة</p>
+                                <p><i class="fab fa-telegram"></i> قناة تلجرام: <a href="https://t.me/pine_Scripts0" target="_blank">pine_Scripts0</a></p>
+                                <p><i class="fas fa-envelope"></i> للاستفسارات العامة: support@exzm.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary-gradient close-about-btn">
+                        <i class="fas fa-times"></i>
+                        <span>إغلاق</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -354,7 +480,7 @@
         <!-- نافذة مشغل الفيديو -->
         <div class="video-modal" id="videoModal">
             <div class="video-modal-content">
-                <div class="video-header">
+                <div class="video-header premium-header">
                     <h4 id="videoTitle">عنوان الفيديو</h4>
                     <button class="close-video" id="closeVideoBtn">
                         <i class="fas fa-times"></i>
@@ -364,6 +490,7 @@
                     <iframe id="videoPlayer" width="100%" height="100%" 
                             src="" 
                             frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen>
                     </iframe>
                 </div>
@@ -372,6 +499,9 @@
                         <i class="fas fa-backward"></i>
                         <span>السابق</span>
                     </button>
+                    <div class="video-info">
+                        <span id="currentVideoNumber">1</span> / <span id="totalVideos">1</span>
+                    </div>
                     <button class="btn btn-secondary" id="nextVideoBtn">
                         <span>التالي</span>
                         <i class="fas fa-forward"></i>
@@ -386,7 +516,7 @@
         <!-- نافذة معلومات الدورة -->
         <div class="info-modal" id="infoModal">
             <div class="info-modal-content">
-                <div class="info-header">
+                <div class="info-header premium-header">
                     <h4 id="infoTitle">معلومات الدورة</h4>
                     <button class="close-info" id="closeInfoBtn">
                         <i class="fas fa-times"></i>
@@ -394,6 +524,12 @@
                 </div>
                 <div class="info-body" id="infoBody">
                     <!-- محتوى المعلومات سينشئ ديناميكياً -->
+                </div>
+                <div class="info-footer">
+                    <button class="btn btn-primary-gradient" id="closeInfoFooterBtn">
+                        <i class="fas fa-check"></i>
+                        <span>تم</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -405,7 +541,7 @@
                 <p>هل أنت متأكد من تسجيل الخروج؟</p>
                 <div class="confirm-buttons">
                     <button class="btn btn-secondary" id="cancelLogoutBtn">إلغاء</button>
-                    <button class="btn btn-primary" id="confirmLogoutBtn">تسجيل الخروج</button>
+                    <button class="btn btn-premium-gradient" id="confirmLogoutBtn">تسجيل الخروج</button>
                 </div>
             </div>
         </div>
@@ -429,7 +565,7 @@
         <!-- نموذج تسجيل الدخول/إنشاء حساب -->
         <div class="auth-modal" id="authModal">
             <div class="auth-modal-content">
-                <div class="auth-header">
+                <div class="auth-header premium-header">
                     <h4 id="authTitle">إنشاء حساب جديد</h4>
                     <button class="close-auth" id="closeAuthBtn">
                         <i class="fas fa-times"></i>
@@ -460,7 +596,7 @@
                         <label for="regPassword">كلمة المرور</label>
                         <input type="password" id="regPassword" placeholder="كلمة مرور قوية">
                     </div>
-                    <button class="btn btn-primary btn-block" id="registerBtn">إنشاء حساب</button>
+                    <button class="btn btn-premium-gradient btn-block" id="registerBtn">إنشاء حساب</button>
                 </div>
                 
                 <!-- نموذج تسجيل الدخول -->
@@ -473,7 +609,7 @@
                         <label for="loginPassword">كلمة المرور</label>
                         <input type="password" id="loginPassword" placeholder="كلمة المرور">
                     </div>
-                    <button class="btn btn-primary btn-block" id="loginBtn">تسجيل الدخول</button>
+                    <button class="btn btn-premium-gradient btn-block" id="loginBtn">تسجيل الدخول</button>
                 </div>
             </div>
         </div>
@@ -506,7 +642,7 @@
     <!-- نافذة الأدوات -->
     <div class="tool-modal" id="fibonacciModal">
         <div class="tool-modal-content">
-            <div class="tool-header">
+            <div class="tool-header premium-header">
                 <h4>حاسبة فيبوناتشي</h4>
                 <button class="close-tool" data-tool="fibonacci">
                     <i class="fas fa-times"></i>
@@ -534,7 +670,7 @@
                     <label for="fibHigh">القمة (High)</label>
                     <input type="number" id="fibHigh" placeholder="أدخل سعر القمة" step="0.0001">
                 </div>
-                <button class="btn btn-primary" id="calculateFibBtn">حساب</button>
+                <button class="btn btn-premium-gradient" id="calculateFibBtn">حساب</button>
                 <div class="results" id="fibResults"></div>
             </div>
         </div>
@@ -542,7 +678,7 @@
 
     <div class="tool-modal" id="riskModal">
         <div class="tool-modal-content">
-            <div class="tool-header">
+            <div class="tool-header premium-header">
                 <h4>إدارة رأس المال</h4>
                 <button class="close-tool" data-tool="risk">
                     <i class="fas fa-times"></i>
@@ -566,7 +702,7 @@
                     <label for="stopLoss">سعر وقف الخسارة</label>
                     <input type="number" id="stopLoss" placeholder="سعر الوقف" step="0.0001">
                 </div>
-                <button class="btn btn-primary" id="calculateRiskBtn">حساب</button>
+                <button class="btn btn-premium-gradient" id="calculateRiskBtn">حساب</button>
                 <div class="results" id="riskResults"></div>
             </div>
         </div>

@@ -7,7 +7,7 @@ let currentCourse = null;
 let currentVideos = [];
 let currentVideoIndex = 0;
 
-// بيانات الدورات
+// بيانات الدورات (نفس البيانات السابقة)
 const coursesData = {
     haider: {
         title: "كورس التداول من صفر الى الاحتراف",
@@ -18,11 +18,33 @@ const coursesData = {
             { id: "CrzVLmflQgQ", title: "الدرس الثالث ترابط الفريمات من كورس الأموال الذكية" }
         ],
         info: `
-            <p><strong>حقوق الدورة:</strong></p>
-            <p>قناة تلجرام: <a href="https://t.me/thesuccessfulwayarabs" target="_blank">thesuccessfulwayarabs</a></p>
-            <p>حساب تلجرام: <a href="https://t.me/haideraljanabi90" target="_blank">haideraljanabi90</a></p>
-            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
-                <p><strong>ملاحظة:</strong> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-user-tie"></i> المدرب:</span>
+                    <span class="info-value">حيدر الجنابي</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-video"></i> عدد الفيديوهات:</span>
+                    <span class="info-value">3</span>
+                </div>
+            </div>
+            
+            <div class="rights-section">
+                <h5><i class="fas fa-copyright"></i> حقوق الدورة:</h5>
+                <div class="rights-links">
+                    <a href="https://t.me/thesuccessfulwayarabs" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>قناة تلجرام: thesuccessfulwayarabs</span>
+                    </a>
+                    <a href="https://t.me/haideraljanabi90" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>حساب تلجرام: haideraljanabi90</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="info-note">
+                <p><i class="fas fa-info-circle"></i> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
             </div>
         `
     },
@@ -47,11 +69,33 @@ const coursesData = {
             { id: "IdkFy19mPag", title: "تطبيق عملي على كل ما سبق - Level 2" }
         ],
         info: `
-            <p><strong>حقوق الدورة:</strong></p>
-            <p>قناة تلجرام: <a href="https://t.me/Exaado" target="_blank">Exaado</a></p>
-            <p>حساب الدعم: <a href="https://t.me/ExaadoSupport" target="_blank">ExaadoSupport</a></p>
-            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
-                <p><strong>ملاحظة:</strong> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-user-tie"></i> المدرب:</span>
+                    <span class="info-value">الدكتور محمد مهدي</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-video"></i> عدد الفيديوهات:</span>
+                    <span class="info-value">15</span>
+                </div>
+            </div>
+            
+            <div class="rights-section">
+                <h5><i class="fas fa-copyright"></i> حقوق الدورة:</h5>
+                <div class="rights-links">
+                    <a href="https://t.me/Exaado" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>قناة تلجرام: Exaado</span>
+                    </a>
+                    <a href="https://t.me/ExaadoSupport" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>حساب الدعم: ExaadoSupport</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="info-note">
+                <p><i class="fas fa-info-circle"></i> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
             </div>
         `
     },
@@ -85,10 +129,29 @@ const coursesData = {
             { id: "IsW3t13FfTE", title: "مؤشر EMA و Stochastic أهم مؤشرين في وضع أي استراتيجية" }
         ],
         info: `
-            <p><strong>حقوق الدورة:</strong></p>
-            <p>قناة تلجرام: <a href="https://t.me/tradaying" target="_blank">tradaying</a></p>
-            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
-                <p><strong>ملاحظة:</strong> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-user-tie"></i> المدرب:</span>
+                    <span class="info-value">حيدر تريدنك</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-video"></i> عدد الفيديوهات:</span>
+                    <span class="info-value">24</span>
+                </div>
+            </div>
+            
+            <div class="rights-section">
+                <h5><i class="fas fa-copyright"></i> حقوق الدورة:</h5>
+                <div class="rights-links">
+                    <a href="https://t.me/tradaying" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>قناة تلجرام: tradaying</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="info-note">
+                <p><i class="fas fa-info-circle"></i> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
             </div>
         `
     },
@@ -113,11 +176,33 @@ const coursesData = {
             { id: "kD8Xs6qzgYc", title: "ختام كورس أساس ICT - اكتشف قوة SETAB + A - الدرس 15" }
         ],
         info: `
-            <p><strong>حقوق الدورة:</strong></p>
-            <p>قناة تلجرام: <a href="https://t.me/mos_rar" target="_blank">mos_rar</a></p>
-            <p>حساب تلجرام: <a href="https://t.me/rar42rar" target="_blank">rar42rar</a></p>
-            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(243, 156, 18, 0.1); border-radius: 8px; border-right: 3px solid #f39c12;">
-                <p><strong>ملاحظة مهمة:</strong></p>
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-user-tie"></i> المدرب:</span>
+                    <span class="info-value">محمد سماره</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-video"></i> عدد الفيديوهات:</span>
+                    <span class="info-value">15</span>
+                </div>
+            </div>
+            
+            <div class="rights-section">
+                <h5><i class="fas fa-copyright"></i> حقوق الدورة:</h5>
+                <div class="rights-links">
+                    <a href="https://t.me/mos_rar" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>قناة تلجرام: mos_rar</span>
+                    </a>
+                    <a href="https://t.me/rar42rar" target="_blank" class="rights-link">
+                        <i class="fab fa-telegram"></i>
+                        <span>حساب تلجرام: rar42rar</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="premium-note">
+                <p><i class="fas fa-crown"></i> <strong>ملاحظة مهمة:</strong></p>
                 <p>هذا الكورس مجاني 100% وتم وضعه في خانة البروميوم لتجربة ميزات البروميوم فقط.</p>
                 <p>تم نشر أكواد مجانية حتى تستطيع استخدام البروميوم بشكل مفتوح.</p>
             </div>
@@ -131,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkUserSession();
     setupEventListeners();
     updateSupportBadge();
+    setupPolicyAndAboutPages();
 });
 
 // تهيئة التطبيق
@@ -153,6 +239,181 @@ function initApp() {
     
     // إعداد زر الرجوع
     setupBackButton();
+    
+    // إضافة أنماط CSS إضافية لمعلومات الدورة
+    addInfoModalStyles();
+}
+
+// إضافة أنماط CSS لمعلومات الدورة
+function addInfoModalStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .info-section {
+            background: rgba(30, 58, 138, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-right: 4px solid #3b82f6;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-value {
+            color: var(--dark-text);
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+        
+        .rights-section {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid #1e293b;
+        }
+        
+        .rights-section h5 {
+            color: #3b82f6;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .rights-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .rights-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            color: var(--dark-text);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .rights-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            transform: translateX(-5px);
+        }
+        
+        .rights-link i {
+            color: #3b82f6;
+            font-size: 1.5rem;
+        }
+        
+        .rights-link span {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .info-note {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-right: 4px solid #10b981;
+        }
+        
+        .info-note p {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .premium-note {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 2px solid #f59e0b;
+        }
+        
+        .premium-note p {
+            color: #f59e0b;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .premium-note p:last-child {
+            margin-bottom: 0;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// إعداد صفحات سياسة الخصوصية ومن نحن
+function setupPolicyAndAboutPages() {
+    // الروابط من القائمة الجانبية
+    document.querySelector('.sidebar-item[href="#privacy"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateToPage('privacy');
+        document.querySelector('.sidebar').classList.remove('open');
+    });
+    
+    document.querySelector('.sidebar-item[href="#about"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateToPage('about');
+        document.querySelector('.sidebar').classList.remove('open');
+    });
+    
+    // أزرار الإغلاق
+    document.querySelector('.close-policy-btn').addEventListener('click', function() {
+        navigateToPage('home');
+    });
+    
+    document.querySelector('.close-about-btn').addEventListener('click', function() {
+        navigateToPage('home');
+    });
+    
+    // زر إغلاق معلومات الدورة
+    document.getElementById('closeInfoFooterBtn').addEventListener('click', function() {
+        hideModal('infoModal');
+    });
 }
 
 // التحقق من جلسة المستخدم
@@ -286,6 +547,15 @@ function setupEventListeners() {
     
     // استماع لتغييرات الصفحة في الرابط
     window.addEventListener('hashchange', handleHashChange);
+    
+    // التعامل مع الروابط الخارجية في معلومات الدورة
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.rights-link')) {
+            e.preventDefault();
+            const link = e.target.closest('.rights-link');
+            window.open(link.href, '_blank');
+        }
+    });
 }
 
 // التعامل مع تغيير الرابط
@@ -307,7 +577,12 @@ function navigateToPage(page) {
     });
     
     // إظهار الصفحة المطلوبة
-    document.getElementById(page + 'Page').classList.add('active');
+    const pageElement = document.getElementById(page + 'Page');
+    if (pageElement) {
+        pageElement.classList.add('active');
+    } else {
+        document.getElementById('homePage').classList.add('active');
+    }
     
     // تحديث العنوان
     const titles = {
@@ -316,7 +591,9 @@ function navigateToPage(page) {
         courses: 'الدورات',
         premium: 'المتقدمين',
         tools: 'الأدوات',
-        support: 'الدعم الفني'
+        support: 'الدعم الفني',
+        privacy: 'سياسة الخصوصية',
+        about: 'من نحن'
     };
     
     document.getElementById('pageTitle').textContent = titles[page] || 'اكزم لتداول';
@@ -716,6 +993,10 @@ function openCourse(courseKey) {
     // تحديث قائمة الفيديوهات
     updateVideoList();
     
+    // تحديث أرقام الفيديوهات
+    document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
+    document.getElementById('totalVideos').textContent = currentVideos.length;
+    
     // إظهار مشغل الفيديو
     document.getElementById('videoModal').style.display = 'flex';
 }
@@ -736,6 +1017,7 @@ function updateVideoList() {
             currentVideoIndex = index;
             playVideo(video.id, video.title);
             updateVideoList();
+            document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
         });
         
         videoList.appendChild(videoItem);
@@ -745,10 +1027,11 @@ function updateVideoList() {
 // تشغيل فيديو
 function playVideo(videoId, title) {
     // استخدام مشغل بديل بدون حقوق يوتيوب
-    const videoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&showinfo=0&rel=0&modestbranding=1`;
+    const videoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&showinfo=0&rel=0&modestbranding=1&fs=1`;
     
     document.getElementById('videoPlayer').src = videoUrl;
     document.getElementById('videoTitle').textContent = title;
+    document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
 }
 
 // تشغيل الفيديو السابق
@@ -758,6 +1041,7 @@ function playPreviousVideo() {
         const video = currentVideos[currentVideoIndex];
         playVideo(video.id, video.title);
         updateVideoList();
+        document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
     }
 }
 
@@ -768,6 +1052,7 @@ function playNextVideo() {
         const video = currentVideos[currentVideoIndex];
         playVideo(video.id, video.title);
         updateVideoList();
+        document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
     }
 }
 
@@ -777,11 +1062,7 @@ function showCourseInfo(courseKey) {
     if (!course) return;
     
     document.getElementById('infoTitle').textContent = `معلومات عن: ${course.title}`;
-    document.getElementById('infoBody').innerHTML = `
-        <p><strong>المدرب:</strong> ${course.author}</p>
-        <p><strong>عدد الفيديوهات:</strong> ${course.videos.length}</p>
-        ${course.info}
-    `;
+    document.getElementById('infoBody').innerHTML = course.info;
     
     document.getElementById('infoModal').style.display = 'flex';
 }
@@ -901,7 +1182,9 @@ function calculateFibonacci() {
     }
     
     resultsHTML += '</div>';
-    resultsHTML += '<p style="margin-top: 15px; color: #95a5a6; font-size: 0.9rem;">ملاحظة: تم حساب المستويات بناءً على الاتجاه المحدد.</p>';
+    resultsHTML += '<div class="info-note" style="margin-top: 20px;">';
+    resultsHTML += '<p><i class="fas fa-info-circle"></i> تم حساب المستويات بناءً على الاتجاه المحدد.</p>';
+    resultsHTML += '</div>';
     
     document.getElementById('fibResults').innerHTML = resultsHTML;
 }
@@ -942,15 +1225,15 @@ function calculateRiskManagement() {
     resultsHTML += `<div class="result-item"><span class="result-label">رأس المال:</span><span class="result-value">$${capital.toFixed(2)}</span></div>`;
     resultsHTML += `<div class="result-item"><span class="result-label">نسبة المخاطرة:</span><span class="result-value">${riskPercent}%</span></div>`;
     resultsHTML += `<div class="result-item"><span class="result-label">مبلغ المخاطرة:</span><span class="result-value">$${riskAmount.toFixed(2)}</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">سعر الدخول:</span><span class="result-value">${entryPrice}</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">وقف الخسارة:</span><span class="result-value">${stopLoss}</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">سعر الدخول:</span><span class="result-value">${entryPrice.toFixed(4)}</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">وقف الخسارة:</span><span class="result-value">${stopLoss.toFixed(4)}</span></div>`;
     resultsHTML += `<div class="result-item"><span class="result-label">النقاط بين الدخول والوقف:</span><span class="result-value">${points.toFixed(4)}</span></div>`;
-    resultsHTML += `<div class="result-item" style="background: rgba(231, 76, 60, 0.1);"><span class="result-label">الحجم المقترح:</span><span class="result-value" style="color: #e74c3c;">${positionSize}</span></div>`;
+    resultsHTML += `<div class="result-item" style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444;"><span class="result-label">الحجم المقترح:</span><span class="result-value" style="color: #ef4444;">${positionSize}</span></div>`;
     resultsHTML += '</div>';
     
     resultsHTML += `
-        <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
-            <p><strong>تفسير النتائج:</strong></p>
+        <div class="premium-note" style="margin-top: 20px;">
+            <p><i class="fas fa-info-circle"></i> <strong>تفسير النتائج:</strong></p>
             <p>إذا خسرت الصفقة، ستخسر فقط $${riskAmount.toFixed(2)} (${riskPercent}% من رأس مالك).</p>
             <p>الحجم المقترح ${positionSize} هو حجم الصفقة الذي يضمن خسارة ${riskPercent}% فقط في حالة تنفيذ الوقف.</p>
         </div>
@@ -1031,9 +1314,10 @@ function loadSupportMessages() {
     
     if (userMessages.length === 0) {
         messagesContainer.innerHTML = `
-            <div class="no-messages">
-                <p>لا توجد رسائل حالياً</p>
-                <p>اكتب رسالتك وسيتم الرد عليك قريباً</p>
+            <div class="no-messages" style="text-align: center; padding: 50px 20px; color: #94a3b8;">
+                <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                <p style="font-size: 1.2rem; margin-bottom: 10px;">لا توجد رسائل حالياً</p>
+                <p style="font-size: 1rem;">اكتب رسالتك وسيتم الرد عليك قريباً</p>
             </div>
         `;
         return;
@@ -1122,47 +1406,4 @@ function formatTime(timestamp) {
         minute: '2-digit',
         hour12: true 
     });
-}
-
-// توليد أكواد بريميوم (للاستخدام في نسخة الإدمن)
-function generatePremiumCode(duration) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    
-    for (let i = 0; i < 16; i++) {
-        if (i > 0 && i % 4 === 0) code += '-';
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    
-    // حساب تاريخ الانتهاء
-    const expiry = new Date();
-    switch (duration) {
-        case 'minute':
-            expiry.setMinutes(expiry.getMinutes() + 1);
-            break;
-        case 'hour':
-            expiry.setHours(expiry.getHours() + 1);
-            break;
-        case 'day':
-            expiry.setDate(expiry.getDate() + 1);
-            break;
-        case 'month':
-            expiry.setMonth(expiry.getMonth() + 1);
-            break;
-        case 'year':
-            expiry.setFullYear(expiry.getFullYear() + 1);
-            break;
-        default:
-            expiry.setMonth(expiry.getMonth() + 1);
-    }
-    
-    return {
-        code: code,
-        duration: duration,
-        expiry: expiry.toISOString(),
-        used: false,
-        usedBy: null,
-        usedAt: null,
-        createdAt: new Date().toISOString()
-    };
 }
