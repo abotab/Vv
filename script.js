@@ -1,1567 +1,1168 @@
-// ===== بيانات التطبيق =====
-class AppManager {
-    constructor() {
-        this.currentUser = null;
-        this.currentPage = 'home';
-        this.theme = 'light';
-        this.notifications = [];
-        this.messages = [];
-        this.courses = [];
-        this.isLoggedIn = false;
-        this.prevPage = null;
-    }
-
-    init() {
-        this.loadData();
-        this.setupEventListeners();
-        this.setupTemplates();
-        this.checkAuth();
-        this.initTheme();
-        this.updateUI();
-        this.hideLoading();
-    }
-
-    loadData() {
-        // تحميل المستخدم الحالي
-        const user = localStorage.getItem('currentUser');
-        if (user) {
-            this.currentUser = JSON.parse(user);
-            this.isLoggedIn = true;
-        }
-
-        // تحميل الإعدادات
-        const settings = localStorage.getItem('appSettings');
-        if (settings) {
-            const { theme } = JSON.parse(settings);
-            this.theme = theme || 'light';
-        }
-
-        // تحميل الرسائل
-        const messages = localStorage.getItem('userMessages');
-        if (messages) {
-            this.messages = JSON.parse(messages);
-        }
-
-        // تحميل الدورات
-        this.loadCourses();
-    }
-
-    saveData() {
-        if (this.currentUser) {
-            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-        }
-        
-        const settings = { theme: this.theme };
-        localStorage.setItem('appSettings', JSON.stringify(settings));
-        
-        localStorage.setItem('userMessages', JSON.stringify(this.messages));
-    }
-
-    loadCourses() {
-        // الدورات المحددة
-        this.courses = [
-            {
-                id: 1,
-                title: "كورس التداول من صفر الى الاحتراف",
-                instructor: "حيدر الجنابي",
-                instructorLinks: {
-                    telegram: "https://t.me/haideraljanabi90",
-                    channel: "https://t.me/thesuccessfulwayarabs"
-                },
-                videos: [
-                    { id: "G8eeqb82KOM", title: "مقدمة الكورس", duration: "11:46" },
-                    { id: "vUeyLqB82CM", title: "الدرس الأول: سمارت موني كونسبت", duration: "15:30" },
-                    { id: "CrzVLmflQgQ", title: "الدرس الثاني: سمارت موني", duration: "18:45" }
-                ]
-            },
-            {
-                id: 2,
-                title: "أفضل دورة لتعلم SMC في الوطن العربي",
-                instructor: "الدكتور محمد مهدي",
-                instructorLinks: {
-                    telegram: "https://t.me/ExaadoSupport",
-                    channel: "https://t.me/Exaado"
-                },
-                videos: [
-                    { id: "eb2y-Kbd_N8", title: "مقدمة الدورة", duration: "20:15" },
-                    { id: "XSPuivsDNd4", title: "المستوى الأول مجاني", duration: "22:30" }
-                ]
-            }
-        ];
-    }
-
-    initTheme() {
-        document.documentElement.setAttribute('data-theme', this.theme);
-        const icon = document.querySelector('#themeToggle i');
-        icon.className = this.theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    }
-
-    toggleTheme() {
-        this.theme = this.theme === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', this.theme);
-        
-        const icon = document.querySelector('#themeToggle i');
-        icon.className = this.theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        
-        this.saveData();
-        this.showNotification('تم تغيير الوضع بنجاح', 'success');
-    }
-
-    setupEventListeners() {
-        // تغيير الصفحات
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = item.getAttribute('data-page');
-                this.navigateTo(page);
-            });
-        });
-
-        // الروابط في القائمة الجانبية
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const href = link.getAttribute('href');
-                const page = href.substring(1);
-                this.navigateTo(page);
-                this.closeSideNav();
-            });
-        });
-
-        // أزرار التحكم
-        document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
-        document.getElementById('menuToggle').addEventListener('click', () => this.openSideNav());
-        document.getElementById('closeNav').addEventListener('click', () => this.closeSideNav());
-        document.getElementById('backBtn').addEventListener('click', () => this.goBack());
-        document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
-        document.getElementById('supportBubble').addEventListener('click', () => this.openSupport());
-        document.getElementById('closeSupport').addEventListener('click', () => this.closeSupport());
-        
-        // زر ابدأ التعلم
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'startLearning') {
-                this.navigateTo('courses');
-            }
-        });
-
-        // مصادقة
-        document.querySelectorAll('.switch-tab').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const tab = link.getAttribute('data-tab');
-                this.switchAuthTab(tab);
-            });
-        });
-
-        document.getElementById('closeAuth').addEventListener('click', () => this.closeAuthModal());
-        document.getElementById('loginForm').addEventListener('submit', (e) => this.login(e));
-        document.getElementById('registerForm').addEventListener('submit', (e) => this.register(e));
-
-        // تغيير تبويبات المصادقة
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.getAttribute('data-tab');
-                this.switchAuthTab(tab);
-            });
-        });
-
-        // رفع الصورة
-        document.getElementById('profileImage').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                document.getElementById('fileName').textContent = file.name;
-            }
-        });
-
-        // تأكيدات
-        document.getElementById('confirmCancel').addEventListener('click', () => this.hideConfirm());
-        document.getElementById('confirmOk').addEventListener('click', () => this.confirmAction());
-
-        // إغلاق النوافذ بالنقر خارجها
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('auth-modal')) {
-                this.closeAuthModal();
-            }
-            if (e.target.classList.contains('confirm-modal')) {
-                this.hideConfirm();
-            }
-            if (e.target.classList.contains('support-modal')) {
-                this.closeSupport();
-            }
-        });
-
-        // منع الإغلاق عند النقر داخل المحتوى
-        document.querySelectorAll('.auth-content, .confirm-content, .support-header, .support-body').forEach(el => {
-            el.addEventListener('click', (e) => e.stopPropagation());
-        });
-
-        // تحميل الصفحة عند التمرير
-        window.addEventListener('popstate', () => {
-            const page = window.location.hash.substring(1) || 'home';
-            this.navigateTo(page, false);
-        });
-    }
-
-    setupTemplates() {
-        // تحميل القوالب الأساسية
-        this.templates = {
-            home: document.getElementById('homeTemplate').content,
-            courses: document.getElementById('coursesTemplate').content,
-            account: this.createAccountTemplate(),
-            advanced: this.createAdvancedTemplate(),
-            tools: this.createToolsTemplate(),
-            support: this.createSupportTemplate(),
-            about: this.createAboutTemplate(),
-            privacy: this.createPrivacyTemplate()
-        };
-    }
-
-    checkAuth() {
-        if (!this.isLoggedIn && this.currentPage !== 'home') {
-            this.showAuthModal();
-        }
-    }
-
-    navigateTo(page, pushState = true) {
-        if (page === this.currentPage) return;
-
-        // التحقق من الصلاحيات
-        if ((page === 'advanced' || page === 'account') && !this.isLoggedIn) {
-            this.showAuthModal();
-            return;
-        }
-
-        // حفظ الصفحة السابقة
-        this.prevPage = this.currentPage;
-        this.currentPage = page;
-
-        // تحديث العنوان
-        document.getElementById('pageTitle').textContent = this.getPageTitle(page);
-
-        // تحديث الروابط النشطة
-        this.updateActiveLinks(page);
-
-        // إظهار زر الرجوع إذا لم تكن الصفحة الرئيسية
-        document.getElementById('backBtn').style.display = page === 'home' ? 'none' : 'flex';
-
-        // تحميل المحتوى
-        this.loadPageContent(page);
-
-        // تحديث التاريخ
-        if (pushState) {
-            window.history.pushState({ page }, '', `#${page}`);
-        }
-
-        // إغلاق القائمة الجانبية
-        this.closeSideNav();
-    }
-
-    getPageTitle(page) {
-        const titles = {
-            home: 'اكزم للتداول',
-            account: 'حسابي',
-            courses: 'الدورات',
-            advanced: 'المتقدمين',
-            tools: 'الأدوات',
-            support: 'الدعم الفني',
-            about: 'من نحن',
-            privacy: 'سياسة الخصوصية'
-        };
-        return titles[page] || 'اكزم للتداول';
-    }
-
-    updateActiveLinks(page) {
-        // شريط التنقل السفلي
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-page') === page) {
-                item.classList.add('active');
-            }
-        });
-
-        // القائمة الجانبية
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${page}`) {
-                link.classList.add('active');
-            }
-        });
-    }
-
-    loadPageContent(page) {
-        const container = document.getElementById('mainContent');
-        const template = this.templates[page];
-        
-        if (!template) {
-            container.innerHTML = '<div class="error-page"><h2>الصفحة غير موجودة</h2></div>';
-            return;
-        }
-
-        container.innerHTML = '';
-        const clone = document.importNode(template, true);
-        container.appendChild(clone);
-
-        // تهيئة محتوى الصفحة
-        this.initPageContent(page);
-    }
-
-    initPageContent(page) {
-        switch (page) {
-            case 'courses':
-                this.initCoursesPage();
-                break;
-            case 'account':
-                this.initAccountPage();
-                break;
-            case 'advanced':
-                this.initAdvancedPage();
-                break;
-            case 'tools':
-                this.initToolsPage();
-                break;
-            case 'support':
-                this.initSupportPage();
-                break;
-        }
-    }
-
-    // ===== إدارة الحساب =====
-    login(event) {
-        event.preventDefault();
-        
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-
-        // حساب الإدمن
-        if (email === 'mstrhmd2005@gmail.com' && password === 'T1O2K3abot$') {
-            // تحويل إلى لوحة الإدمن
-            window.location.href = 'admin.html';
-            return;
-        }
-
-        // البحث عن المستخدم
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find(u => u.email === email && u.password === password);
-
-        if (user) {
-            // التحقق من الحظر
-            if (user.banned) {
-                this.showNotification('حسابك محظور من قبل الإدارة', 'error');
-                return;
-            }
-
-            this.currentUser = {
-                name: user.name,
-                username: user.username,
-                email: user.email,
-                profileImage: user.profileImage,
-                isPremium: user.isPremium || false,
-                joined: user.joined || new Date().toISOString()
-            };
-
-            this.isLoggedIn = true;
-            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-            
-            this.closeAuthModal();
-            this.updateUI();
-            this.showNotification('مرحباً بعودتك!', 'success');
-            this.navigateTo('home');
-        } else {
-            this.showNotification('البريد الإلكتروني أو كلمة المرور غير صحيحة', 'error');
-        }
-    }
-
-    register(event) {
-        event.preventDefault();
-        
-        const name = document.getElementById('registerName').value.trim();
-        const username = document.getElementById('registerUsername').value.trim();
-        const email = document.getElementById('registerEmail').value.trim();
-        const password = document.getElementById('registerPassword').value.trim();
-        const profileImage = document.getElementById('profileImage').files[0];
-
-        // التحقق من صحة البيانات
-        if (!name || !username || !email || !password) {
-            this.showNotification('يرجى ملء جميع الحقول الإلزامية', 'error');
-            return;
-        }
-
-        // التحقق من اسم المستخدم
-        if (!/^[A-Za-zأ-ي]/.test(username)) {
-            this.showNotification('يجب أن يبدأ اسم المستخدم بحرف', 'error');
-            return;
-        }
-
-        // التحقق من البريد الإلكتروني
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            this.showNotification('البريد الإلكتروني غير صالح', 'error');
-            return;
-        }
-
-        // التحقق من عدم وجود حساب بنفس البريد
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        if (users.find(u => u.email === email)) {
-            this.showNotification('هذا البريد الإلكتروني مسجل بالفعل', 'error');
-            return;
-        }
-
-        // التحقق من عدم وجود اسم مستخدم مكرر
-        if (users.find(u => u.username === username)) {
-            this.showNotification('اسم المستخدم هذا موجود بالفعل', 'error');
-            return;
-        }
-
-        // إنشاء حساب جديد
-        const newUser = {
-            name,
-            username,
-            email,
-            password,
-            profileImage: null,
-            isPremium: false,
-            banned: false,
-            joined: new Date().toISOString()
-        };
-
-        // معالجة صورة الحساب
-        if (profileImage) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                newUser.profileImage = e.target.result;
-                this.finalizeRegistration(newUser, users);
-            };
-            reader.readAsDataURL(profileImage);
-        } else {
-            this.finalizeRegistration(newUser, users);
-        }
-    }
-
-    finalizeRegistration(newUser, existingUsers) {
-        existingUsers.push(newUser);
-        localStorage.setItem('users', JSON.stringify(existingUsers));
-
-        this.currentUser = {
-            name: newUser.name,
-            username: newUser.username,
-            email: newUser.email,
-            profileImage: newUser.profileImage,
-            isPremium: false,
-            joined: newUser.joined
-        };
-
-        this.isLoggedIn = true;
-        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-
-        this.closeAuthModal();
-        this.updateUI();
-        this.showNotification('تم إنشاء حسابك بنجاح!', 'success');
-        this.navigateTo('home');
-    }
-
-    logout() {
-        this.showConfirm(
-            'تسجيل الخروج',
-            'هل أنت متأكد من تسجيل الخروج؟',
-            () => {
-                this.currentUser = null;
-                this.isLoggedIn = false;
-                localStorage.removeItem('currentUser');
-                this.updateUI();
-                this.showNotification('تم تسجيل الخروج بنجاح', 'success');
-                this.navigateTo('home');
-                this.closeSideNav();
-            }
-        );
-    }
-
-    updateUI() {
-        const userAvatar = document.getElementById('userAvatar');
-        const userName = document.getElementById('userName');
-        const userEmail = document.getElementById('userEmail');
-
-        if (this.isLoggedIn && this.currentUser) {
-            userName.textContent = this.currentUser.name;
-            userEmail.textContent = this.currentUser.email;
-            if (this.currentUser.profileImage) {
-                userAvatar.src = this.currentUser.profileImage;
-                userAvatar.style.display = 'block';
-            } else {
-                userAvatar.src = '';
-                userAvatar.style.display = 'none';
-            }
-        } else {
-            userName.textContent = 'زائر';
-            userEmail.textContent = 'سجل الدخول للوصول';
-            userAvatar.src = '';
-            userAvatar.style.display = 'none';
-        }
-    }
-
-    // ===== واجهة المستخدم =====
-    openSideNav() {
-        document.getElementById('sideNav').classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    closeSideNav() {
-        document.getElementById('sideNav').classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-
-    openSupport() {
-        document.getElementById('supportModal').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        this.updateSupportBadge(0);
-    }
-
-    closeSupport() {
-        document.getElementById('supportModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-
-    showAuthModal() {
-        document.getElementById('authModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        this.switchAuthTab('login');
-    }
-
-    closeAuthModal() {
-        document.getElementById('authModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-
-    switchAuthTab(tab) {
-        // تحديث الأزرار
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.getAttribute('data-tab') === tab) {
-                btn.classList.add('active');
-            }
-        });
-
-        // تحديث النماذج
-        document.querySelectorAll('.auth-form').forEach(form => {
-            form.classList.remove('active');
-            if (form.id === `${tab}Form`) {
-                form.classList.add('active');
-            }
-        });
-
-        // مسح الحقول
-        if (tab === 'login') {
-            document.getElementById('loginForm').reset();
-        } else {
-            document.getElementById('registerForm').reset();
-            document.getElementById('fileName').textContent = '';
-        }
-    }
-
-    showNotification(message, type = 'info') {
-        const container = document.getElementById('notificationContainer');
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        
-        const icon = type === 'success' ? 'check-circle' : 
-                    type === 'error' ? 'exclamation-circle' : 
-                    type === 'warning' ? 'exclamation-triangle' : 'info-circle';
-        
-        notification.innerHTML = `
-            <i class="fas fa-${icon}"></i>
-            <span>${message}</span>
-        `;
-        
-        container.appendChild(notification);
-        
-        // إزالة الإشعار تلقائياً بعد 5 ثوان
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 5000);
-    }
-
-    showConfirm(title, message, callback) {
-        document.getElementById('confirmTitle').textContent = title;
-        document.getElementById('confirmMessage').textContent = message;
-        document.getElementById('confirmModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        
-        this.confirmCallback = callback;
-    }
-
-    hideConfirm() {
-        document.getElementById('confirmModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-        this.confirmCallback = null;
-    }
-
-    confirmAction() {
-        if (this.confirmCallback) {
-            this.confirmCallback();
-        }
-        this.hideConfirm();
-    }
-
-    goBack() {
-        if (this.prevPage) {
-            this.navigateTo(this.prevPage);
-            this.prevPage = null;
-        } else {
-            this.navigateTo('home');
-        }
-    }
-
-    hideLoading() {
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').style.display = 'none';
-            }, 300);
-        }, 1000);
-    }
-
-    updateSupportBadge(count) {
-        const badge = document.getElementById('supportBadge');
-        if (count > 0) {
-            badge.textContent = count;
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    // ===== الصفحات =====
-    createAccountTemplate() {
-        const template = document.createElement('template');
-        template.innerHTML = `
-            <section class="page account-page">
-                <div class="page-header">
-                    <h2><i class="fas fa-user-circle"></i> حسابي</h2>
-                    <p>إدارة معلومات حسابك الشخصي</p>
-                </div>
-
-                <div class="account-info">
-                    <div class="profile-section">
-                        <div class="profile-image">
-                            <img src="" alt="صورة الحساب" id="accountAvatar">
-                            <button class="btn btn-secondary btn-sm" id="changeAvatar">
-                                <i class="fas fa-camera"></i> تغيير الصورة
-                            </button>
-                        </div>
-                        <div class="profile-details">
-                            <h3 id="accountName"></h3>
-                            <p><i class="fas fa-at"></i> <span id="accountUsername"></span></p>
-                            <p><i class="fas fa-envelope"></i> <span id="accountEmail"></span></p>
-                            <p><i class="fas fa-calendar"></i> عضو منذ <span id="accountJoined"></span></p>
-                            <div class="premium-badge" id="premiumBadge" style="display: none;">
-                                <i class="fas fa-crown"></i> عضو مميز
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="account-actions">
-                        <button class="btn btn-primary" id="editProfile">
-                            <i class="fas fa-edit"></i> تعديل المعلومات
-                        </button>
-                        <button class="btn btn-secondary" id="changePassword">
-                            <i class="fas fa-key"></i> تغيير كلمة المرور
-                        </button>
-                        <button class="btn btn-danger" id="deleteAccount">
-                            <i class="fas fa-trash"></i> حذف الحساب
-                        </button>
-                    </div>
-
-                    <div class="account-stats">
-                        <h3><i class="fas fa-chart-line"></i> إحصائيات</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <i class="fas fa-video"></i>
-                                <span>الدورات المشاهدة</span>
-                                <strong id="watchedCourses">0</strong>
-                            </div>
-                            <div class="stat-item">
-                                <i class="fas fa-clock"></i>
-                                <span>ساعات التعلم</span>
-                                <strong id="learningHours">0</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        `;
-        return template.content;
-    }
-
-    createAdvancedTemplate() {
-        const template = document.createElement('template');
-        template.innerHTML = `
-            <section class="page advanced-page">
-                <div class="page-header">
-                    <h2><i class="fas fa-crown"></i> المحتوى المتقدم</h2>
-                    <p>دورات احترافية تتطلب تفعيل الاشتراك المميز</p>
-                </div>
-
-                <div class="premium-status" id="premiumStatus">
-                    <div class="status-content">
-                        <i class="fas fa-gem"></i>
-                        <h3>الاشتراك المميز غير مفعل</h3>
-                        <p>للدخول إلى المحتوى المتقدم، يرجى تفعيل الاشتراك المميز</p>
-                        <button class="btn btn-primary" id="activatePremium">
-                            <i class="fas fa-key"></i> تفعيل الاشتراك
-                        </button>
-                    </div>
-                </div>
-
-                <div class="premium-courses" id="premiumCourses" style="display: none;">
-                    <!-- المحتوى المتقدم يظهر هنا -->
-                </div>
-
-                <div class="activation-form" id="activationForm" style="display: none;">
-                    <h3><i class="fas fa-key"></i> تفعيل الاشتراك المميز</h3>
-                    <div class="input-group">
-                        <label>كود التفعيل</label>
-                        <input type="text" id="activationCode" placeholder="أدخل كود التفعيل">
-                    </div>
-                    <button class="btn btn-success" id="submitActivation">
-                        <i class="fas fa-check"></i> تفعيل
-                    </button>
-                    <button class="btn btn-secondary" id="cancelActivation">
-                        إلغاء
-                    </button>
-                </div>
-            </section>
-        `;
-        return template.content;
-    }
-
-    createToolsTemplate() {
-        const template = document.createElement('template');
-        template.innerHTML = `
-            <section class="page tools-page">
-                <div class="page-header">
-                    <h2><i class="fas fa-tools"></i> أدوات التداول</h2>
-                    <p>مجموعة من الأدوات المساعدة للتداول</p>
-                </div>
-
-                <div class="tools-container">
-                    <div class="tool-card" id="fibonacciCalculator">
-                        <i class="fas fa-calculator"></i>
-                        <h3>حاسبة فيبوناتشي</h3>
-                        <p>حساب مستويات فيبوناتشي للترندات</p>
-                    </div>
-
-                    <div class="tool-card" id="riskManagement">
-                        <i class="fas fa-chart-pie"></i>
-                        <h3>إدارة رأس المال</h3>
-                        <p>حساب حجم الصفقة ونسبة المخاطرة</p>
-                    </div>
-
-                    <div class="tool-card" id="positionSize">
-                        <i class="fas fa-balance-scale"></i>
-                        <h3>حجم الصفقة</h3>
-                        <p>حساب حجم الصفقة الأمثل</p>
-                    </div>
-                </div>
-
-                <!-- حاسبة فيبوناتشي -->
-                <div class="tool-modal" id="fibonacciModal">
-                    <div class="modal-content">
-                        <h3><i class="fas fa-calculator"></i> حاسبة فيبوناتشي</h3>
-                        <div class="input-group">
-                            <label>اتجاه الترند</label>
-                            <select id="trendDirection">
-                                <option value="up">صاعد (من القاع للقمة)</option>
-                                <option value="down">هابط (من القمة للقاع)</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label id="lowLabel">السعر الأدنى (القاع)</label>
-                            <input type="number" id="lowPrice" placeholder="أدخل السعر الأدنى">
-                        </div>
-                        <div class="input-group">
-                            <label id="highLabel">السعر الأعلى (القمة)</label>
-                            <input type="number" id="highPrice" placeholder="أدخل السعر الأعلى">
-                        </div>
-                        <button class="btn btn-primary" id="calculateFibonacci">
-                            <i class="fas fa-calculator"></i> حساب المستويات
-                        </button>
-                        <div class="results" id="fibonacciResults"></div>
-                    </div>
-                </div>
-
-                <!-- إدارة المخاطرة -->
-                <div class="tool-modal" id="riskModal">
-                    <div class="modal-content">
-                        <h3><i class="fas fa-chart-pie"></i> إدارة رأس المال</h3>
-                        <div class="input-group">
-                            <label>رأس المال ($)</label>
-                            <input type="number" id="capital" placeholder="أدخل رأس المال">
-                        </div>
-                        <div class="input-group">
-                            <label>نسبة المخاطرة (%)</label>
-                            <input type="number" id="riskPercentage" placeholder="أدخل نسبة المخاطرة" min="0.1" max="10" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label>سعر الدخول ($)</label>
-                            <input type="number" id="entryPrice" placeholder="أدخل سعر الدخول">
-                        </div>
-                        <div class="input-group">
-                            <label>سعر وقف الخسارة ($)</label>
-                            <input type="number" id="stopLoss" placeholder="أدخل سعر وقف الخسارة">
-                        </div>
-                        <button class="btn btn-primary" id="calculateRisk">
-                            <i class="fas fa-calculator"></i> حساب المخاطرة
-                        </button>
-                        <div class="results" id="riskResults"></div>
-                    </div>
-                </div>
-            </section>
-        `;
-        return template.content;
-    }
-
-    createSupportTemplate() {
-        const template = document.createElement('template');
-        template.innerHTML = `
-            <section class="page support-page">
-                <div class="page-header">
-                    <h2><i class="fas fa-headset"></i> الدعم الفني</h2>
-                    <p>نحن هنا لمساعدتك في أي وقت</p>
-                </div>
-
-                <div class="support-content">
-                    <div class="contact-info">
-                        <h3><i class="fas fa-address-book"></i> معلومات التواصل</h3>
-                        <div class="contact-list">
-                            <a href="https://wa.me/442031375274" target="_blank" class="contact-item">
-                                <i class="fab fa-whatsapp"></i>
-                                <div>
-                                    <strong>واتساب الدعم</strong>
-                                    <span>+44 203 137 5274</span>
-                                </div>
-                            </a>
-                            <a href="https://t.me/ASQ412" target="_blank" class="contact-item">
-                                <i class="fab fa-telegram"></i>
-                                <div>
-                                    <strong>تليجرام المطور</strong>
-                                    <span>@ASQ412</span>
-                                </div>
-                            </a>
-                            <a href="https://t.me/pine_Scripts0" target="_blank" class="contact-item">
-                                <i class="fab fa-telegram"></i>
-                                <div>
-                                    <strong>قناة تليجرام</strong>
-                                    <span>@pine_Scripts0</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="faq-section">
-                        <h3><i class="fas fa-question-circle"></i> الأسئلة الشائعة</h3>
-                        <div class="faq-list">
-                            <div class="faq-item">
-                                <div class="faq-question">
-                                    <span>كيف أشترك في المحتوى المميز؟</span>
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                                <div class="faq-answer">
-                                    <p>يمكنك الاشتراك في المحتوى المميز عن طريق الحصول على كود تفعيل من الإدارة.</p>
-                                </div>
-                            </div>
-                            <div class="faq-item">
-                                <div class="faq-question">
-                                    <span>هل التطبيق مجاني؟</span>
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                                <div class="faq-answer">
-                                    <p>نعم، التطبيق مجاني بالكامل مع وجود بعض الميزات الإضافية للاشتراك المميز.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="message-form">
-                        <h3><i class="fas fa-envelope"></i> أرسل رسالة</h3>
-                        <div class="input-group">
-                            <label>الموضوع</label>
-                            <input type="text" id="messageSubject" placeholder="موضوع الرسالة">
-                        </div>
-                        <div class="input-group">
-                            <label>الرسالة</label>
-                            <textarea id="messageText" rows="4" placeholder="اكتب رسالتك هنا..."></textarea>
-                        </div>
-                        <button class="btn btn-primary" id="sendMessage">
-                            <i class="fas fa-paper-plane"></i> إرسال الرسالة
-                        </button>
-                    </div>
-                </div>
-            </section>
-        `;
-        return template.content;
-    }
-
-    createAboutTemplate() {
-        const template = document.createElement('template');
-        template.innerHTML = `
-            <section class="page about-page">
-                <div class="page-header">
-                    <h2><i class="fas fa-info-circle"></i> من نحن</h2>
-                    <p>تعرف على فريق اكزم للتداول</p>
-                </div>
-
-                <div class="about-content">
-                    <div class="about-card">
-                        <h3><i class="fas fa-rocket"></i> مهمتنا</h3>
-                        <p>نحن فريق من المطورين والمتداولين المحترفين، نعمل على تقديم أفضل المحتويات التعليمية والأدوات المساعدة لعالم التداول. مهمتنا هي جعل التعلم ممكناً للجميع بجودة عالية وسهولة وصول.</p>
-                    </div>
-
-                    <div class="about-card">
-                        <h3><i class="fas fa-eye"></i> رؤيتنا</h3>
-                        <p>نسعى لأن نكون المنصة الرائدة في تعليم التداول في الوطن العربي، من خلال تقديم محتوى احترافي، أدوات مبتكرة، ودعم فني متميز لمساعدة المتداولين على تحقيق أهدافهم.</p>
-                    </div>
-
-                    <div class="about-card">
-                        <h3><i class="fas fa-handshake"></i> قيمنا</h3>
-                        <ul>
-                            <li><i class="fas fa-check-circle"></i> الجودة والاحترافية</li>
-                            <li><i class="fas fa-check-circle"></i> الشفافية والوضوح</li>
-                            <li><i class="fas fa-check-circle"></i> الابتكار والتطوير المستمر</li>
-                            <li><i class="fas fa-check-circle"></i> دعم المستخدم أولوية</li>
-                        </ul>
-                    </div>
-
-                    <div class="team-section">
-                        <h3><i class="fas fa-users"></i> فريق العمل</h3>
-                        <p>نعمل كفريق واحد لتحقيق أهدافنا المشتركة في تطوير وتعليم التداول.</p>
-                    </div>
-                </div>
-            </section>
-        `;
-        return template.content;
-    }
-
-    createPrivacyTemplate() {
-        const template = document.createElement('template');
-        template.innerHTML = `
-            <section class="page privacy-page">
-                <div class="page-header">
-                    <h2><i class="fas fa-shield-alt"></i> سياسة الخصوصية</h2>
-                    <p>حماية بياناتك هي أولويتنا</p>
-                </div>
-
-                <div class="privacy-content">
-                    <div class="privacy-section">
-                        <h3><i class="fas fa-database"></i> جمع المعلومات</h3>
-                        <p>نقوم بجمع المعلومات الضرورية فقط لتقديم خدمة أفضل، مثل:</p>
-                        <ul>
-                            <li>الاسم وبيانات الاتصال لتسجيل الدخول</li>
-                            <li>سجل النشاط لتحسين الخدمة</li>
-                            <li>تفضيلات المستخدم لتخصيص التجربة</li>
-                        </ul>
-                    </div>
-
-                    <div class="privacy-section">
-                        <h3><i class="fas fa-lock"></i> حماية البيانات</h3>
-                        <p>نستخدم تقنيات متطورة لحماية بياناتك:</p>
-                        <ul>
-                            <li>تشفير البيانات الحساسة</li>
-                            <li>حماية من الوصول غير المصرح به</li>
-                            <li>نسخ احتياطي آمن للبيانات</li>
-                        </ul>
-                    </div>
-
-                    <div class="privacy-section">
-                        <h3><i class="fas fa-share-alt"></i> مشاركة المعلومات</h3>
-                        <p>لا نشارك معلوماتك الشخصية مع أي طرف ثالث إلا في الحالات التالية:</p>
-                        <ul>
-                            <li>بموافقتك الصريحة</li>
-                            <li>عندما يطلب القانون ذلك</li>
-                            <li>لحماية حقوق وممتلكات المنصة</li>
-                        </ul>
-                    </div>
-
-                    <div class="privacy-section">
-                        <h3><i class="fas fa-user-cog"></i> حقوق المستخدم</h3>
-                        <p>لديك الحق في:</p>
-                        <ul>
-                            <li>الوصول إلى بياناتك الشخصية</li>
-                            <li>تصحيح البيانات غير الدقيقة</li>
-                            <li>حذف حسابك وبياناتك</li>
-                            <li>سحب الموافقة على جمع البيانات</li>
-                        </ul>
-                    </div>
-
-                    <div class="privacy-note">
-                        <p><i class="fas fa-exclamation-circle"></i> آخر تحديث: ${new Date().toLocaleDateString('ar-SA')}</p>
-                        <p>لأي استفسارات حول الخصوصية، يرجى التواصل مع الدعم الفني.</p>
-                    </div>
-                </div>
-            </section>
-        `;
-        return template.content;
-    }
-
-    // ===== تهيئة صفحات معينة =====
-    initCoursesPage() {
-        const container = document.getElementById('coursesContainer');
-        if (!container) return;
-
-        container.innerHTML = '';
-        
-        this.courses.forEach(course => {
-            const courseCard = this.createCourseCard(course);
-            container.appendChild(courseCard);
-        });
-    }
-
-    createCourseCard(course) {
-        const div = document.createElement('div');
-        div.className = 'course-card';
-        div.innerHTML = `
-            <div class="course-header">
-                <h3>${course.title}</h3>
-                <div class="course-instructor">
-                    <i class="fas fa-user-tie"></i>
-                    <span>${course.instructor}</span>
-                </div>
+// البيانات المخزنة محلياً
+let currentUser = null;
+let users = JSON.parse(localStorage.getItem('trading_users')) || [];
+let premiumCodes = JSON.parse(localStorage.getItem('premium_codes')) || [];
+let supportMessages = JSON.parse(localStorage.getItem('support_messages')) || [];
+let currentCourse = null;
+let currentVideos = [];
+let currentVideoIndex = 0;
+
+// بيانات الدورات
+const coursesData = {
+    haider: {
+        title: "كورس التداول من صفر الى الاحتراف",
+        author: "حيدر الجنابي",
+        videos: [
+            { id: "G8eeqb82KOM", title: "دورة سمارت موني كونسبت الحلقة الأولى للمبتدئين" },
+            { id: "vUeyLqB82CM", title: "الدرس الثاني من كورس الأموال الذكية" },
+            { id: "CrzVLmflQgQ", title: "الدرس الثالث ترابط الفريمات من كورس الأموال الذكية" }
+        ],
+        info: `
+            <p><strong>حقوق الدورة:</strong></p>
+            <p>قناة تلجرام: <a href="https://t.me/thesuccessfulwayarabs" target="_blank">thesuccessfulwayarabs</a></p>
+            <p>حساب تلجرام: <a href="https://t.me/haideraljanabi90" target="_blank">haideraljanabi90</a></p>
+            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
+                <p><strong>ملاحظة:</strong> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
             </div>
-            <div class="course-body">
-                <div class="video-player" id="player-${course.id}">
-                    <iframe width="100%" height="100%" 
-                            src="https://www.youtube.com/embed/${course.videos[0].id}?controls=1&modestbranding=1&rel=0&showinfo=0"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                    </iframe>
-                </div>
-                <div class="video-list">
-                    ${course.videos.map((video, index) => `
-                        <div class="video-item ${index === 0 ? 'active' : ''}" 
-                             data-video-id="${video.id}"
-                             data-course-id="${course.id}">
-                            <i class="fas fa-play-circle"></i>
-                            <div>
-                                <div class="video-title">${video.title}</div>
-                                <div class="video-duration">${video.duration}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
+        `
+    },
+    mohamed: {
+        title: "أفضل دورة لتعلم SMC في الوطن العربي",
+        author: "الدكتور محمد مهدي",
+        videos: [
+            { id: "eb2y-Kbd_N8", title: "مقدمة هامة لدورة SMC Exaado" },
+            { id: "XSPuivsDNd4", title: "لماذا المستوى الأول مجاني؟" },
+            { id: "cWx_GkB2htE", title: "هل علم SMC أفضل علم لتحقيق الأرباح بالفوركس؟" },
+            { id: "pQsk2N8j08I", title: "تأسيس SMC - درس 1 - الشموع اليابانية" },
+            { id: "C1qDxNJJbbI", title: "تأسيس SMC - الدرس 2 - هيكلية الشموع" },
+            { id: "fH0vP9NNuug", title: "تأسيس SMC - الدرس 3 - الغلبة لمن؟" },
+            { id: "QmhYCHTkGPU", title: "تأسيس SMC - الدرس 4 - قمم وقيعان الهيكل" },
+            { id: "h9JXmwltHvw", title: "تأسيس SMC - درس 5 - كيف تتكون اتجاهات السوق؟" },
+            { id: "R08Q9wj0vHw", title: "تأسيس SMC - درس 6 - تطبيق عملي على اتجاهات السوق" },
+            { id: "vkEgojBoLO4", title: "تأسيس SMC - الدرس 7 - الاتجاهات الرئيسية والداخلية" },
+            { id: "ITKrEnK152M", title: "تأسيس SMC - الدرس 8 - تطبيق عملي على الاتجاه الرئيسي والداخلي" },
+            { id: "ICJbnDo20mI", title: "الحافز Level 2 - Inducment IDM" },
+            { id: "sKfoeLGsQUY", title: "شروط Level 2 - Inducment IDM" },
+            { id: "U1Alwc74Ap0", title: "تطبيق عملي لاستخراج Level 2 - IDM" },
+            { id: "IdkFy19mPag", title: "تطبيق عملي على كل ما سبق - Level 2" }
+        ],
+        info: `
+            <p><strong>حقوق الدورة:</strong></p>
+            <p>قناة تلجرام: <a href="https://t.me/Exaado" target="_blank">Exaado</a></p>
+            <p>حساب الدعم: <a href="https://t.me/ExaadoSupport" target="_blank">ExaadoSupport</a></p>
+            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
+                <p><strong>ملاحظة:</strong> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
             </div>
-            <div class="course-footer">
-                <button class="btn btn-secondary btn-course-info">
-                    <i class="fas fa-info-circle"></i> معلومات الدورة
-                </button>
-                <button class="btn btn-primary btn-watch">
-                    <i class="fas fa-play"></i> تشغيل
-                </button>
+        `
+    },
+    tradaying: {
+        title: "الكورس السداسي في احتراف التحليل الفني",
+        author: "حيدر تريدنك",
+        videos: [
+            { id: "pNLb-3Nrjv0", title: "مقدمة الكورس السداسي احتراف التحليل الفني" },
+            { id: "QEMB6XnoAPU", title: "شرح الشمعة اليابانية بالتفصيل" },
+            { id: "SC9IA6y0mLo", title: "شرح القمم والقيعان وأهميتها في التحليل الفني" },
+            { id: "SL0sab2OsPQ", title: "علم تحديد الاتجاه في الأسواق المالية" },
+            { id: "vdhBbWv7P8Q", title: "علم تحديد الاتجاه (الترند الفرعي) في الأسواق" },
+            { id: "qMSe7tjnkE0", title: "علم تحديد الاتجاه في الأسواق المالية (المتوسط المتحرك 200)" },
+            { id: "4CNWWp2toNI", title: "الدعم الثابت ماهو وكيف نحدده بشكل دقيق" },
+            { id: "FMQG-iud_3k", title: "المقاومة الثابتة ماهي وكيف نحددها بشكل دقيق" },
+            { id: "jEOCbIDFagE", title: "عملية الاستبدال (بين دعم ومقاومة) في الأسواق" },
+            { id: "hsWQxsmF7Z4", title: "الدعم والمقاومات الديناميكية (المتحركة)" },
+            { id: "r0dtL2Eey34", title: "الدعوم والمقاومات الديناميكية (المتحركة)" },
+            { id: "S-PceOrWCVc", title: "الدعم والمقاومات على طريقة أعظم محللين العالم (شبه الديناميكية)" },
+            { id: "X7aBNS3fj3E", title: "تحديد الدعوم والمقاومات على طريقة أعظم محللين التاريخ (القنوات السعرية)" },
+            { id: "gsMhtEVN8us", title: "تحديد الدعوم والمقاومات على طريقة أعظم محللين التاريخ (القنوات السعرية)" },
+            { id: "ECC5erFed88", title: "قراءة الحالة النفسية في السوق عن طريق الشموع اليابانية (أنماط الشموع اليابانية)" },
+            { id: "dh4OZDqZohA", title: "أساسيات البرايس اكشن (قراءة الحالة النفسية) في السوق" },
+            { id: "wfidL8peRxA", title: "التصحيح والكسر والاختراق وإعادة الاختبار في التحليل الفني" },
+            { id: "evnMF07iHfA", title: "تتبع البنوك والحيتان في الأسواق المالية (معلومات بآلاف الدولارات)" },
+            { id: "qfsu98cAwaM", title: "تأكيد الاختراق الحقيقي وتجنب الاختراق الوهمي بالتحليل الفني عن طريق الفوليوم" },
+            { id: "dhpeq_sfy_k", title: "تأكيد الكسر الحقيقي وتجنب الكسر الوهمي بالتحليل الفني عن طريق الفوليوم" },
+            { id: "6dH93cY8G7Y", title: "البرايس اكشن النوع الأول.. تعلم بطريقة جديدة" },
+            { id: "C_4NsWODb7c", title: "البرايس اكشن المتحرك النوع الثاني.. تعلم بطريقة جديدة" },
+            { id: "Iv-oyMEzR74", title: "الفيبوناتشي والبرايس اكشن النوع الثالث.. تعلم بطريقة جديدة" },
+            { id: "IsW3t13FfTE", title: "مؤشر EMA و Stochastic أهم مؤشرين في وضع أي استراتيجية" }
+        ],
+        info: `
+            <p><strong>حقوق الدورة:</strong></p>
+            <p>قناة تلجرام: <a href="https://t.me/tradaying" target="_blank">tradaying</a></p>
+            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
+                <p><strong>ملاحظة:</strong> هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
             </div>
-        `;
-
-        // إضافة مستمعي الأحداث
-        setTimeout(() => {
-            const videoItems = div.querySelectorAll('.video-item');
-            videoItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const videoId = item.getAttribute('data-video-id');
-                    const courseId = item.getAttribute('data-course-id');
-                    this.changeVideo(courseId, videoId, item);
-                });
-            });
-
-            const infoBtn = div.querySelector('.btn-course-info');
-            infoBtn.addEventListener('click', () => this.showCourseInfo(course));
-
-            const watchBtn = div.querySelector('.btn-watch');
-            watchBtn.addEventListener('click', () => {
-                const firstVideo = course.videos[0];
-                this.changeVideo(course.id, firstVideo.id);
-            });
-        }, 100);
-
-        return div;
-    }
-
-    changeVideo(courseId, videoId, clickedItem = null) {
-        // تحديث الفيديو النشط
-        const player = document.getElementById(`player-${courseId}`);
-        if (player) {
-            const iframe = player.querySelector('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&showinfo=0`;
-        }
-
-        // تحديث العناصر النشطة
-        if (clickedItem) {
-            const allItems = clickedItem.parentElement.querySelectorAll('.video-item');
-            allItems.forEach(item => item.classList.remove('active'));
-            clickedItem.classList.add('active');
-        }
-    }
-
-    showCourseInfo(course) {
-        const info = `
-            <strong>معلومات الدورة:</strong><br>
-            ${course.title}<br><br>
-            <strong>المدرب:</strong> ${course.instructor}<br>
-            <strong>عدد الفيديوهات:</strong> ${course.videos.length}<br><br>
-            <strong>روابط المدرب:</strong><br>
-            <a href="${course.instructorLinks.telegram}" target="_blank">تليجرام</a> | 
-            <a href="${course.instructorLinks.channel}" target="_blank">القناة</a>
-        `;
-        
-        this.showConfirm('معلومات الدورة', info, null);
-    }
-
-    initAccountPage() {
-        if (!this.isLoggedIn || !this.currentUser) {
-            this.showAuthModal();
-            return;
-        }
-
-        // تحديث معلومات الحساب
-        document.getElementById('accountName').textContent = this.currentUser.name;
-        document.getElementById('accountUsername').textContent = '@' + this.currentUser.username;
-        document.getElementById('accountEmail').textContent = this.currentUser.email;
-        
-        const joinedDate = new Date(this.currentUser.joined);
-        document.getElementById('accountJoined').textContent = joinedDate.toLocaleDateString('ar-SA');
-        
-        const avatar = document.getElementById('accountAvatar');
-        if (this.currentUser.profileImage) {
-            avatar.src = this.currentUser.profileImage;
-        } else {
-            avatar.style.display = 'none';
-        }
-
-        // تحديث حالة الاشتراك المميز
-        const premiumBadge = document.getElementById('premiumBadge');
-        premiumBadge.style.display = this.currentUser.isPremium ? 'flex' : 'none';
-
-        // إضافة مستمعي الأحداث
-        document.getElementById('editProfile').addEventListener('click', () => this.editProfile());
-        document.getElementById('changePassword').addEventListener('click', () => this.changePassword());
-        document.getElementById('deleteAccount').addEventListener('click', () => this.deleteAccount());
-        document.getElementById('changeAvatar').addEventListener('click', () => this.changeAvatar());
-    }
-
-    editProfile() {
-        this.showNotification('هذه الميزة قيد التطوير', 'info');
-    }
-
-    changePassword() {
-        this.showNotification('هذه الميزة قيد التطوير', 'info');
-    }
-
-    deleteAccount() {
-        this.showConfirm(
-            'حذف الحساب',
-            'هل أنت متأكد من حذف حسابك؟ سيتم حذف جميع بياناتك بشكل نهائي.',
-            () => {
-                // حذف المستخدم من قاعدة البيانات
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                const updatedUsers = users.filter(u => u.email !== this.currentUser.email);
-                localStorage.setItem('users', JSON.stringify(updatedUsers));
-                
-                // حذف المستخدم الحالي
-                localStorage.removeItem('currentUser');
-                this.currentUser = null;
-                this.isLoggedIn = false;
-                
-                this.showNotification('تم حذف حسابك بنجاح', 'success');
-                this.navigateTo('home');
-            }
-        );
-    }
-
-    changeAvatar() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    this.currentUser.profileImage = event.target.result;
-                    localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-                    
-                    // تحديث الصورة في الواجهة
-                    document.getElementById('accountAvatar').src = this.currentUser.profileImage;
-                    document.getElementById('accountAvatar').style.display = 'block';
-                    document.getElementById('userAvatar').src = this.currentUser.profileImage;
-                    
-                    // تحديث قاعدة البيانات
-                    const users = JSON.parse(localStorage.getItem('users') || '[]');
-                    const userIndex = users.findIndex(u => u.email === this.currentUser.email);
-                    if (userIndex !== -1) {
-                        users[userIndex].profileImage = this.currentUser.profileImage;
-                        localStorage.setItem('users', JSON.stringify(users));
-                    }
-                    
-                    this.showNotification('تم تحديث صورة الحساب', 'success');
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        input.click();
-    }
-
-    initAdvancedPage() {
-        if (!this.isLoggedIn) {
-            this.showAuthModal();
-            return;
-        }
-
-        const premiumStatus = document.getElementById('premiumStatus');
-        const premiumCourses = document.getElementById('premiumCourses');
-        const activationForm = document.getElementById('activationForm');
-
-        if (this.currentUser.isPremium) {
-            premiumStatus.style.display = 'none';
-            premiumCourses.style.display = 'block';
-            this.loadPremiumCourses();
-        } else {
-            premiumStatus.style.display = 'block';
-            premiumCourses.style.display = 'none';
-            activationForm.style.display = 'none';
-        }
-
-        // إضافة مستمعي الأحداث
-        const activateBtn = document.getElementById('activatePremium');
-        if (activateBtn) {
-            activateBtn.addEventListener('click', () => {
-                activationForm.style.display = 'block';
-                premiumStatus.style.display = 'none';
-            });
-        }
-
-        const submitBtn = document.getElementById('submitActivation');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', () => this.activatePremium());
-        }
-
-        const cancelBtn = document.getElementById('cancelActivation');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                activationForm.style.display = 'none';
-                premiumStatus.style.display = 'block';
-            });
-        }
-    }
-
-    activatePremium() {
-        const code = document.getElementById('activationCode').value.trim();
-        
-        if (!code) {
-            this.showNotification('يرجى إدخال كود التفعيل', 'error');
-            return;
-        }
-
-        // التحقق من الأكواد المخزنة
-        const codes = JSON.parse(localStorage.getItem('activationCodes') || '[]');
-        const validCode = codes.find(c => c.code === code && c.active && c.usedCount < c.maxUses);
-
-        if (validCode) {
-            // تفعيل الاشتراك
-            this.currentUser.isPremium = true;
-            validCode.usedCount++;
-            validCode.users.push(this.currentUser.email);
-            
-            // حفظ التغييرات
-            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-            localStorage.setItem('activationCodes', JSON.stringify(codes));
-            
-            // تحديث قاعدة بيانات المستخدمين
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const userIndex = users.findIndex(u => u.email === this.currentUser.email);
-            if (userIndex !== -1) {
-                users[userIndex].isPremium = true;
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-            
-            this.showNotification('تم تفعيل الاشتراك المميز بنجاح!', 'success');
-            this.initAdvancedPage();
-        } else {
-            this.showNotification('كود التفعيل غير صالح أو منتهي الصلاحية', 'error');
-        }
-    }
-
-    loadPremiumCourses() {
-        const container = document.getElementById('premiumCourses');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="course-card">
-                <div class="course-header">
-                    <h3>كورس ICT من الصفر للمبتدئين</h3>
-                    <div class="course-instructor">
-                        <i class="fas fa-user-tie"></i>
-                        <span>محمد سماره</span>
-                    </div>
-                </div>
-                <div class="course-body">
-                    <p>كورس متقدم في استراتيجية ICT للتداول</p>
-                    <div class="premium-features">
-                        <h4><i class="fas fa-star"></i> مميزات الكورس:</h4>
-                        <ul>
-                            <li>15 درساً متقدماً</li>
-                            <li>أدوات تحليل احترافية</li>
-                            <li>تمارين عملية</li>
-                            <li>دعم مباشر</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="course-footer">
-                    <button class="btn btn-primary" id="startPremiumCourse">
-                        <i class="fas fa-play"></i> بدء التعلم
-                    </button>
-                </div>
+        `
+    },
+    ict: {
+        title: "كورس ICT من الصفر للمبتدئين",
+        author: "محمد سماره",
+        videos: [
+            { id: "B_Cniskclho", title: "بعد 4 سنين تداول.... كورس ICT من الصفر للمبتدئين - الدرس الأول" },
+            { id: "P02iX2KGYpc", title: "لا تصدق أن السوق يتحرك عشوائياً.... تعرف على BSL و SSL واكتشف الحقيقة - الدرس 2" },
+            { id: "sRBlms-TcMM", title: "كيف يصنع السوق مناطق سيولة كاذبة لخداعك؟ افهم ERL و IRL بوضوح - الدرس 3" },
+            { id: "p-tI_Opbstk", title: "هل تغير هيكل السوق يعني فرصة ربح؟ تعرف على MSS و BMS بوضوح - الدرس 4" },
+            { id: "Hd4ogoQabuA", title: "كيف تستخدم فيبوناتشي و OTE لتحديد أفضل نقاط الدخول والخروج - الدرس 5" },
+            { id: "j-z1_kvtS4M", title: "شرح مختلف يخليك تفهم السوق من جذوره - الدرس FVG 6" },
+            { id: "L897X5SrnaE", title: "كيف تكتشف الفجوات غير المتوازنة وتتفوق على IFVG السوق - الدرس 7" },
+            { id: "VFsQ9mNebNk", title: "سر اختيار أفضل نقاط الانعكاس في السوق - BPR FVG الدرس 8" },
+            { id: "rWx1zIaPhAw", title: "أداة سرية يستخدمها الحيتان لدخول السوق! شرح اختلال الحجم بأسلوب ICT - الدرس 9" },
+            { id: "Uws5QjN2Dr4", title: "كيف تكتشف الكسر الحقيقي في السوق؟ شرح BSG خطوة بخطوة بأسلوب ICT - الدرس 10" },
+            { id: "ME6rPGFoWbU", title: "شرح جميع أنواع FVG في استراتيجية ICT - دليل شامل للمبتدئين خطوة بخطوة - الدرس 11" },
+            { id: "2hGENxNVCDc", title: "عرفت OB؟ بس هل عرفت +OB و -OB؟ الفروقات المهمة التي تغير قراراتك - الدرس 12" },
+            { id: "x0OgWDaPhtc", title: "ما حد علمك الـ BB بهذه الطريقة.... الفرصة بيدك! - الدرس 13" },
+            { id: "GCaYsTLRs04", title: "اكتشف سر الـ Rejection Block قبل ما يتحرك السوق - الدرس 14" },
+            { id: "kD8Xs6qzgYc", title: "ختام كورس أساس ICT - اكتشف قوة SETAB + A - الدرس 15" }
+        ],
+        info: `
+            <p><strong>حقوق الدورة:</strong></p>
+            <p>قناة تلجرام: <a href="https://t.me/mos_rar" target="_blank">mos_rar</a></p>
+            <p>حساب تلجرام: <a href="https://t.me/rar42rar" target="_blank">rar42rar</a></p>
+            <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(243, 156, 18, 0.1); border-radius: 8px; border-right: 3px solid #f39c12;">
+                <p><strong>ملاحظة مهمة:</strong></p>
+                <p>هذا الكورس مجاني 100% وتم وضعه في خانة البروميوم لتجربة ميزات البروميوم فقط.</p>
+                <p>تم نشر أكواد مجانية حتى تستطيع استخدام البروميوم بشكل مفتوح.</p>
             </div>
-        `;
-
-        const startBtn = document.getElementById('startPremiumCourse');
-        if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                this.showNotification('يتم تحميل المحتوى المتقدم...', 'info');
-            });
-        }
+        `
     }
+};
 
-    initToolsPage() {
-        // حاسبة فيبوناتشي
-        const fibonacciCard = document.getElementById('fibonacciCalculator');
-        if (fibonacciCard) {
-            fibonacciCard.addEventListener('click', () => this.openFibonacciCalculator());
-        }
+// تهيئة التطبيق
+document.addEventListener('DOMContentLoaded', function() {
+    initApp();
+    checkUserSession();
+    setupEventListeners();
+    updateSupportBadge();
+});
 
-        // إدارة المخاطرة
-        const riskCard = document.getElementById('riskManagement');
-        if (riskCard) {
-            riskCard.addEventListener('click', () => this.openRiskManagement());
-        }
-
-        // حجم الصفقة
-        const positionCard = document.getElementById('positionSize');
-        if (positionCard) {
-            positionCard.addEventListener('click', () => {
-                this.showNotification('هذه الميزة قيد التطوير', 'info');
-            });
-        }
-
-        // إعدادات حاسبة فيبوناتشي
-        const trendSelect = document.getElementById('trendDirection');
-        if (trendSelect) {
-            trendSelect.addEventListener('change', () => {
-                const isUp = trendSelect.value === 'up';
-                document.getElementById('lowLabel').textContent = isUp ? 'السعر الأدنى (القاع)' : 'السعر الأعلى (القمة)';
-                document.getElementById('highLabel').textContent = isUp ? 'السعر الأعلى (القمة)' : 'السعر الأدنى (القاع)';
-            });
-        }
-
-        const calcFibonacciBtn = document.getElementById('calculateFibonacci');
-        if (calcFibonacciBtn) {
-            calcFibonacciBtn.addEventListener('click', () => this.calculateFibonacci());
-        }
-
-        // إعدادات إدارة المخاطرة
-        const calcRiskBtn = document.getElementById('calculateRisk');
-        if (calcRiskBtn) {
-            calcRiskBtn.addEventListener('click', () => this.calculateRisk());
-        }
+// تهيئة التطبيق
+function initApp() {
+    // تحميل المستخدم الحالي من الجلسة
+    const sessionUser = sessionStorage.getItem('current_user');
+    if (sessionUser) {
+        currentUser = JSON.parse(sessionUser);
+        updateUIForLoggedInUser();
     }
+    
+    // تحميل الرسائل
+    loadSupportMessages();
+    
+    // إعداد أيقونة الدعم العائمة
+    setupFloatingSupport();
+    
+    // إعداد الشريط السفلي
+    setupBottomNav();
+    
+    // إعداد زر الرجوع
+    setupBackButton();
+}
 
-    openFibonacciCalculator() {
-        document.getElementById('fibonacciModal').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-
-    openRiskManagement() {
-        document.getElementById('riskModal').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-
-    calculateFibonacci() {
-        const direction = document.getElementById('trendDirection').value;
-        const low = parseFloat(document.getElementById('lowPrice').value);
-        const high = parseFloat(document.getElementById('highPrice').value);
-
-        if (!low || !high) {
-            this.showNotification('يرجى إدخال جميع الأسعار', 'error');
-            return;
-        }
-
-        if (low >= high) {
-            this.showNotification('السعر الأدنى يجب أن يكون أقل من السعر الأعلى', 'error');
-            return;
-        }
-
-        const range = high - low;
-        const levels = {
-            '0%': direction === 'up' ? low : high,
-            '23.6%': direction === 'up' ? low + range * 0.236 : high - range * 0.236,
-            '38.2%': direction === 'up' ? low + range * 0.382 : high - range * 0.382,
-            '50%': direction === 'up' ? low + range * 0.5 : high - range * 0.5,
-            '61.8%': direction === 'up' ? low + range * 0.618 : high - range * 0.618,
-            '78.6%': direction === 'up' ? low + range * 0.786 : high - range * 0.786,
-            '100%': direction === 'up' ? high : low
-        };
-
-        let results = '<h4>مستويات فيبوناتشي:</h4>';
-        for (const [level, price] of Object.entries(levels)) {
-            results += `<div class="result-item">
-                <span>${level}</span>
-                <strong>${price.toFixed(4)}</strong>
-            </div>`;
-        }
-
-        document.getElementById('fibonacciResults').innerHTML = results;
-    }
-
-    calculateRisk() {
-        const capital = parseFloat(document.getElementById('capital').value);
-        const riskPercentage = parseFloat(document.getElementById('riskPercentage').value);
-        const entryPrice = parseFloat(document.getElementById('entryPrice').value);
-        const stopLoss = parseFloat(document.getElementById('stopLoss').value);
-
-        if (!capital || !riskPercentage || !entryPrice || !stopLoss) {
-            this.showNotification('يرجى إدخال جميع القيم', 'error');
-            return;
-        }
-
-        if (riskPercentage > 10) {
-            this.showNotification('نسبة المخاطرة يجب ألا تتجاوز 10%', 'warning');
-        }
-
-        const riskAmount = capital * (riskPercentage / 100);
-        const priceDifference = Math.abs(entryPrice - stopLoss);
-        const positionSize = riskAmount / priceDifference;
-
-        let results = '<h4>نتائج الحساب:</h4>';
-        results += `<div class="result-item">
-            <span>مبلغ المخاطرة</span>
-            <strong>${riskAmount.toFixed(2)} $</strong>
-        </div>`;
-        results += `<div class="result-item">
-            <span>فرق السعر</span>
-            <strong>${priceDifference.toFixed(4)}</strong>
-        </div>`;
-        results += `<div class="result-item">
-            <span>حجم الصفقة</span>
-            <strong>${positionSize.toFixed(2)} وحدة</strong>
-        </div>`;
-        results += `<div class="result-item">
-            <span>قيمة الصفقة</span>
-            <strong>${(positionSize * entryPrice).toFixed(2)} $</strong>
-        </div>`;
-
-        document.getElementById('riskResults').innerHTML = results;
-    }
-
-    initSupportPage() {
-        // إرسال الرسائل
-        const sendBtn = document.getElementById('sendMessage');
-        if (sendBtn) {
-            sendBtn.addEventListener('click', () => this.sendSupportMessage());
-        }
-
-        // الأسئلة الشائعة
-        const faqItems = document.querySelectorAll('.faq-question');
-        faqItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const answer = item.nextElementSibling;
-                const icon = item.querySelector('i');
-                
-                if (answer.style.maxHeight) {
-                    answer.style.maxHeight = null;
-                    icon.className = 'fas fa-chevron-down';
-                } else {
-                    answer.style.maxHeight = answer.scrollHeight + 'px';
-                    icon.className = 'fas fa-chevron-up';
-                }
-            });
-        });
-    }
-
-    sendSupportMessage() {
-        const subject = document.getElementById('messageSubject').value.trim();
-        const text = document.getElementById('messageText').value.trim();
-
-        if (!subject || !text) {
-            this.showNotification('يرجى ملء جميع الحقول', 'error');
-            return;
-        }
-
-        // حفظ الرسالة محلياً
-        const messages = JSON.parse(localStorage.getItem('supportMessages') || '[]');
-        messages.push({
-            id: Date.now(),
-            subject,
-            text,
-            date: new Date().toISOString(),
-            from: this.currentUser ? this.currentUser.email : 'زائر',
-            read: false
-        });
-        
-        localStorage.setItem('supportMessages', JSON.stringify(messages));
-        
-        document.getElementById('messageSubject').value = '';
-        document.getElementById('messageText').value = '';
-        
-        this.showNotification('تم إرسال رسالتك بنجاح', 'success');
+// التحقق من جلسة المستخدم
+function checkUserSession() {
+    if (!currentUser) {
+        showAuthModal();
     }
 }
 
-// ===== بدء التطبيق =====
-document.addEventListener('DOMContentLoaded', () => {
-    const app = new AppManager();
-    app.init();
+// إعداد المستمعين للأحداث
+function setupEventListeners() {
+    // القائمة الجانبية
+    document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
+    document.getElementById('closeMenu').addEventListener('click', toggleSidebar);
     
-    // إضافة CSS للرسوم المتحركة
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+    // زر الرجوع
+    document.getElementById('backBtn').addEventListener('click', goBack);
+    
+    // الشريط السفلي
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.getAttribute('data-page');
+            navigateToPage(page);
+        });
+    });
+    
+    // زر تسجيل الخروج
+    document.getElementById('logoutBtn').addEventListener('click', confirmLogout);
+    document.getElementById('confirmLogoutBtn').addEventListener('click', logout);
+    document.getElementById('cancelLogoutBtn').addEventListener('click', function() {
+        hideModal('logoutConfirmModal');
+    });
+    
+    // تعديل البيانات
+    document.getElementById('editProfileBtn').addEventListener('click', showEditForm);
+    document.getElementById('cancelEditBtn').addEventListener('click', hideEditForm);
+    document.getElementById('saveEditBtn').addEventListener('click', saveProfileChanges);
+    document.getElementById('changeImgBtn').addEventListener('click', changeProfileImage);
+    
+    // الروابط السريعة
+    document.getElementById('goToCoursesBtn').addEventListener('click', function() {
+        navigateToPage('courses');
+    });
+    
+    document.getElementById('goToToolsBtn').addEventListener('click', function() {
+        navigateToPage('tools');
+    });
+    
+    // الدورات
+    document.querySelectorAll('.view-course-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const course = this.getAttribute('data-course');
+            openCourse(course);
+        });
+    });
+    
+    document.querySelectorAll('.course-info-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const course = this.getAttribute('data-course');
+            showCourseInfo(course);
+        });
+    });
+    
+    // مشغل الفيديو
+    document.getElementById('closeVideoBtn').addEventListener('click', function() {
+        hideModal('videoModal');
+    });
+    
+    document.getElementById('prevVideoBtn').addEventListener('click', playPreviousVideo);
+    document.getElementById('nextVideoBtn').addEventListener('click', playNextVideo);
+    
+    // معلومات الدورة
+    document.getElementById('closeInfoBtn').addEventListener('click', function() {
+        hideModal('infoModal');
+    });
+    
+    // المتقدمين
+    document.getElementById('viewPremiumCourseBtn').addEventListener('click', function() {
+        if (currentUser && currentUser.premium) {
+            openCourse('ict');
+        } else {
+            showActivationSection();
+        }
+    });
+    
+    document.getElementById('activatePremiumBtn').addEventListener('click', activatePremium);
+    
+    // الأدوات
+    document.getElementById('fibonacciCalculatorBtn').addEventListener('click', function() {
+        showToolModal('fibonacciModal');
+    });
+    
+    document.getElementById('riskManagerBtn').addEventListener('click', function() {
+        showToolModal('riskModal');
+    });
+    
+    document.getElementById('calculateFibBtn').addEventListener('click', calculateFibonacci);
+    document.getElementById('calculateRiskBtn').addEventListener('click', calculateRiskManagement);
+    
+    document.querySelectorAll('.close-tool').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tool = this.getAttribute('data-tool');
+            hideToolModal(tool);
+        });
+    });
+    
+    // الدعم الفني
+    document.getElementById('sendMessageBtn').addEventListener('click', sendSupportMessage);
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendSupportMessage();
+        }
+    });
+    
+    // المصادقة
+    document.getElementById('loginFabBtn').addEventListener('click', showAuthModal);
+    document.getElementById('closeAuthBtn').addEventListener('click', function() {
+        hideModal('authModal');
+    });
+    
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabType = this.getAttribute('data-tab');
+            switchAuthTab(tabType);
+        });
+    });
+    
+    document.getElementById('registerBtn').addEventListener('click', registerUser);
+    document.getElementById('loginBtn').addEventListener('click', loginUser);
+    
+    // استماع لتغييرات الصفحة في الرابط
+    window.addEventListener('hashchange', handleHashChange);
+}
+
+// التعامل مع تغيير الرابط
+function handleHashChange() {
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+        navigateToPage(hash);
+    }
+}
+
+// التنقل بين الصفحات
+function navigateToPage(page) {
+    // تحديث الرابط
+    window.location.hash = page;
+    
+    // إخفاء جميع الصفحات
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+    });
+    
+    // إظهار الصفحة المطلوبة
+    document.getElementById(page + 'Page').classList.add('active');
+    
+    // تحديث العنوان
+    const titles = {
+        account: 'الحساب',
+        home: 'الرئيسية',
+        courses: 'الدورات',
+        premium: 'المتقدمين',
+        tools: 'الأدوات',
+        support: 'الدعم الفني'
+    };
+    
+    document.getElementById('pageTitle').textContent = titles[page] || 'اكزم لتداول';
+    
+    // إظهار زر الرجوع إذا لم تكن في الصفحة الرئيسية
+    if (page !== 'home') {
+        document.getElementById('backBtn').style.display = 'flex';
+    } else {
+        document.getElementById('backBtn').style.display = 'none';
+    }
+    
+    // تحديث الشريط السفلي
+    updateBottomNav(page);
+    
+    // إغلاق القائمة الجانبية
+    document.querySelector('.sidebar').classList.remove('open');
+}
+
+// تحديث الشريط السفلي
+function updateBottomNav(activePage) {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-page') === activePage) {
+            item.classList.add('active');
+        }
+    });
+}
+
+// إعداد زر الرجوع
+function setupBackButton() {
+    document.getElementById('backBtn').addEventListener('click', function() {
+        if (window.location.hash === '#home' || !window.location.hash) {
+            navigateToPage('home');
+        } else {
+            window.history.back();
+        }
+    });
+}
+
+// العودة للخلف
+function goBack() {
+    window.history.back();
+}
+
+// إعداد الشريط السفلي
+function setupBottomNav() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.getAttribute('data-page');
+            navigateToPage(page);
+        });
+    });
+}
+
+// تبديل القائمة الجانبية
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+}
+
+// تحديث واجهة المستخدم للمستخدم المسجل
+function updateUIForLoggedInUser() {
+    if (currentUser) {
+        // تحديث معلومات الحساب
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userUsername').textContent = '@' + currentUser.username;
+        
+        // تحديث حالة الحساب
+        const statusBadge = document.getElementById('accountStatus');
+        if (currentUser.premium) {
+            statusBadge.textContent = 'حساب مميز (Premium)';
+            statusBadge.classList.add('premium');
+        } else {
+            statusBadge.textContent = 'حساب عادي';
+            statusBadge.classList.remove('premium');
         }
         
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+        // تحديث الصورة
+        if (currentUser.profileImage) {
+            document.getElementById('profileImg').src = currentUser.profileImage;
         }
         
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
+        // إخفاء زر المصادقة
+        document.getElementById('authFab').style.display = 'none';
+        
+        // إظهار زر تسجيل الخروج
+        document.getElementById('logoutBtn').style.display = 'flex';
+    }
+}
+
+// إظهار نموذج المصادقة
+function showAuthModal() {
+    document.getElementById('authModal').style.display = 'flex';
+    document.getElementById('authTitle').textContent = 'إنشاء حساب جديد';
+    switchAuthTab('register');
+}
+
+// إخفاء النافذة
+function hideModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// تبديل تبويبات المصادقة
+function switchAuthTab(tab) {
+    // تحديث الأزرار
+    document.querySelectorAll('.auth-tab').forEach(t => {
+        t.classList.remove('active');
+    });
+    
+    document.querySelector(`.auth-tab[data-tab="${tab}"]`).classList.add('active');
+    
+    // تحديث النماذج
+    document.querySelectorAll('.auth-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    document.getElementById(tab + 'Form').classList.add('active');
+    
+    // تحديث العنوان
+    document.getElementById('authTitle').textContent = 
+        tab === 'register' ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
+}
+
+// تسجيل مستخدم جديد
+function registerUser() {
+    const name = document.getElementById('regName').value.trim();
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const password = document.getElementById('regPassword').value;
+    
+    // التحقق من الحقول المطلوبة
+    if (!name || !username || !email || !password) {
+        alert('يرجى ملء جميع الحقول المطلوبة');
+        return;
+    }
+    
+    // التحقق من اسم المستخدم
+    if (!/^[a-zA-Z]/.test(username)) {
+        alert('اسم المستخدم يجب أن يبدأ بحرف إنجليزي');
+        return;
+    }
+    
+    if (username.length < 4) {
+        alert('اسم المستخدم يجب أن يكون 4 أحرف على الأقل');
+        return;
+    }
+    
+    // التحقق من البريد الإلكتروني
+    if (!isValidEmail(email)) {
+        alert('يرجى إدخال بريد إلكتروني صحيح');
+        return;
+    }
+    
+    // التحقق من عدم وجود نفس البريد الإلكتروني
+    if (users.some(user => user.email === email)) {
+        alert('هذا البريد الإلكتروني مسجل مسبقاً');
+        return;
+    }
+    
+    // التحقق من عدم وجود نفس اسم المستخدم
+    if (users.some(user => user.username === username)) {
+        alert('اسم المستخدم هذا مستخدم مسبقاً');
+        return;
+    }
+    
+    // إنشاء المستخدم الجديد
+    const newUser = {
+        id: Date.now().toString(),
+        name: name,
+        username: username,
+        email: email,
+        password: password,
+        profileImage: 'https://j.top4top.io/p_3670reejg0.png',
+        premium: false,
+        premiumExpiry: null,
+        createdAt: new Date().toISOString()
+    };
+    
+    // إضافة المستخدم للقائمة
+    users.push(newUser);
+    localStorage.setItem('trading_users', JSON.stringify(users));
+    
+    // تسجيل الدخول تلقائياً
+    currentUser = newUser;
+    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+    
+    // تحديث الواجهة
+    updateUIForLoggedInUser();
+    
+    // إغلاق النافذة
+    hideModal('authModal');
+    
+    // إظهار رسالة ترحيب
+    alert(`مرحباً ${name}! تم إنشاء حسابك بنجاح.`);
+    
+    // التوجه للصفحة الرئيسية
+    navigateToPage('home');
+}
+
+// تسجيل الدخول
+function loginUser() {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value;
+    
+    // البحث عن المستخدم
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        // تسجيل الدخول
+        currentUser = user;
+        sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+        
+        // تحديث الواجهة
+        updateUIForLoggedInUser();
+        
+        // إغلاق النافذة
+        hideModal('authModal');
+        
+        // التوجه للصفحة الرئيسية
+        navigateToPage('home');
+    } else {
+        alert('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+    }
+}
+
+// التحقق من صحة البريد الإلكتروني
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// تأكيد تسجيل الخروج
+function confirmLogout() {
+    document.getElementById('logoutConfirmModal').style.display = 'flex';
+}
+
+// تسجيل الخروج
+function logout() {
+    // حذف جلسة المستخدم
+    sessionStorage.removeItem('current_user');
+    currentUser = null;
+    
+    // إعادة تعيين الواجهة
+    document.getElementById('userName').textContent = 'مستخدم جديد';
+    document.getElementById('userUsername').textContent = '@username';
+    document.getElementById('accountStatus').textContent = 'حساب عادي';
+    document.getElementById('accountStatus').classList.remove('premium');
+    document.getElementById('profileImg').src = 'https://j.top4top.io/p_3670reejg0.png';
+    
+    // إظهار زر المصادقة
+    document.getElementById('authFab').style.display = 'block';
+    
+    // إخفاء نموذج تعديل البيانات إذا كان ظاهراً
+    hideEditForm();
+    
+    // إخفاء نافذة التأكيد
+    hideModal('logoutConfirmModal');
+    
+    // إظهار نموذج المصادقة
+    showAuthModal();
+    
+    // التوجه للصفحة الرئيسية
+    navigateToPage('home');
+}
+
+// إظهار نموذج تعديل البيانات
+function showEditForm() {
+    if (!currentUser) {
+        alert('يرجى تسجيل الدخول أولاً');
+        return;
+    }
+    
+    // تعبئة الحقول بالمعلومات الحالية
+    document.getElementById('editName').value = currentUser.name;
+    document.getElementById('editUsername').value = currentUser.username;
+    document.getElementById('editPassword').value = '';
+    
+    // إظهار النموذج
+    document.getElementById('editForm').style.display = 'block';
+}
+
+// إخفاء نموذج تعديل البيانات
+function hideEditForm() {
+    document.getElementById('editForm').style.display = 'none';
+    document.getElementById('usernameError').textContent = '';
+}
+
+// حفظ التغييرات
+function saveProfileChanges() {
+    if (!currentUser) return;
+    
+    const name = document.getElementById('editName').value.trim();
+    const username = document.getElementById('editUsername').value.trim();
+    const password = document.getElementById('editPassword').value;
+    
+    // التحقق من الاسم
+    if (!name) {
+        alert('يرجى إدخال الاسم');
+        return;
+    }
+    
+    // التحقق من اسم المستخدم
+    if (!/^[a-zA-Z]/.test(username)) {
+        document.getElementById('usernameError').textContent = 'يجب أن يبدأ اسم المستخدم بحرف إنجليزي';
+        return;
+    }
+    
+    if (username.length < 4) {
+        document.getElementById('usernameError').textContent = 'يجب أن يكون اسم المستخدم 4 أحرف على الأقل';
+        return;
+    }
+    
+    // التحقق من عدم استخدام اسم المستخدم من قبل مستخدم آخر
+    if (username !== currentUser.username && users.some(u => u.username === username && u.id !== currentUser.id)) {
+        document.getElementById('usernameError').textContent = 'اسم المستخدم هذا مستخدم مسبقاً';
+        return;
+    }
+    
+    // تحديث بيانات المستخدم
+    currentUser.name = name;
+    currentUser.username = username;
+    
+    if (password) {
+        currentUser.password = password;
+    }
+    
+    // تحديث القائمة
+    const userIndex = users.findIndex(u => u.id === currentUser.id);
+    if (userIndex !== -1) {
+        users[userIndex] = currentUser;
+        localStorage.setItem('trading_users', JSON.stringify(users));
+    }
+    
+    // تحديث الجلسة
+    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+    
+    // تحديث الواجهة
+    updateUIForLoggedInUser();
+    
+    // إخفاء النموذج
+    hideEditForm();
+    
+    alert('تم تحديث بياناتك بنجاح');
+}
+
+// تغيير صورة الحساب
+function changeProfileImage() {
+    if (!currentUser) {
+        alert('يرجى تسجيل الدخول أولاً');
+        return;
+    }
+    
+    // في التطبيق الحقيقي، هنا سيتم رفع صورة
+    // لكن في هذا المثال، سنستخدم صورة افتراضية
+    const newImage = prompt('أدخل رابط الصورة الجديدة:', currentUser.profileImage);
+    
+    if (newImage) {
+        currentUser.profileImage = newImage;
+        
+        // تحديث القائمة
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        if (userIndex !== -1) {
+            users[userIndex] = currentUser;
+            localStorage.setItem('trading_users', JSON.stringify(users));
         }
         
-        .result-item:last-child {
-            border-bottom: none;
-        }
+        // تحديث الجلسة
+        sessionStorage.setItem('current_user', JSON.stringify(currentUser));
         
-        .tool-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            z-index: 1002;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        // تحديث الصورة في الواجهة
+        document.getElementById('profileImg').src = newImage;
         
-        .modal-content {
-            background: var(--card-color);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
+        alert('تم تحديث صورة الحساب بنجاح');
+    }
+}
+
+// فتح دورة
+function openCourse(courseKey) {
+    if (courseKey === 'ict' && (!currentUser || !currentUser.premium)) {
+        showActivationSection();
+        return;
+    }
+    
+    const course = coursesData[courseKey];
+    if (!course) return;
+    
+    currentCourse = courseKey;
+    currentVideos = course.videos;
+    currentVideoIndex = 0;
+    
+    // تحديث عنوان الفيديو
+    document.getElementById('videoTitle').textContent = course.title;
+    
+    // تشغيل الفيديو الأول
+    playVideo(currentVideos[0].id, currentVideos[0].title);
+    
+    // تحديث قائمة الفيديوهات
+    updateVideoList();
+    
+    // إظهار مشغل الفيديو
+    document.getElementById('videoModal').style.display = 'flex';
+}
+
+// تحديث قائمة الفيديوهات
+function updateVideoList() {
+    const videoList = document.getElementById('videoList');
+    videoList.innerHTML = '';
+    
+    currentVideos.forEach((video, index) => {
+        const videoItem = document.createElement('div');
+        videoItem.className = `video-item ${index === currentVideoIndex ? 'active' : ''}`;
+        videoItem.innerHTML = `
+            <strong>${index + 1}.</strong> ${video.title}
+        `;
+        
+        videoItem.addEventListener('click', function() {
+            currentVideoIndex = index;
+            playVideo(video.id, video.title);
+            updateVideoList();
+        });
+        
+        videoList.appendChild(videoItem);
+    });
+}
+
+// تشغيل فيديو
+function playVideo(videoId, title) {
+    // استخدام مشغل بديل بدون حقوق يوتيوب
+    const videoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&showinfo=0&rel=0&modestbranding=1`;
+    
+    document.getElementById('videoPlayer').src = videoUrl;
+    document.getElementById('videoTitle').textContent = title;
+}
+
+// تشغيل الفيديو السابق
+function playPreviousVideo() {
+    if (currentVideoIndex > 0) {
+        currentVideoIndex--;
+        const video = currentVideos[currentVideoIndex];
+        playVideo(video.id, video.title);
+        updateVideoList();
+    }
+}
+
+// تشغيل الفيديو التالي
+function playNextVideo() {
+    if (currentVideoIndex < currentVideos.length - 1) {
+        currentVideoIndex++;
+        const video = currentVideos[currentVideoIndex];
+        playVideo(video.id, video.title);
+        updateVideoList();
+    }
+}
+
+// إظهار معلومات الدورة
+function showCourseInfo(courseKey) {
+    const course = coursesData[courseKey];
+    if (!course) return;
+    
+    document.getElementById('infoTitle').textContent = `معلومات عن: ${course.title}`;
+    document.getElementById('infoBody').innerHTML = `
+        <p><strong>المدرب:</strong> ${course.author}</p>
+        <p><strong>عدد الفيديوهات:</strong> ${course.videos.length}</p>
+        ${course.info}
     `;
-    document.head.appendChild(style);
-});
+    
+    document.getElementById('infoModal').style.display = 'flex';
+}
+
+// إظهار قسم التفعيل
+function showActivationSection() {
+    if (!currentUser) {
+        alert('يرجى إنشاء حساب أولاً للوصول لدورات المتقدمين');
+        showAuthModal();
+        return;
+    }
+    
+    document.getElementById('activationSection').style.display = 'block';
+    
+    // التمرير للقسم
+    document.getElementById('activationSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// تفعيل الاشتراك المميز
+function activatePremium() {
+    if (!currentUser) return;
+    
+    const code = document.getElementById('activationCode').value.trim();
+    
+    if (!code) {
+        alert('يرجى إدخال كود التفعيل');
+        return;
+    }
+    
+    // البحث عن الكود
+    const codeIndex = premiumCodes.findIndex(c => c.code === code && !c.used);
+    
+    if (codeIndex === -1) {
+        alert('كود التفعيل غير صالح أو مستخدم مسبقاً');
+        return;
+    }
+    
+    // تفعيل الكود
+    const premiumCode = premiumCodes[codeIndex];
+    premiumCode.used = true;
+    premiumCode.usedBy = currentUser.id;
+    premiumCode.usedAt = new Date().toISOString();
+    
+    // تفعيل المستخدم
+    currentUser.premium = true;
+    currentUser.premiumExpiry = premiumCode.expiry;
+    
+    // تحديث القوائم
+    const userIndex = users.findIndex(u => u.id === currentUser.id);
+    if (userIndex !== -1) {
+        users[userIndex] = currentUser;
+    }
+    
+    premiumCodes[codeIndex] = premiumCode;
+    
+    // حفظ التغييرات
+    localStorage.setItem('trading_users', JSON.stringify(users));
+    localStorage.setItem('premium_codes', JSON.stringify(premiumCodes));
+    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+    
+    // تحديث الواجهة
+    updateUIForLoggedInUser();
+    
+    // إخفاء قسم التفعيل
+    document.getElementById('activationSection').style.display = 'none';
+    
+    // عرض رسالة نجاح
+    alert('مبروك! تم تفعيل الاشتراك المميز بنجاح.');
+    
+    // فتح الدورة مباشرة
+    openCourse('ict');
+}
+
+// إظهار نافذة الأداة
+function showToolModal(toolId) {
+    document.getElementById(toolId).style.display = 'flex';
+}
+
+// إخفاء نافذة الأداة
+function hideToolModal(toolId) {
+    document.getElementById(toolId).style.display = 'none';
+}
+
+// حساب فيبوناتشي
+function calculateFibonacci() {
+    const direction = document.querySelector('input[name="fibDirection"]:checked').value;
+    const low = parseFloat(document.getElementById('fibLow').value);
+    const high = parseFloat(document.getElementById('fibHigh').value);
+    
+    if (!low || !high || low >= high) {
+        alert('يرجى إدخال قيم صحيحة (القاع يجب أن يكون أقل من القمة)');
+        return;
+    }
+    
+    const levels = {
+        '0.0': direction === 'lowToHigh' ? low : high,
+        '0.236': direction === 'lowToHigh' ? low + (high - low) * 0.236 : high - (high - low) * 0.236,
+        '0.382': direction === 'lowToHigh' ? low + (high - low) * 0.382 : high - (high - low) * 0.382,
+        '0.5': direction === 'lowToHigh' ? low + (high - low) * 0.5 : high - (high - low) * 0.5,
+        '0.618': direction === 'lowToHigh' ? low + (high - low) * 0.618 : high - (high - low) * 0.618,
+        '0.786': direction === 'lowToHigh' ? low + (high - low) * 0.786 : high - (high - low) * 0.786,
+        '1.0': direction === 'lowToHigh' ? high : low,
+        '1.272': direction === 'lowToHigh' ? high + (high - low) * 0.272 : low - (high - low) * 0.272,
+        '1.618': direction === 'lowToHigh' ? high + (high - low) * 0.618 : low - (high - low) * 0.618
+    };
+    
+    let resultsHTML = '<h4>مستويات فيبوناتشي:</h4>';
+    resultsHTML += '<div class="results-grid">';
+    
+    for (const [level, value] of Object.entries(levels)) {
+        resultsHTML += `
+            <div class="result-item">
+                <span class="result-label">مستوى ${level}:</span>
+                <span class="result-value">${value.toFixed(4)}</span>
+            </div>
+        `;
+    }
+    
+    resultsHTML += '</div>';
+    resultsHTML += '<p style="margin-top: 15px; color: #95a5a6; font-size: 0.9rem;">ملاحظة: تم حساب المستويات بناءً على الاتجاه المحدد.</p>';
+    
+    document.getElementById('fibResults').innerHTML = resultsHTML;
+}
+
+// إدارة رأس المال
+function calculateRiskManagement() {
+    const capital = parseFloat(document.getElementById('riskCapital').value);
+    const riskPercent = parseFloat(document.getElementById('riskPercentage').value);
+    const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+    const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+    
+    if (!capital || !riskPercent || !entryPrice || !stopLoss) {
+        alert('يرجى ملء جميع الحقول');
+        return;
+    }
+    
+    if (riskPercent < 0.1 || riskPercent > 10) {
+        alert('نسبة المخاطرة يجب أن تكون بين 0.1% و 10%');
+        return;
+    }
+    
+    // حساب مبلغ المخاطرة
+    const riskAmount = capital * (riskPercent / 100);
+    
+    // حساب النقاط بين الدخول والوقف
+    const points = Math.abs(entryPrice - stopLoss);
+    
+    if (points === 0) {
+        alert('سعر الدخول لا يمكن أن يساوي سعر وقف الخسارة');
+        return;
+    }
+    
+    // حساب حجم الصفقة (مبسط)
+    const positionSize = (riskAmount / points).toFixed(2);
+    
+    let resultsHTML = '<h4>نتائج إدارة رأس المال:</h4>';
+    resultsHTML += '<div class="results-grid">';
+    resultsHTML += `<div class="result-item"><span class="result-label">رأس المال:</span><span class="result-value">$${capital.toFixed(2)}</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">نسبة المخاطرة:</span><span class="result-value">${riskPercent}%</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">مبلغ المخاطرة:</span><span class="result-value">$${riskAmount.toFixed(2)}</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">سعر الدخول:</span><span class="result-value">${entryPrice}</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">وقف الخسارة:</span><span class="result-value">${stopLoss}</span></div>`;
+    resultsHTML += `<div class="result-item"><span class="result-label">النقاط بين الدخول والوقف:</span><span class="result-value">${points.toFixed(4)}</span></div>`;
+    resultsHTML += `<div class="result-item" style="background: rgba(231, 76, 60, 0.1);"><span class="result-label">الحجم المقترح:</span><span class="result-value" style="color: #e74c3c;">${positionSize}</span></div>`;
+    resultsHTML += '</div>';
+    
+    resultsHTML += `
+        <div class="note" style="margin-top: 15px; padding: 12px; background: rgba(52, 152, 219, 0.1); border-radius: 8px;">
+            <p><strong>تفسير النتائج:</strong></p>
+            <p>إذا خسرت الصفقة، ستخسر فقط $${riskAmount.toFixed(2)} (${riskPercent}% من رأس مالك).</p>
+            <p>الحجم المقترح ${positionSize} هو حجم الصفقة الذي يضمن خسارة ${riskPercent}% فقط في حالة تنفيذ الوقف.</p>
+        </div>
+    `;
+    
+    document.getElementById('riskResults').innerHTML = resultsHTML;
+}
+
+// إعداد أيقونة الدعم العائمة
+function setupFloatingSupport() {
+    const supportIcon = document.getElementById('floatingSupport');
+    let isDragging = false;
+    let offsetX, offsetY;
+    
+    supportIcon.addEventListener('mousedown', startDrag);
+    supportIcon.addEventListener('touchstart', startDragTouch);
+    supportIcon.addEventListener('click', function(e) {
+        if (!isDragging) {
+            navigateToPage('support');
+        }
+    });
+    
+    function startDrag(e) {
+        isDragging = false;
+        const rect = supportIcon.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+    }
+    
+    function startDragTouch(e) {
+        isDragging = false;
+        const touch = e.touches[0];
+        const rect = supportIcon.getBoundingClientRect();
+        offsetX = touch.clientX - rect.left;
+        offsetY = touch.clientY - rect.top;
+        
+        document.addEventListener('touchmove', dragTouch);
+        document.addEventListener('touchend', stopDrag);
+    }
+    
+    function drag(e) {
+        isDragging = true;
+        supportIcon.style.left = (e.clientX - offsetX) + 'px';
+        supportIcon.style.top = (e.clientY - offsetY) + 'px';
+    }
+    
+    function dragTouch(e) {
+        isDragging = true;
+        const touch = e.touches[0];
+        supportIcon.style.left = (touch.clientX - offsetX) + 'px';
+        supportIcon.style.top = (touch.clientY - offsetY) + 'px';
+    }
+    
+    function stopDrag() {
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('touchmove', dragTouch);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchend', stopDrag);
+        
+        // حفظ الموقع
+        setTimeout(() => {
+            isDragging = false;
+        }, 100);
+    }
+}
+
+// تحميل رسائل الدعم
+function loadSupportMessages() {
+    const messagesContainer = document.getElementById('supportMessages');
+    messagesContainer.innerHTML = '';
+    
+    const userMessages = supportMessages.filter(msg => 
+        msg.userId === (currentUser ? currentUser.id : 'anonymous')
+    );
+    
+    if (userMessages.length === 0) {
+        messagesContainer.innerHTML = `
+            <div class="no-messages">
+                <p>لا توجد رسائل حالياً</p>
+                <p>اكتب رسالتك وسيتم الرد عليك قريباً</p>
+            </div>
+        `;
+        return;
+    }
+    
+    userMessages.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${msg.type}`;
+        messageDiv.innerHTML = `
+            <p>${msg.text}</p>
+            <div class="message-time">${formatTime(msg.timestamp)}</div>
+        `;
+        messagesContainer.appendChild(messageDiv);
+    });
+    
+    // التمرير للأسفل
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// إرسال رسالة دعم
+function sendSupportMessage() {
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
+    
+    if (!text) {
+        alert('يرجى كتابة رسالة');
+        return;
+    }
+    
+    // إنشاء الرسالة
+    const message = {
+        id: Date.now().toString(),
+        userId: currentUser ? currentUser.id : 'anonymous',
+        text: text,
+        type: 'sent',
+        timestamp: new Date().toISOString()
+    };
+    
+    // إضافة الرسالة
+    supportMessages.push(message);
+    localStorage.setItem('support_messages', JSON.stringify(supportMessages));
+    
+    // تحديث الواجهة
+    loadSupportMessages();
+    
+    // مسح حقل الإدخال
+    input.value = '';
+    
+    // إضافة رد آلي (محاكاة)
+    setTimeout(() => {
+        const autoReply = {
+            id: Date.now().toString() + 'auto',
+            userId: currentUser ? currentUser.id : 'anonymous',
+            text: 'شكراً لتواصلكم. تم استلام رسالتك وسيتم الرد عليك في أقرب وقت ممكن.',
+            type: 'received',
+            timestamp: new Date().toISOString()
+        };
+        
+        supportMessages.push(autoReply);
+        localStorage.setItem('support_messages', JSON.stringify(supportMessages));
+        loadSupportMessages();
+        updateSupportBadge();
+    }, 2000);
+}
+
+// تحديث شعار الإشعارات
+function updateSupportBadge() {
+    if (!currentUser) return;
+    
+    const unreadCount = supportMessages.filter(msg => 
+        msg.userId === currentUser.id && 
+        msg.type === 'received' &&
+        !msg.read
+    ).length;
+    
+    const badge = document.getElementById('notificationBadge');
+    badge.textContent = unreadCount;
+    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+}
+
+// تنسيق الوقت
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('ar-EG', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+    });
+}
+
+// توليد أكواد بريميوم (للاستخدام في نسخة الإدمن)
+function generatePremiumCode(duration) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    
+    for (let i = 0; i < 16; i++) {
+        if (i > 0 && i % 4 === 0) code += '-';
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    // حساب تاريخ الانتهاء
+    const expiry = new Date();
+    switch (duration) {
+        case 'minute':
+            expiry.setMinutes(expiry.getMinutes() + 1);
+            break;
+        case 'hour':
+            expiry.setHours(expiry.getHours() + 1);
+            break;
+        case 'day':
+            expiry.setDate(expiry.getDate() + 1);
+            break;
+        case 'month':
+            expiry.setMonth(expiry.getMonth() + 1);
+            break;
+        case 'year':
+            expiry.setFullYear(expiry.getFullYear() + 1);
+            break;
+        default:
+            expiry.setMonth(expiry.getMonth() + 1);
+    }
+    
+    return {
+        code: code,
+        duration: duration,
+        expiry: expiry.toISOString(),
+        used: false,
+        usedBy: null,
+        usedAt: null,
+        createdAt: new Date().toISOString()
+    };
+}
