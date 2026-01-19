@@ -1,208 +1,292 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>اكزم للتداول</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>اكزم للتداول</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-<div id="app">
-<div id="menu" class="menu">
-<div class="menu-header">
-<img src="https://j.top4top.io/p_3670reejg0.png" class="menu-profile-img">
-<h3 id="menuUsername">مستخدم</h3>
-</div>
-<div class="menu-items">
-<button onclick="showPage('account')" class="menu-item">الحساب</button>
-<button onclick="showPage('home')" class="menu-item">الرئيسية</button>
-<button onclick="showPage('courses')" class="menu-item">الدورات</button>
-<button onclick="showPage('advanced')" class="menu-item">المتقدمين</button>
-<button onclick="showPage('tools')" class="menu-item">الأدوات</button>
-</div>
-<div class="menu-footer">
-<a href="https://wa.me/442031375274" target="_blank" class="menu-link">الدعم الفني</a>
-<a href="https://t.me/ASQ412" target="_blank" class="menu-link">تلجرام المطور</a>
-<a href="https://t.me/pine_Scripts0" target="_blank" class="menu-link">قناة تلجرام</a>
-<div class="menu-divider"></div>
-<button onclick="showPage('privacy')" class="menu-link">سياسة الخصوصية</button>
-<button onclick="showPage('about')" class="menu-link">من نحن</button>
-</div>
-</div>
-<div id="mainContent">
-<header>
-<button id="menuBtn" onclick="toggleMenu()">☰</button>
-<h1>اكزم للتداول</h1>
-<button id="themeToggle" onclick="toggleTheme()">☀</button>
-</header>
-<div id="homePage" class="page active">
-<div class="welcome-section">
-<h2>مرحباً بك في اكزم للتداول</h2>
-<p>منصتك الشاملة لتعلم التداول من الصفر إلى الاحتراف</p>
-</div>
-<div class="quick-links">
-<div class="quick-link-card" onclick="showPage('courses')">
-<h3>الدورات التعليمية</h3>
-<p>دورات متخصصة في التداول</p>
-</div>
-<div class="quick-link-card" onclick="showPage('advanced')">
-<h3>المحتوى المتقدم</h3>
-<p>دورات ICT المتقدمة</p>
-</div>
-<div class="quick-link-card" onclick="showPage('tools')">
-<h3>الأدوات</h3>
-<p>حاسبات وأدوات مفيدة</p>
-</div>
-</div>
-</div>
-<div id="accountPage" class="page">
-<div id="loginSection">
-<div class="auth-container">
-<h2>تسجيل الدخول</h2>
-<input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
-<input type="password" id="loginPassword" placeholder="كلمة المرور">
-<button onclick="login()" class="btn-primary">تسجيل الدخول</button>
-<button onclick="showRegister()" class="btn-secondary">إنشاء حساب جديد</button>
-</div>
-</div>
-<div id="registerSection" style="display:none">
-<div class="auth-container">
-<h2>إنشاء حساب</h2>
-<input type="text" id="regName" placeholder="الاسم">
-<input type="text" id="regUsername" placeholder="اسم المستخدم">
-<input type="email" id="regEmail" placeholder="البريد الإلكتروني">
-<input type="password" id="regPassword" placeholder="كلمة المرور">
-<button onclick="register()" class="btn-primary">إنشاء الحساب</button>
-<button onclick="showLogin()" class="btn-secondary">لديك حساب</button>
-</div>
-</div>
-<div id="profileSection" style="display:none">
-<div class="profile-container">
-<div class="profile-header">
-<img id="profileImg" src="https://j.top4top.io/p_3670reejg0.png">
-<input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="uploadImage()">
-<button onclick="document.getElementById('imageUpload').click()" class="btn-upload">تغيير الصورة</button>
-</div>
-<div class="profile-info">
-<h2 id="profileName">المستخدم</h2>
-<p id="profileUsername">username</p>
-<p id="profileEmail">email</p>
-<p id="profileStatus" class="premium-status">حساب عادي</p>
-</div>
-<button onclick="showEditProfile()" class="btn-primary">تعديل المعلومات</button>
-<button onclick="logout()" class="btn-danger">تسجيل الخروج</button>
-</div>
-</div>
-<div id="editProfileSection" style="display:none">
-<div class="auth-container">
-<h2>تعديل المعلومات</h2>
-<input type="text" id="editName" placeholder="الاسم">
-<input type="text" id="editUsername" placeholder="اسم المستخدم">
-<input type="password" id="editPassword" placeholder="كلمة المرور">
-<button onclick="updateProfile()" class="btn-primary">حفظ</button>
-<button onclick="showProfile()" class="btn-secondary">إلغاء</button>
-</div>
-</div>
-</div>
-<div id="coursesPage" class="page">
-<h2>الدورات التعليمية</h2>
-<div class="courses-grid">
-<div class="course-card" onclick="showCourse(1)">
-<h3>كورس التداول من صفر الى الاحتراف</h3>
-<p>حيدر الجنابي</p>
-</div>
-<div class="course-card" onclick="showCourse(2)">
-<h3>أفضل دورة لتعلم SMC</h3>
-<p>الدكتور محمد مهدي</p>
-</div>
-<div class="course-card" onclick="showCourse(3)">
-<h3>الكورس السداسي</h3>
-<p>حيدر تريدنك</p>
-</div>
-</div>
-</div>
-<div id="courseDetailPage" class="page">
-<button onclick="showPage('courses')" class="btn-back">رجوع</button>
-<div id="courseDetailContent"></div>
-</div>
-<div id="advancedPage" class="page">
-<h2>المحتوى المتقدم</h2>
-<p class="advanced-desc">دورات ICT المتقدمة</p>
-<div class="courses-grid">
-<div class="course-card premium-course" onclick="checkPremiumAccess()">
-<span class="premium-badge">PRO</span>
-<h3>كورس ICT من الصفر</h3>
-<p>محمد سماره</p>
-</div>
-</div>
-<div class="premium-note">
-<p>هذا الكورس مجاني 100%</p>
-</div>
-</div>
-<div id="toolsPage" class="page">
-<h2>الأدوات</h2>
-<div class="tools-grid">
-<div class="tool-card" onclick="showTool('fib')">
-<h3>حاسبة فيبوناتشي</h3>
-<p>احسب مستويات فيبوناتشي</p>
-</div>
-<div class="tool-card" onclick="showTool('risk')">
-<h3>إدارة رأس المال</h3>
-<p>احسب حجم الصفقة</p>
-</div>
-</div>
-</div>
-<div id="toolDetailPage" class="page">
-<button onclick="showPage('tools')" class="btn-back">رجوع</button>
-<div id="toolContent"></div>
-</div>
-<div id="privacyPage" class="page">
-<h2>سياسة الخصوصية</h2>
-<div class="content-box">
-<p>نحن في اكزم للتداول نحافظ على خصوصية مستخدمينا</p>
-</div>
-</div>
-<div id="aboutPage" class="page">
-<h2>من نحن</h2>
-<div class="content-box">
-<p>نحن فريق مطورين برامج متخصصون</p>
-</div>
-</div>
-</div>
-<div id="videoPlayerModal" class="modal">
-<div class="modal-content">
-<button onclick="closeVideo()" class="btn-close">X</button>
-<div id="videoContainer"></div>
-</div>
-</div>
-<div id="premiumModal" class="modal">
-<div class="modal-content premium-modal">
-<button onclick="closePremiumModal()" class="btn-close">X</button>
-<h2>تفعيل البريميوم</h2>
-<p>أدخل كود التفعيل</p>
-<input type="text" id="premiumCode" placeholder="الكود">
-<button onclick="activatePremium()" class="btn-primary">تفعيل</button>
-</div>
-</div>
-<div id="supportChat" class="support-chat" onclick="toggleSupport()">
-<span id="supportBadge" class="support-badge" style="display:none">0</span>
-<span class="support-icon">?</span>
-</div>
-<div id="supportPanel" class="support-panel">
-<div class="support-header">
-<h3>الدعم الفني</h3>
-<button onclick="closeSupport()" class="btn-close">X</button>
-</div>
-<div id="supportMessages" class="support-messages"></div>
-</div>
-<nav class="bottom-nav">
-<button onclick="showPage('account')" class="nav-item"><span>الحساب</span></button>
-<button onclick="showPage('tools')" class="nav-item"><span>الأدوات</span></button>
-<button onclick="showPage('advanced')" class="nav-item"><span>المتقدمين</span></button>
-<button onclick="showPage('courses')" class="nav-item"><span>الدورات</span></button>
-<button onclick="showPage('home')" class="nav-item active"><span>الرئيسية</span></button>
-</nav>
-</div>
-<script src="script.js"></script>
+    <!-- طبقة التحميل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>جاري تحميل التطبيق...</p>
+    </div>
+
+    <!-- إشعارات -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- نافذة التأكيد -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-content">
+            <h3 id="confirmTitle"></h3>
+            <p id="confirmMessage"></p>
+            <div class="confirm-buttons">
+                <button class="btn btn-secondary" id="confirmCancel">إلغاء</button>
+                <button class="btn btn-primary" id="confirmOk">موافق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التسجيل/الدخول -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-content">
+            <div class="auth-header">
+                <h2><i class="fas fa-user-shield"></i> تسجيل الدخول</h2>
+                <button class="close-btn" id="closeAuth">&times;</button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login">تسجيل الدخول</button>
+                <button class="tab-btn" data-tab="register">إنشاء حساب</button>
+            </div>
+
+            <!-- نموذج تسجيل الدخول -->
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" placeholder="ادخل بريدك الإلكتروني" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="ادخل كلمة المرور" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> دخول إلى التطبيق
+                </button>
+                <p class="auth-link">ليس لديك حساب؟ <a href="#" class="switch-tab" data-tab="register">أنشئ حساب جديد</a></p>
+            </form>
+
+            <!-- نموذج إنشاء حساب -->
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
+                    <input type="text" id="registerName" placeholder="ادخل اسمك الكامل" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-at"></i> اسم المستخدم</label>
+                    <input type="text" id="registerUsername" placeholder="يجب أن يبدأ بحرف" pattern="[A-Za-zأ-ي].*" required>
+                    <small class="hint">يجب أن يبدأ اسم المستخدم بحرف</small>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="registerEmail" placeholder="ادخل بريدك الإلكتروني" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="registerPassword" placeholder="ادخل كلمة مرور قوية" minlength="6" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-image"></i> صورة الحساب (اختياري)</label>
+                    <div class="file-upload">
+                        <input type="file" id="profileImage" accept="image/*" hidden>
+                        <label for="profileImage" class="file-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اختر صورة</span>
+                        </label>
+                        <div id="fileName"></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success btn-block">
+                    <i class="fas fa-user-plus"></i> إنشاء حساب جديد
+                </button>
+                <p class="auth-link">لديك حساب بالفعل؟ <a href="#" class="switch-tab" data-tab="login">سجل الدخول</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- الهيكل الرئيسي -->
+    <div class="app-container" id="appContainer">
+        <!-- شريط العنوان -->
+        <header class="main-header">
+            <button class="back-btn" id="backBtn" style="display: none;">
+                <i class="fas fa-arrow-right"></i>
+                <span>رجوع</span>
+            </button>
+            <h1 class="logo" id="pageTitle">اكزم للتداول</h1>
+            <div class="header-actions">
+                <button class="icon-btn" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="icon-btn" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- القائمة الجانبية -->
+        <nav class="side-nav" id="sideNav">
+            <div class="nav-header">
+                <div class="user-info">
+                    <img src="" alt="صورة المستخدم" class="user-avatar" id="userAvatar">
+                    <div>
+                        <h3 id="userName">زائر</h3>
+                        <p id="userEmail">سجل الدخول للوصول</p>
+                    </div>
+                </div>
+                <button class="close-nav" id="closeNav">&times;</button>
+            </div>
+            
+            <div class="nav-content">
+                <ul class="nav-menu">
+                    <li><a href="#home" class="nav-link active"><i class="fas fa-home"></i> الرئيسية</a></li>
+                    <li><a href="#account" class="nav-link"><i class="fas fa-user-circle"></i> الحساب</a></li>
+                    <li><a href="#courses" class="nav-link"><i class="fas fa-graduation-cap"></i> الدورات</a></li>
+                    <li><a href="#advanced" class="nav-link"><i class="fas fa-crown"></i> المتقدمين</a></li>
+                    <li><a href="#tools" class="nav-link"><i class="fas fa-tools"></i> الأدوات</a></li>
+                    <li><a href="#support" class="nav-link"><i class="fas fa-headset"></i> الدعم الفني</a></li>
+                    <li><a href="#about" class="nav-link"><i class="fas fa-info-circle"></i> من نحن</a></li>
+                    <li><a href="#privacy" class="nav-link"><i class="fas fa-shield-alt"></i> سياسة الخصوصية</a></li>
+                </ul>
+                
+                <div class="nav-footer">
+                    <button class="btn btn-logout" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                    </button>
+                    <div class="app-version">الإصدار 1.0.0</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="main-content" id="mainContent">
+            <!-- الصفحات يتم تحميلها هنا ديناميكياً -->
+        </main>
+
+        <!-- شريط التنقل السفلي -->
+        <nav class="bottom-nav">
+            <a href="#home" class="nav-item active" data-page="home">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="#courses" class="nav-item" data-page="courses">
+                <i class="fas fa-graduation-cap"></i>
+                <span>الدورات</span>
+            </a>
+            <a href="#advanced" class="nav-item" data-page="advanced">
+                <i class="fas fa-crown"></i>
+                <span>المتقدمين</span>
+            </a>
+            <a href="#tools" class="nav-item" data-page="tools">
+                <i class="fas fa-tools"></i>
+                <span>الأدوات</span>
+            </a>
+            <a href="#account" class="nav-item" data-page="account">
+                <i class="fas fa-user"></i>
+                <span>الحساب</span>
+            </a>
+        </nav>
+
+        <!-- فقاعة الدعم الفني -->
+        <div class="support-bubble" id="supportBubble">
+            <i class="fas fa-comment-dots"></i>
+            <span class="notification-badge" id="supportBadge">0</span>
+        </div>
+
+        <!-- نافذة الدعم الفني -->
+        <div class="support-modal" id="supportModal">
+            <div class="support-header">
+                <h3><i class="fas fa-headset"></i> الدعم الفني</h3>
+                <button class="close-btn" id="closeSupport">&times;</button>
+            </div>
+            <div class="support-body">
+                <div class="messages-container" id="messagesContainer">
+                    <!-- الرسائل تظهر هنا -->
+                </div>
+                <div class="support-links">
+                    <a href="https://wa.me/442031375274" target="_blank" class="support-link">
+                        <i class="fab fa-whatsapp"></i> واتساب الدعم
+                    </a>
+                    <a href="https://t.me/ASQ412" target="_blank" class="support-link">
+                        <i class="fab fa-telegram"></i> تليجرام المطور
+                    </a>
+                    <a href="https://t.me/pine_Scripts0" target="_blank" class="support-link">
+                        <i class="fab fa-telegram"></i> قناة تليجرام
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- القوالب -->
+    <template id="homeTemplate">
+        <section class="page home-page">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h2>مرحباً بك في <span class="highlight">اكزم للتداول</span></h2>
+                    <p>منصة متكاملة لتعلم التداول من الصفر للإحتراف</p>
+                    <button class="btn btn-primary" id="startLearning">
+                        <i class="fas fa-play-circle"></i> ابدأ التعلم الآن
+                    </button>
+                </div>
+                <div class="hero-image">
+                    <img src="https://j.top4top.io/p_3670reejg0.png" alt="اكزم للتداول">
+                </div>
+            </div>
+
+            <div class="features-section">
+                <h3 class="section-title"><i class="fas fa-star"></i> المميزات الرئيسية</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-video"></i>
+                        <h4>دورات متكاملة</h4>
+                        <p>أفضل الدورات التعليمية في التداول</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-tools"></i>
+                        <h4>أدوات مساعدة</h4>
+                        <p>حاسبات وإدارة رأس مال</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-crown"></i>
+                        <h4>محتوى متقدم</h4>
+                        <p>دورات احترافية للمتقدمين</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-headset"></i>
+                        <h4>دعم فني</h4>
+                        <p>مساعدتك أولويتنا</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-links">
+                <h3 class="section-title"><i class="fas fa-bolt"></i> روابط سريعة</h3>
+                <div class="links-grid">
+                    <a href="#courses" class="quick-link">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>تصفح الدورات</span>
+                    </a>
+                    <a href="#tools" class="quick-link">
+                        <i class="fas fa-calculator"></i>
+                        <span>حاسبة التداول</span>
+                    </a>
+                    <a href="#support" class="quick-link">
+                        <i class="fas fa-question-circle"></i>
+                        <span>مساعدة ودعم</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="coursesTemplate">
+        <section class="page courses-page">
+            <div class="page-header">
+                <h2><i class="fas fa-graduation-cap"></i> الدورات التعليمية</h2>
+                <p>اختر الدورة المناسبة وابدأ رحلة التعلم</p>
+            </div>
+
+            <div class="courses-container" id="coursesContainer">
+                <!-- الدورات تظهر هنا ديناميكياً -->
+            </div>
+        </section>
+    </template>
+
+    <!-- القوالب الأخرى (account, advanced, tools) سيتم إضافتها في ملف JavaScript -->
+    
+    <script src="script.js"></script>
 </body>
 </html>
