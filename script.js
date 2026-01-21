@@ -1,1252 +1,1310 @@
-// البيانات المخزنة محلياً
-let currentUser = null;
-let users = JSON.parse(localStorage.getItem('trading_users')) || [];
-let premiumCodes = JSON.parse(localStorage.getItem('premium_codes')) || [];
-let supportMessages = JSON.parse(localStorage.getItem('support_messages')) || [];
-let currentCourse = null;
-let currentVideos = [];
-let currentVideoIndex = 0;
+// تهيئة Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAMMS8UccAPP4_4517ehfS2paPYEPJ7nbw",
+    authDomain: "tradingchatapp.firebaseapp.com",
+    databaseURL: "https://tradingchatapp-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "tradingchatapp",
+    storageBucket: "tradingchatapp.firebasestorage.app",
+    messagingSenderId: "826334456372",
+    appId: "1:826334456372:web:4f99b76fe47328d3e4b861",
+    measurementId: "G-VFQVMQR80S"
+};
 
-// بيانات الدورات
-const coursesData = {
-    haider: {
-        title: "كورس التداول من صفر الى الاحتراف",
-        author: "حيدر الجنابي",
-        videos: [
-            { id: "G8eeqb82KOM", title: "دورة سمارت موني كونسبت الحلقة الأولى للمبتدئين" },
-            { id: "vUeyLqB82CM", title: "الدرس الثاني من كورس الأموال الذكية" },
-            { id: "CrzVLmflQgQ", title: "الدرس الثالث ترابط الفريمات من كورس الأموال الذكية" }
-        ],
-        info: `
-            <div class="info-section">
-                <p><strong>المدرب:</strong> حيدر الجنابي</p>
-                <p><strong>عدد الفيديوهات:</strong> 3</p>
-            </div>
-            <div class="rights-section">
-                <p><strong>حقوق الدورة:</strong></p>
-                <p><a href="https://t.me/thesuccessfulwayarabs" target="_blank">قناة تلجرام: thesuccessfulwayarabs</a></p>
-                <p><a href="https://t.me/haideraljanabi90" target="_blank">حساب تلجرام: haideraljanabi90</a></p>
-            </div>
-        `
-    },
-    mohamed: {
-        title: "أفضل دورة لتعلم SMC في الوطن العربي",
-        author: "الدكتور محمد مهدي",
-        videos: [
-            { id: "eb2y-Kbd_N8", title: "مقدمة هامة لدورة SMC Exaado" },
-            { id: "XSPuivsDNd4", title: "لماذا المستوى الأول مجاني؟" },
-            { id: "cWx_GkB2htE", title: "هل علم SMC أفضل علم لتحقيق الأرباح بالفوركس؟" },
-            { id: "pQsk2N8j08I", title: "تأسيس SMC - درس 1 - الشموع اليابانية" },
-            { id: "C1qDxNJJbbI", title: "تأسيس SMC - الدرس 2 - هيكلية الشموع" },
-            { id: "fH0vP9NNuug", title: "تأسيس SMC - الدرس 3 - الغلبة لمن؟" },
-            { id: "QmhYCHTkGPU", title: "تأسيس SMC - الدرس 4 - قمم وقيعان الهيكل" },
-            { id: "h9JXmwltHvw", title: "تأسيس SMC - درس 5 - كيف تتكون اتجاهات السوق؟" },
-            { id: "R08Q9wj0vHw", title: "تأسيس SMC - درس 6 - تطبيق عملي على اتجاهات السوق" },
-            { id: "vkEgojBoLO4", title: "تأسيس SMC - الدرس 7 - الاتجاهات الرئيسية والداخلية" },
-            { id: "ITKrEnK152M", title: "تأسيس SMC - الدرس 8 - تطبيق عملي على الاتجاه الرئيسي والداخلي" },
-            { id: "ICJbnDo20mI", title: "الحافز Level 2 - Inducment IDM" },
-            { id: "sKfoeLGsQUY", title: "شروط Level 2 - Inducment IDM" },
-            { id: "U1Alwc74Ap0", title: "تطبيق عملي لاستخراج Level 2 - IDM" },
-            { id: "IdkFy19mPag", title: "تطبيق عملي على كل ما سبق - Level 2" }
-        ],
-        info: `
-            <div class="info-section">
-                <p><strong>المدرب:</strong> الدكتور محمد مهدي</p>
-                <p><strong>عدد الفيديوهات:</strong> 15</p>
-            </div>
-            <div class="rights-section">
-                <p><strong>حقوق الدورة:</strong></p>
-                <p><a href="https://t.me/Exaado" target="_blank">قناة تلجرام: Exaado</a></p>
-                <p><a href="https://t.me/ExaadoSupport" target="_blank">حساب الدعم: ExaadoSupport</a></p>
-            </div>
-        `
-    },
-    tradaying: {
-        title: "الكورس السداسي في احتراف التحليل الفني",
-        author: "حيدر تريدنك",
-        videos: [
-            { id: "pNLb-3Nrjv0", title: "مقدمة الكورس السداسي احتراف التحليل الفني" },
-            { id: "QEMB6XnoAPU", title: "شرح الشمعة اليابانية بالتفصيل" },
-            { id: "SC9IA6y0mLo", title: "شرح القمم والقيعان وأهميتها في التحليل الفني" },
-            { id: "SL0sab2OsPQ", title: "علم تحديد الاتجاه في الأسواق المالية" },
-            { id: "vdhBbWv7P8Q", title: "علم تحديد الاتجاه (الترند الفرعي) في الأسواق" },
-            { id: "qMSe7tjnkE0", title: "علم تحديد الاتجاه في الأسواق المالية (المتوسط المتحرك 200)" },
-            { id: "4CNWWp2toNI", title: "الدعم الثابت ماهو وكيف نحدده بشكل دقيق" },
-            { id: "FMQG-iud_3k", title: "المقاومة الثابتة ماهي وكيف نحددها بشكل دقيق" },
-            { id: "jEOCbIDFagE", title: "عملية الاستبدال (بين دعم ومقاومة) في الأسواق" },
-            { id: "hsWQxsmF7Z4", title: "الدعم والمقاومات الديناميكية (المتحركة)" },
-            { id: "r0dtL2Eey34", title: "الدعوم والمقاومات الديناميكية (المتحركة)" },
-            { id: "S-PceOrWCVc", title: "الدعم والمقاومات على طريقة أعظم محللين العالم (شبه الديناميكية)" },
-            { id: "X7aBNS3fj3E", title: "تحديد الدعوم والمقاومات على طريقة أعظم محللين التاريخ (القنوات السعرية)" },
-            { id: "gsMhtEVN8us", title: "تحديد الدعوم والمقاومات على طريقة أعظم محللين التاريخ (القنوات السعرية)" },
-            { id: "ECC5erFed88", title: "قراءة الحالة النفسية في السوق عن طريق الشموع اليابانية (أنماط الشموع اليابانية)" },
-            { id: "dh4OZDqZohA", title: "أساسيات البرايس اكشن (قراءة الحالة النفسية) في السوق" },
-            { id: "wfidL8peRxA", title: "التصحيح والكسر والاختراق وإعادة الاختبار في التحليل الفني" },
-            { id: "evnMF07iHfA", title: "تتبع البنوك والحيتان في الأسواق المالية (معلومات بآلاف الدولارات)" },
-            { id: "qfsu98cAwaM", title: "تأكيد الاختراق الحقيقي وتجنب الاختراق الوهمي بالتحليل الفني عن طريق الفوليوم" },
-            { id: "dhpeq_sfy_k", title: "تأكيد الكسر الحقيقي وتجنب الكسر الوهمي بالتحليل الفني عن طريق الفوليوم" },
-            { id: "6dH93cY8G7Y", title: "البرايس اكشن النوع الأول.. تعلم بطريقة جديدة" },
-            { id: "C_4NsWODb7c", title: "البرايس اكشن المتحرك النوع الثاني.. تعلم بطريقة جديدة" },
-            { id: "Iv-oyMEzR74", title: "الفيبوناتشي والبرايس اكشن النوع الثالث.. تعلم بطريقة جديدة" },
-            { id: "IsW3t13FfTE", title: "مؤشر EMA و Stochastic أهم مؤشرين في وضع أي استراتيجية" }
-        ],
-        info: `
-            <div class="info-section">
-                <p><strong>المدرب:</strong> حيدر تريدنك</p>
-                <p><strong>عدد الفيديوهات:</strong> 24</p>
-            </div>
-            <div class="rights-section">
-                <p><strong>حقوق الدورة:</strong></p>
-                <p><a href="https://t.me/tradaying" target="_blank">قناة تلجرام: tradaying</a></p>
-            </div>
-        `
-    },
-    ict: {
+// تهيئة Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const database = firebase.database();
+const storage = firebase.storage();
+const messaging = firebase.messaging();
+
+// حالة التطبيق
+let currentUser = null;
+let currentPage = 'home';
+let pageHistory = [];
+
+// دورات الفيديو
+const courses = {
+    free: [
+        {
+            id: 1,
+            title: "كورس التداول من صفر الى الاحتراف",
+            instructor: "حيدر الجنابي",
+            videos: [
+                { id: 1, title: "مقدمة الكورس", url: "G8eeqb82KOM" },
+                { id: 2, title: "دورة سمارت موني كونسبت", url: "vUeyLqB82CM" },
+                { id: 3, title: "الدرس الثالث ترابط الفريمات", url: "CrzVLmflQgQ" }
+            ],
+            rights: {
+                channel: "https://t.me/thesuccessfulwayarabs",
+                account: "https://t.me/haideraljanabi90"
+            }
+        },
+        {
+            id: 2,
+            title: "أفضل دورة لتعلم SMC في الوطن العربي",
+            instructor: "الدكتور محمد مهدي",
+            videos: [
+                { id: 1, title: "مقدمة هامة لدورة SMC", url: "eb2y-Kbd_N8" },
+                { id: 2, title: "لماذا المستوي الأول مجاني؟", url: "XSPuivsDNd4" },
+                { id: 3, title: "هل علم SMC أفضل علم لتحقيق الارباح؟", url: "cWx_GkB2htE" },
+                { id: 4, title: "تأسيس SMC - الشموع اليابانية", url: "pQsk2N8j08I" },
+                { id: 5, title: "تأسيس SMC - هيكلية الشموع", url: "C1qDxNJJbbI" },
+                { id: 6, title: "تأسيس SMC - الغلبة لمن؟", url: "fH0vP9NNuug" }
+            ],
+            rights: {
+                channel: "https://t.me/Exaado",
+                account: "https://t.me/ExaadoSupport"
+            }
+        },
+        {
+            id: 3,
+            title: "الكورس السداسي في احتراف التحليل الفني",
+            instructor: "حيدر تريدنك",
+            videos: [
+                { id: 1, title: "مقدمة الكورس السداسي", url: "pNLb-3Nrjv0" },
+                { id: 2, title: "شرح الشمعه اليابانية بالتفصيل", url: "QEMB6XnoAPU" },
+                { id: 3, title: "شرح القمم والقيعان", url: "SC9IA6y0mLo" }
+            ],
+            rights: {
+                channel: "https://t.me/tradaying"
+            }
+        }
+    ],
+    premium: {
+        id: 4,
         title: "كورس ICT من الصفر للمبتدئين",
-        author: "محمد سماره",
+        instructor: "محمد سماره",
         videos: [
-            { id: "B_Cniskclho", title: "بعد 4 سنين تداول.... كورس ICT من الصفر للمبتدئين - الدرس الأول" },
-            { id: "P02iX2KGYpc", title: "لا تصدق أن السوق يتحرك عشوائياً.... تعرف على BSL و SSL واكتشف الحقيقة - الدرس 2" },
-            { id: "sRBlms-TcMM", title: "كيف يصنع السوق مناطق سيولة كاذبة لخداعك؟ افهم ERL و IRL بوضوح - الدرس 3" },
-            { id: "p-tI_Opbstk", title: "هل تغير هيكل السوق يعني فرصة ربح؟ تعرف على MSS و BMS بوضوح - الدرس 4" },
-            { id: "Hd4ogoQabuA", title: "كيف تستخدم فيبوناتشي و OTE لتحديد أفضل نقاط الدخول والخروج - الدرس 5" },
-            { id: "j-z1_kvtS4M", title: "شرح مختلف يخليك تفهم السوق من جذوره - الدرس FVG 6" },
-            { id: "L897X5SrnaE", title: "كيف تكتشف الفجوات غير المتوازنة وتتفوق على IFVG السوق - الدرس 7" },
-            { id: "VFsQ9mNebNk", title: "سر اختيار أفضل نقاط الانعكاس في السوق - BPR FVG الدرس 8" },
-            { id: "rWx1zIaPhAw", title: "أداة سرية يستخدمها الحيتان لدخول السوق! شرح اختلال الحجم بأسلوب ICT - الدرس 9" },
-            { id: "Uws5QjN2Dr4", title: "كيف تكتشف الكسر الحقيقي في السوق؟ شرح BSG خطوة بخطوة بأسلوب ICT - الدرس 10" },
-            { id: "ME6rPGFoWbU", title: "شرح جميع أنواع FVG في استراتيجية ICT - دليل شامل للمبتدئين خطوة بخطوة - الدرس 11" },
-            { id: "2hGENxNVCDc", title: "عرفت OB؟ بس هل عرفت +OB و -OB؟ الفروقات المهمة التي تغير قراراتك - الدرس 12" },
-            { id: "x0OgWDaPhtc", title: "ما حد علمك الـ BB بهذه الطريقة.... الفرصة بيدك! - الدرس 13" },
-            { id: "GCaYsTLRs04", title: "اكتشف سر الـ Rejection Block قبل ما يتحرك السوق - الدرس 14" },
-            { id: "kD8Xs6qzgYc", title: "ختام كورس أساس ICT - اكتشف قوة SETAB + A - الدرس 15" }
+            { id: 1, title: "الدرس الأول - بعد 4 سنين تداول", url: "B_Cniskclho" },
+            { id: 2, title: "الدرس الثاني - لا تصدق ان السوق يتحرك عشوائيا", url: "P02iX2KGYpc" },
+            { id: 3, title: "الدرس الثالث - كيف يصنع السوق مناطق سيولة", url: "sRBlms-TcMM" }
         ],
-        info: `
-            <div class="info-section">
-                <p><strong>المدرب:</strong> محمد سماره</p>
-                <p><strong>عدد الفيديوهات:</strong> 15</p>
-            </div>
-            <div class="rights-section">
-                <p><strong>حقوق الدورة:</strong></p>
-                <p><a href="https://t.me/mos_rar" target="_blank">قناة تلجرام: mos_rar</a></p>
-                <p><a href="https://t.me/rar42rar" target="_blank">حساب تلجرام: rar42rar</a></p>
-            </div>
-        `
+        rights: {
+            channel: "https://t.me/mos_rar",
+            account: "https://t.me/rar42rar"
+        },
+        note: "الكورس مجاني 100% وتم وضعه في خانة البرمويوم لتجربة ميزات البرمويوم فقط"
     }
 };
 
-// تهيئة التطبيق
+// عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-    checkUserSession();
-    setupEventListeners();
-    updateSupportBadge();
+    initializeApp();
 });
 
-// تهيئة التطبيق
-function initApp() {
-    // تحميل المستخدم الحالي من الجلسة
-    const sessionUser = sessionStorage.getItem('current_user');
-    if (sessionUser) {
-        currentUser = JSON.parse(sessionUser);
-        updateUIForLoggedInUser();
-    }
-    
-    // تحميل الرسائل
-    loadSupportMessages();
-    
-    // إعداد أيقونة الدعم العائمة
-    setupFloatingSupport();
-    
-    // إعداد الشريط السفلي
-    setupBottomNav();
-    
-    // إعداد زر الرجوع
-    setupBackButton();
+function initializeApp() {
+    setTimeout(() => {
+        document.getElementById('loadingScreen').style.display = 'none';
+        
+        // التحقق من حالة تسجيل الدخول
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+                showApp();
+            } else {
+                showAuth();
+            }
+        });
+        
+        setupEventListeners();
+    }, 2000);
 }
 
-// التحقق من جلسة المستخدم
-function checkUserSession() {
-    if (!currentUser) {
-        // إظهار زر إنشاء حساب فقط
-        document.getElementById('authFab').style.display = 'block';
-    }
-}
-
-// إعداد المستمعين للأحداث
 function setupEventListeners() {
+    // مصادقة
+    document.getElementById('showRegister').addEventListener('click', showRegisterForm);
+    document.getElementById('showLogin').addEventListener('click', showLoginForm);
+    document.getElementById('loginBtn').addEventListener('click', login);
+    document.getElementById('registerBtn').addEventListener('click', register);
+    
+    // التنقل
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => navigateToPage(e.target.closest('.nav-btn').dataset.page));
+    });
+    
     // القائمة الجانبية
-    document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
-    document.getElementById('closeMenu').addEventListener('click', toggleSidebar);
+    document.getElementById('menuBtn').addEventListener('click', openSidebar);
+    document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
+    document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+    
+    // الروابط الجانبية
+    document.querySelectorAll('.sidebar-menu a[data-page]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateToPage(e.target.closest('a').dataset.page);
+            closeSidebar();
+        });
+    });
     
     // زر الرجوع
     document.getElementById('backBtn').addEventListener('click', goBack);
     
-    // الشريط السفلي
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const page = this.getAttribute('data-page');
-            navigateToPage(page);
-        });
+    // دعم الفني
+    document.getElementById('supportFloat').addEventListener('click', openSupport);
+    document.getElementById('closeSupport').addEventListener('click', closeSupport);
+    document.getElementById('sendMessage').addEventListener('click', sendMessage);
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
     });
     
-    // زر تسجيل الخروج
-    document.getElementById('logoutBtn').addEventListener('click', confirmLogout);
-    document.getElementById('confirmLogoutBtn').addEventListener('click', logout);
-    document.getElementById('cancelLogoutBtn').addEventListener('click', function() {
-        hideModal('logoutConfirmModal');
-    });
+    // Premium
+    document.getElementById('activatePremium').addEventListener('click', activatePremium);
+    document.getElementById('cancelPremium').addEventListener('click', closePremiumModal);
     
-    // تعديل البيانات
-    document.getElementById('editProfileBtn').addEventListener('click', showEditForm);
-    document.getElementById('cancelEditBtn').addEventListener('click', hideEditForm);
-    document.getElementById('saveEditBtn').addEventListener('click', saveProfileChanges);
-    document.getElementById('changeImgBtn').addEventListener('click', showImageModal);
+    // تأكيد
+    document.getElementById('confirmCancel').addEventListener('click', closeConfirmModal);
+    document.getElementById('confirmOk').addEventListener('click', confirmAction);
     
-    // الروابط السريعة
-    document.getElementById('goToCoursesBtn').addEventListener('click', function() {
-        if (!currentUser) {
-            showError('يرجى إنشاء حساب أولاً', 'يجب عليك إنشاء حساب للوصول إلى الدورات التعليمية');
-            showAuthModal();
-            return;
-        }
-        navigateToPage('courses');
-    });
-    
-    document.getElementById('goToToolsBtn').addEventListener('click', function() {
-        if (!currentUser) {
-            showError('يرجى إنشاء حساب أولاً', 'يجب عليك إنشاء حساب لاستخدام أدوات التداول');
-            showAuthModal();
-            return;
-        }
-        navigateToPage('tools');
-    });
-    
-    // الدورات
-    document.querySelectorAll('.view-course-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!currentUser) {
-                showError('يرجى إنشاء حساب أولاً', 'يجب عليك إنشاء حساب لمشاهدة الدورات');
-                showAuthModal();
-                return;
-            }
-            const course = this.getAttribute('data-course');
-            openCourse(course);
-        });
-    });
-    
-    document.querySelectorAll('.course-info-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const course = this.getAttribute('data-course');
-            showCourseInfo(course);
-        });
-    });
-    
-    // مشغل الفيديو
-    document.getElementById('closeVideoBtn').addEventListener('click', function() {
-        hideModal('videoModal');
-    });
-    
-    document.getElementById('prevVideoBtn').addEventListener('click', playPreviousVideo);
-    document.getElementById('nextVideoBtn').addEventListener('click', playNextVideo);
-    
-    // معلومات الدورة
-    document.getElementById('closeInfoBtn').addEventListener('click', function() {
-        hideModal('infoModal');
-    });
-    
-    // المتقدمين
-    document.getElementById('viewPremiumCourseBtn').addEventListener('click', function() {
-        if (!currentUser) {
-            showError('يرجى إنشاء حساب أولاً', 'يجب عليك إنشاء حساب للوصول لدورات المتقدمين');
-            showAuthModal();
-            return;
-        }
-        
-        if (currentUser && currentUser.premium) {
-            openCourse('ict');
-        } else {
-            showActivationSection();
-        }
-    });
-    
-    document.getElementById('activatePremiumBtn').addEventListener('click', activatePremium);
-    
-    // الأدوات
-    document.getElementById('fibonacciCalculatorBtn').addEventListener('click', function() {
-        if (!currentUser) {
-            showError('يرجى إنشاء حساب أولاً', 'يجب عليك إنشاء حساب لاستخدام أدوات التداول');
-            showAuthModal();
-            return;
-        }
-        showToolModal('fibonacciModal');
-    });
-    
-    document.getElementById('riskManagerBtn').addEventListener('click', function() {
-        if (!currentUser) {
-            showError('يرجى إنشاء حساب أولاً', 'يجب عليك إنشاء حساب لاستخدام أدوات التداول');
-            showAuthModal();
-            return;
-        }
-        showToolModal('riskModal');
-    });
-    
-    document.getElementById('calculateFibBtn').addEventListener('click', calculateFibonacci);
-    document.getElementById('calculateRiskBtn').addEventListener('click', calculateRiskManagement);
-    
-    document.querySelectorAll('.close-tool').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tool = this.getAttribute('data-tool');
-            hideToolModal(tool);
-        });
-    });
-    
-    // الدعم الفني
-    document.getElementById('sendMessageBtn').addEventListener('click', sendSupportMessage);
-    document.getElementById('messageInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendSupportMessage();
-        }
-    });
-    
-    // المصادقة
-    document.getElementById('loginFabBtn').addEventListener('click', showAuthModal);
-    document.getElementById('closeAuthBtn').addEventListener('click', function() {
-        hideModal('authModal');
-    });
-    
-    document.querySelectorAll('.auth-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabType = this.getAttribute('data-tab');
-            switchAuthTab(tabType);
-        });
-    });
-    
-    document.getElementById('registerBtn').addEventListener('click', registerUser);
-    document.getElementById('loginBtn').addEventListener('click', loginUser);
-    
-    // اختيار الصورة
-    document.getElementById('cameraOption').addEventListener('click', function() {
-        showError('غير متاح حالياً', 'ميزة الكاميرا غير متاحة حالياً. يرجى استخدام المعرض أو رابط الصورة.');
-    });
-    
-    document.getElementById('galleryOption').addEventListener('click', function() {
-        showError('غير متاح حالياً', 'ميزة المعرض غير متاحة حالياً. يرجى استخدام رابط الصورة.');
-    });
-    
-    document.getElementById('urlOption').addEventListener('click', function() {
-        document.getElementById('imageUrlInput').style.display = 'block';
-    });
-    
-    document.getElementById('saveImageUrlBtn').addEventListener('click', function() {
-        const imageUrl = document.getElementById('imageUrl').value.trim();
-        if (imageUrl) {
-            changeProfileImageFromUrl(imageUrl);
-        } else {
-            showError('رابط فارغ', 'يرجى إدخال رابط صورة صالح');
-        }
-    });
-    
-    document.getElementById('closeImageBtn').addEventListener('click', function() {
-        hideModal('imageModal');
-    });
-    
-    // زر إغلاق الخطأ
-    document.getElementById('closeErrorBtn').addEventListener('click', function() {
-        hideModal('errorModal');
-    });
-    
-    // صفحات سياسة الخصوصية ومن نحن
-    document.querySelector('.sidebar-item[href="#privacy"]').addEventListener('click', function(e) {
+    // تسجيل الخروج
+    document.getElementById('supportBtn').addEventListener('click', (e) => {
         e.preventDefault();
-        navigateToPage('privacy');
-        document.querySelector('.sidebar').classList.remove('open');
+        openSupport();
+        closeSidebar();
     });
     
-    document.querySelector('.sidebar-item[href="#about"]').addEventListener('click', function(e) {
+    // سياسة الخصوصية ومن نحن
+    document.getElementById('privacyBtn').addEventListener('click', (e) => {
         e.preventDefault();
-        navigateToPage('about');
-        document.querySelector('.sidebar').classList.remove('open');
+        showPrivacyPolicy();
+        closeSidebar();
     });
     
-    document.querySelector('.close-policy-btn').addEventListener('click', function() {
-        navigateToPage('home');
+    document.getElementById('aboutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        showAboutUs();
+        closeSidebar();
     });
     
-    document.querySelector('.close-about-btn').addEventListener('click', function() {
-        navigateToPage('home');
-    });
-    
-    // استماع لتغييرات الصفحة في الرابط
-    window.addEventListener('hashchange', handleHashChange);
-}
-
-// إظهار رسالة خطأ
-function showError(title, message) {
-    document.getElementById('errorTitle').textContent = title;
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorModal').style.display = 'flex';
-}
-
-// التعامل مع تغيير الرابط
-function handleHashChange() {
-    const hash = window.location.hash.substring(1);
-    if (hash) {
-        navigateToPage(hash);
-    }
-}
-
-// التنقل بين الصفحات
-function navigateToPage(page) {
-    // تحديث الرابط
-    window.location.hash = page;
-    
-    // إخفاء جميع الصفحات
-    document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active');
-    });
-    
-    // إظهار الصفحة المطلوبة
-    const pageElement = document.getElementById(page + 'Page');
-    if (pageElement) {
-        pageElement.classList.add('active');
-    } else {
-        document.getElementById('homePage').classList.add('active');
-    }
-    
-    // تحديث العنوان
-    const titles = {
-        account: 'الحساب',
-        home: 'الرئيسية',
-        courses: 'الدورات',
-        premium: 'المتقدمين',
-        tools: 'الأدوات',
-        support: 'الدعم الفني',
-        privacy: 'سياسة الخصوصية',
-        about: 'من نحن'
-    };
-    
-    document.getElementById('pageTitle').textContent = titles[page] || 'اكزم لتداول';
-    
-    // إظهار زر الرجوع إذا لم تكن في الصفحة الرئيسية
-    if (page !== 'home') {
-        document.getElementById('backBtn').style.display = 'flex';
-    } else {
-        document.getElementById('backBtn').style.display = 'none';
-    }
-    
-    // تحديث الشريط السفلي
-    updateBottomNav(page);
-    
-    // إغلاق القائمة الجانبية
-    document.querySelector('.sidebar').classList.remove('open');
-}
-
-// تحديث الشريط السفلي
-function updateBottomNav(activePage) {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('data-page') === activePage) {
-            item.classList.add('active');
-        }
+    // حساب الأدمن
+    document.getElementById('adminAccess').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'admin.html';
     });
 }
 
-// إعداد زر الرجوع
-function setupBackButton() {
-    document.getElementById('backBtn').addEventListener('click', function() {
-        if (window.location.hash === '#home' || !window.location.hash) {
-            navigateToPage('home');
-        } else {
-            window.history.back();
-        }
-    });
+function showAuth() {
+    document.getElementById('authScreen').style.display = 'block';
+    document.getElementById('appScreen').style.display = 'none';
 }
 
-// إعداد الشريط السفلي
-function setupBottomNav() {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const page = this.getAttribute('data-page');
-            navigateToPage(page);
-        });
-    });
-}
-
-// تبديل القائمة الجانبية
-function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
-}
-
-// تحديث واجهة المستخدم للمستخدم المسجل
-function updateUIForLoggedInUser() {
-    if (currentUser) {
-        // تحديث معلومات الحساب
-        document.getElementById('userName').textContent = currentUser.name;
-        document.getElementById('userUsername').textContent = '@' + currentUser.username;
-        
-        // تحديث حالة الحساب
-        const statusBadge = document.getElementById('accountStatus');
-        if (currentUser.premium) {
-            statusBadge.textContent = 'حساب مميز';
-            statusBadge.classList.add('premium');
-        } else {
-            statusBadge.textContent = 'حساب عادي';
-            statusBadge.classList.remove('premium');
-        }
-        
-        // تحديث الصورة
-        if (currentUser.profileImage) {
-            document.getElementById('profileImg').src = currentUser.profileImage;
-        }
-        
-        // إخفاء زر المصادقة
-        document.getElementById('authFab').style.display = 'none';
-        
-        // إظهار زر تسجيل الخروج
-        document.getElementById('logoutBtn').style.display = 'flex';
-    }
-}
-
-// إظهار نموذج المصادقة
-function showAuthModal() {
-    document.getElementById('authModal').style.display = 'flex';
-    document.getElementById('authTitle').textContent = 'إنشاء حساب جديد';
-    switchAuthTab('register');
-}
-
-// إخفاء النافذة
-function hideModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-// تبديل تبويبات المصادقة
-function switchAuthTab(tab) {
-    // تحديث الأزرار
-    document.querySelectorAll('.auth-tab').forEach(t => {
-        t.classList.remove('active');
-    });
-    
-    document.querySelector(`.auth-tab[data-tab="${tab}"]`).classList.add('active');
-    
-    // تحديث النماذج
-    document.querySelectorAll('.auth-form').forEach(form => {
-        form.classList.remove('active');
-    });
-    
-    document.getElementById(tab + 'Form').classList.add('active');
-    
-    // تحديث العنوان
-    document.getElementById('authTitle').textContent = 
-        tab === 'register' ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
-}
-
-// تسجيل مستخدم جديد
-function registerUser() {
-    const name = document.getElementById('regName').value.trim();
-    const username = document.getElementById('regUsername').value.trim();
-    const email = document.getElementById('regEmail').value.trim().toLowerCase();
-    const password = document.getElementById('regPassword').value;
-    
-    // التحقق من الحقول المطلوبة
-    if (!name || !username || !email || !password) {
-        showError('حقول مطلوبة', 'يرجى ملء جميع الحقول المطلوبة');
-        return;
-    }
-    
-    // التحقق من اسم المستخدم
-    if (!/^[a-zA-Z]/.test(username)) {
-        showError('خطأ في اسم المستخدم', 'اسم المستخدم يجب أن يبدأ بحرف إنجليزي');
-        return;
-    }
-    
-    if (username.length < 4) {
-        showError('خطأ في اسم المستخدم', 'اسم المستخدم يجب أن يكون 4 أحرف على الأقل');
-        return;
-    }
-    
-    // التحقق من البريد الإلكتروني
-    if (!isValidEmail(email)) {
-        showError('خطأ في البريد الإلكتروني', 'يرجى إدخال بريد إلكتروني صحيح');
-        return;
-    }
-    
-    // التحقق من عدم وجود نفس البريد الإلكتروني
-    if (users.some(user => user.email === email)) {
-        showError('بريد إلكتروني موجود', 'هذا البريد الإلكتروني مسجل مسبقاً');
-        return;
-    }
-    
-    // التحقق من عدم وجود نفس اسم المستخدم
-    if (users.some(user => user.username === username)) {
-        showError('اسم مستخدم موجود', 'اسم المستخدم هذا مستخدم مسبقاً');
-        return;
-    }
-    
-    // إنشاء المستخدم الجديد
-    const newUser = {
-        id: Date.now().toString(),
-        name: name,
-        username: username,
-        email: email,
-        password: password,
-        profileImage: 'https://j.top4top.io/p_3670reejg0.png',
-        premium: false,
-        premiumExpiry: null,
-        createdAt: new Date().toISOString()
-    };
-    
-    // إضافة المستخدم للقائمة
-    users.push(newUser);
-    localStorage.setItem('trading_users', JSON.stringify(users));
-    
-    // تسجيل الدخول تلقائياً
-    currentUser = newUser;
-    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
-    
-    // تحديث الواجهة
-    updateUIForLoggedInUser();
-    
-    // إغلاق النافذة
-    hideModal('authModal');
-    
-    // إظهار رسالة ترحيب
-    showError('تم بنجاح', `مرحباً ${name}! تم إنشاء حسابك بنجاح.`);
-    
-    // التوجه للصفحة الرئيسية
+function showApp() {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
     navigateToPage('home');
 }
 
-// تسجيل الدخول
-function loginUser() {
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+function showRegisterForm(e) {
+    e.preventDefault();
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+}
+
+function showLoginForm(e) {
+    e.preventDefault();
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+}
+
+async function login() {
+    const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    // البحث عن المستخدم
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-        // تسجيل الدخول
-        currentUser = user;
-        sessionStorage.setItem('current_user', JSON.stringify(currentUser));
-        
-        // تحديث الواجهة
-        updateUIForLoggedInUser();
-        
-        // إغلاق النافذة
-        hideModal('authModal');
-        
-        // التوجه للصفحة الرئيسية
-        navigateToPage('home');
-    } else {
-        showError('خطأ في تسجيل الدخول', 'البريد الإلكتروني أو كلمة المرور غير صحيحة');
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+        alert('خطأ في تسجيل الدخول: ' + error.message);
     }
 }
 
-// التحقق من صحة البريد الإلكتروني
-function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-// تأكيد تسجيل الخروج
-function confirmLogout() {
-    document.getElementById('logoutConfirmModal').style.display = 'flex';
-}
-
-// تسجيل الخروج
-function logout() {
-    // حذف جلسة المستخدم
-    sessionStorage.removeItem('current_user');
-    currentUser = null;
-    
-    // إعادة تعيين الواجهة
-    document.getElementById('userName').textContent = 'مستخدم جديد';
-    document.getElementById('userUsername').textContent = '@username';
-    document.getElementById('accountStatus').textContent = 'حساب عادي';
-    document.getElementById('accountStatus').classList.remove('premium');
-    document.getElementById('profileImg').src = 'https://j.top4top.io/p_3670reejg0.png';
-    
-    // إظهار زر المصادقة
-    document.getElementById('authFab').style.display = 'block';
-    
-    // إخفاء نموذج تعديل البيانات إذا كان ظاهراً
-    hideEditForm();
-    
-    // إخفاء نافذة التأكيد
-    hideModal('logoutConfirmModal');
-    
-    // التوجه للصفحة الرئيسية
-    navigateToPage('home');
-}
-
-// إظهار نموذج تعديل البيانات
-function showEditForm() {
-    if (!currentUser) {
-        showError('غير مسجل', 'يرجى تسجيل الدخول أولاً');
-        return;
-    }
-    
-    // تعبئة الحقول بالمعلومات الحالية
-    document.getElementById('editName').value = currentUser.name;
-    document.getElementById('editUsername').value = currentUser.username;
-    document.getElementById('editPassword').value = '';
-    
-    // إظهار النموذج
-    document.getElementById('editForm').style.display = 'block';
-}
-
-// إخفاء نموذج تعديل البيانات
-function hideEditForm() {
-    document.getElementById('editForm').style.display = 'none';
-    document.getElementById('usernameError').textContent = '';
-}
-
-// حفظ التغييرات
-function saveProfileChanges() {
-    if (!currentUser) return;
-    
-    const name = document.getElementById('editName').value.trim();
-    const username = document.getElementById('editUsername').value.trim();
-    const password = document.getElementById('editPassword').value;
-    
-    // التحقق من الاسم
-    if (!name) {
-        showError('اسم مطلوب', 'يرجى إدخال الاسم');
-        return;
-    }
+async function register() {
+    const name = document.getElementById('registerName').value;
+    const username = document.getElementById('registerUsername').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const photo = document.getElementById('registerPhoto').files[0];
     
     // التحقق من اسم المستخدم
-    if (!/^[a-zA-Z]/.test(username)) {
-        document.getElementById('usernameError').textContent = 'يجب أن يبدأ اسم المستخدم بحرف إنجليزي';
+    if (!/^[a-zA-Z].{3,}$/.test(username)) {
+        alert('اسم المستخدم يجب أن يبدأ بحرف ويكون 4 رموز على الأقل');
         return;
     }
     
-    if (username.length < 4) {
-        document.getElementById('usernameError').textContent = 'يجب أن يكون اسم المستخدم 4 أحرف على الأقل';
+    // التحقق من عدم تكرار اسم المستخدم
+    const usernameSnapshot = await database.ref('usernames').child(username).once('value');
+    if (usernameSnapshot.exists()) {
+        alert('اسم المستخدم موجود مسبقاً');
         return;
     }
     
-    // التحقق من عدم استخدام اسم المستخدم من قبل مستخدم آخر
-    if (username !== currentUser.username && users.some(u => u.username === username && u.id !== currentUser.id)) {
-        document.getElementById('usernameError').textContent = 'اسم المستخدم هذا مستخدم مسبقاً';
-        return;
-    }
-    
-    // تحديث بيانات المستخدم
-    currentUser.name = name;
-    currentUser.username = username;
-    
-    if (password) {
-        currentUser.password = password;
-    }
-    
-    // تحديث القائمة
-    const userIndex = users.findIndex(u => u.id === currentUser.id);
-    if (userIndex !== -1) {
-        users[userIndex] = currentUser;
-        localStorage.setItem('trading_users', JSON.stringify(users));
-    }
-    
-    // تحديث الجلسة
-    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
-    
-    // تحديث الواجهة
-    updateUIForLoggedInUser();
-    
-    // إخفاء النموذج
-    hideEditForm();
-    
-    showError('تم التحديث', 'تم تحديث بياناتك بنجاح');
-}
-
-// إظهار نافذة اختيار الصورة
-function showImageModal() {
-    if (!currentUser) {
-        showError('غير مسجل', 'يرجى تسجيل الدخول أولاً');
-        return;
-    }
-    
-    document.getElementById('imageModal').style.display = 'flex';
-    document.getElementById('imageUrlInput').style.display = 'none';
-    document.getElementById('imageUrl').value = '';
-}
-
-// تغيير صورة الحساب من رابط
-function changeProfileImageFromUrl(imageUrl) {
-    if (!imageUrl.startsWith('http')) {
-        showError('رابط غير صالح', 'يرجى إدخال رابط صورة صالح يبدأ بـ http أو https');
-        return;
-    }
-    
-    // اختبار تحميل الصورة
-    const img = new Image();
-    img.onload = function() {
-        currentUser.profileImage = imageUrl;
+    try {
+        // إنشاء المستخدم
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
         
-        // تحديث القائمة
-        const userIndex = users.findIndex(u => u.id === currentUser.id);
-        if (userIndex !== -1) {
-            users[userIndex] = currentUser;
-            localStorage.setItem('trading_users', JSON.stringify(users));
+        // رفع الصورة إذا وجدت
+        let photoURL = '';
+        if (photo) {
+            const storageRef = storage.ref(`profile_photos/${user.uid}`);
+            await storageRef.put(photo);
+            photoURL = await storageRef.getDownloadURL();
         }
         
-        // تحديث الجلسة
-        sessionStorage.setItem('current_user', JSON.stringify(currentUser));
+        // حفظ بيانات المستخدم
+        const userData = {
+            name: name,
+            username: username,
+            email: email,
+            photoURL: photoURL,
+            status: 'عادي',
+            premiumExpiry: null,
+            createdAt: new Date().toISOString()
+        };
         
-        // تحديث الصورة في الواجهة
-        document.getElementById('profileImg').src = imageUrl;
+        await database.ref('users').child(user.uid).set(userData);
+        await database.ref('usernames').child(username).set(user.uid);
         
-        // إغلاق النافذة
-        hideModal('imageModal');
+        // تسجيل الدخول تلقائي
+        await auth.signInWithEmailAndPassword(email, password);
         
-        showError('تم التحديث', 'تم تحديث صورة الحساب بنجاح');
-    };
-    
-    img.onerror = function() {
-        showError('رابط غير صالح', 'لا يمكن تحميل الصورة من هذا الرابط. يرجى التحقق من الرابط والمحاولة مرة أخرى.');
-    };
-    
-    img.src = imageUrl;
-}
-
-// فتح دورة
-function openCourse(courseKey) {
-    if (courseKey === 'ict' && (!currentUser || !currentUser.premium)) {
-        showActivationSection();
-        return;
+    } catch (error) {
+        alert('خطأ في إنشاء الحساب: ' + error.message);
     }
-    
-    const course = coursesData[courseKey];
-    if (!course) return;
-    
-    currentCourse = courseKey;
-    currentVideos = course.videos;
-    currentVideoIndex = 0;
-    
-    // تحديث عنوان الفيديو
-    document.getElementById('videoTitle').textContent = course.title;
-    
-    // تشغيل الفيديو الأول
-    playVideo(currentVideos[0].id, currentVideos[0].title);
-    
-    // تحديث قائمة الفيديوهات
-    updateVideoList();
-    
-    // تحديث أرقام الفيديوهات
-    document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
-    document.getElementById('totalVideos').textContent = currentVideos.length;
-    
-    // إظهار مشغل الفيديو
-    document.getElementById('videoModal').style.display = 'flex';
 }
 
-// تحديث قائمة الفيديوهات
-function updateVideoList() {
-    const videoList = document.getElementById('videoList');
-    videoList.innerHTML = '';
+async function loadUserData() {
+    if (!currentUser) return;
     
-    currentVideos.forEach((video, index) => {
-        const videoItem = document.createElement('div');
-        videoItem.className = `video-item ${index === currentVideoIndex ? 'active' : ''}`;
-        videoItem.innerHTML = `
-            <strong>${index + 1}.</strong> ${video.title}
-        `;
-        
-        videoItem.addEventListener('click', function() {
-            currentVideoIndex = index;
-            playVideo(video.id, video.title);
-            updateVideoList();
-            document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
-        });
-        
-        videoList.appendChild(videoItem);
+    const userRef = database.ref('users').child(currentUser.uid);
+    userRef.on('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (userData) {
+            updateUIWithUserData(userData);
+            checkUnreadMessages();
+        }
     });
 }
 
-// تشغيل فيديو
-function playVideo(videoId, title) {
-    const videoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&showinfo=0&rel=0&modestbranding=1`;
+function updateUIWithUserData(userData) {
+    // تحديث القائمة الجانبية
+    document.getElementById('sidebarUserName').textContent = userData.name;
+    document.getElementById('sidebarUserStatus').textContent = userData.status === 'premium' ? 'حساب Premium' : 'حساب عادي';
     
-    document.getElementById('videoPlayer').src = videoUrl;
+    if (userData.photoURL) {
+        document.getElementById('sidebarUserPhoto').src = userData.photoURL;
+    }
+    
+    // تحديث صفحة الحساب
+    if (currentPage === 'account') {
+        renderAccountPage(userData);
+    }
+}
+
+function navigateToPage(page) {
+    pageHistory.push(currentPage);
+    currentPage = page;
+    
+    // تحديث الشريط العلوي
+    document.getElementById('pageTitle').textContent = getPageTitle(page);
+    document.getElementById('backBtn').style.display = pageHistory.length > 0 ? 'block' : 'none';
+    
+    // تحديث التنقل السفلي
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.page === page) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // تحميل المحتوى
+    loadPageContent(page);
+}
+
+function getPageTitle(page) {
+    const titles = {
+        'account': 'الحساب',
+        'home': 'الرئيسية',
+        'courses': 'الدورات',
+        'premium': 'المتقدمين',
+        'tools': 'الأدوات'
+    };
+    return titles[page] || 'اكزم لتداول';
+}
+
+function loadPageContent(page) {
+    const content = document.getElementById('mainContent');
+    
+    switch(page) {
+        case 'home':
+            renderHomePage();
+            break;
+        case 'account':
+            renderAccountPage();
+            break;
+        case 'courses':
+            renderCoursesPage();
+            break;
+        case 'premium':
+            renderPremiumPage();
+            break;
+        case 'tools':
+            renderToolsPage();
+            break;
+    }
+}
+
+function renderHomePage() {
+    const content = `
+        <div class="page home-page">
+            <div class="welcome">
+                <h2>مرحباً بك في اكزم لتداول</h2>
+                <p>التطبيق التعليمي الاحترافي الذي يجمع أفضل الدورات والأدوات في مكان واحد لتطوير مهاراتك في التداول</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>${courses.free.length} دورات</h3>
+                    <p>مجانية متاحة</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-crown"></i>
+                    <h3>دورة مميزة</h3>
+                    <p>للمتقدمين</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tools"></i>
+                    <h3>أدوات متقدمة</h3>
+                    <p>لتحليل السوق</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-headset"></i>
+                    <h3>دعم فني</h3>
+                    <p>متاح 24/7</p>
+                </div>
+            </div>
+            
+            <div style="background: #222; padding: 1.5rem; border-radius: 10px;">
+                <h3 style="margin-bottom: 1rem;">نصائح سريعة</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 5px 0; border-bottom: 1px solid #333;">📚 ابدأ بالدورات المجانية</li>
+                    <li style="padding: 5px 0; border-bottom: 1px solid #333;">⚡ استخدم أدوات التحليل</li>
+                    <li style="padding: 5px 0; border-bottom: 1px solid #333;">👑 جرب ميزات Premium</li>
+                    <li style="padding: 5px 0;">📞 تواصل مع الدعم الفني</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = content;
+}
+
+function renderAccountPage(userData) {
+    if (!userData && currentUser) {
+        database.ref('users').child(currentUser.uid).once('value').then(snapshot => {
+            renderAccountPage(snapshot.val());
+        });
+        return;
+    }
+    
+    const isPremium = userData && userData.status === 'premium';
+    const expiryDate = userData && userData.premiumExpiry ? 
+        new Date(userData.premiumExpiry).toLocaleDateString('ar-EG') : 'غير مفعل';
+    
+    const content = `
+        <div class="page account-page">
+            <div class="profile-header">
+                <img class="profile-img" src="${userData?.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userData?.name || 'User')}" 
+                     alt="صورة الحساب" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random'">
+                <h2>${userData?.name || 'المستخدم'}</h2>
+                <p>@${userData?.username || 'username'}</p>
+                ${isPremium ? '<span class="premium-badge">Premium</span>' : ''}
+            </div>
+            
+            <div class="user-info">
+                <div class="info-row">
+                    <span>نوع الحساب:</span>
+                    <span>${isPremium ? 'Premium' : 'عادي'}</span>
+                </div>
+                <div class="info-row">
+                    <span>البريد الإلكتروني:</span>
+                    <span>${userData?.email || 'غير متوفر'}</span>
+                </div>
+                ${isPremium ? `
+                <div class="info-row">
+                    <span>انتهاء الاشتراك:</span>
+                    <span>${expiryDate}</span>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="account-actions">
+                <button class="btn-secondary" onclick="editProfile()">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </button>
+                ${!isPremium ? `
+                <button class="btn-primary" onclick="showPremiumModal()">
+                    <i class="fas fa-crown"></i> ترقية إلى Premium
+                </button>
+                ` : ''}
+                <button class="btn-danger" onclick="confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = content;
+}
+
+function renderCoursesPage() {
+    let coursesHTML = '';
+    
+    courses.free.forEach(course => {
+        let videosHTML = '';
+        course.videos.forEach(video => {
+            videosHTML += `
+                <div class="video-item" onclick="playVideo('${video.url}', '${course.title} - ${video.title}', ${course.id})">
+                    <i class="fas fa-play-circle"></i>
+                    <span>الدرس ${video.id}: ${video.title}</span>
+                </div>
+            `;
+        });
+        
+        coursesHTML += `
+            <div class="course-card">
+                <div class="course-header">
+                    <h3>${course.title}</h3>
+                    <p>المدرب: ${course.instructor}</p>
+                </div>
+                <div class="course-content">
+                    <div class="video-list">
+                        ${videosHTML}
+                    </div>
+                    <button class="btn-secondary" style="width: 100%; margin-top: 1rem;" 
+                            onclick="showCourseInfo(${course.id})">
+                        <i class="fas fa-info-circle"></i> معلومات الكورس
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    document.getElementById('mainContent').innerHTML = `
+        <div class="page courses-page">
+            <h2 style="margin-bottom: 1.5rem;">الدورات المجانية</h2>
+            ${coursesHTML}
+        </div>
+    `;
+}
+
+function renderPremiumPage() {
+    database.ref('users').child(currentUser.uid).once('value').then(snapshot => {
+        const userData = snapshot.val();
+        const isPremium = userData && userData.status === 'premium';
+        
+        if (isPremium) {
+            let videosHTML = '';
+            courses.premium.videos.forEach(video => {
+                videosHTML += `
+                    <div class="video-item" onclick="playVideo('${video.url}', '${courses.premium.title} - ${video.title}', 'premium')">
+                        <i class="fas fa-play-circle"></i>
+                        <span>الدرس ${video.id}: ${video.title}</span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('mainContent').innerHTML = `
+                <div class="page courses-page">
+                    <div class="course-card">
+                        <div class="course-header" style="background: linear-gradient(135deg, #ffd700, #ff9800);">
+                            <h3><i class="fas fa-crown"></i> ${courses.premium.title}</h3>
+                            <p>المدرب: ${courses.premium.instructor}</p>
+                        </div>
+                        <div class="course-content">
+                            <div class="video-list">
+                                ${videosHTML}
+                            </div>
+                            <button class="btn-secondary" style="width: 100%; margin-top: 1rem;" 
+                                    onclick="showCourseInfo('premium')">
+                                <i class="fas fa-info-circle"></i> معلومات الكورس
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #222; padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                        <p style="color: #ffd700; text-align: center;">${courses.premium.note}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="page premium-page">
+                    <div class="locked-content">
+                        <i class="fas fa-lock"></i>
+                        <h2>محتوى Premium</h2>
+                        <p style="margin: 1rem 0;">هذا المحتوى متاح فقط للأعضاء المشتركين في Premium</p>
+                        <button class="btn-primary" onclick="showPremiumModal()">
+                            <i class="fas fa-crown"></i> تفعيل Premium
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    });
+}
+
+function renderToolsPage() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="page tools-page">
+            <h2 style="margin-bottom: 1.5rem;">أدوات التداول</h2>
+            <div class="tool-card" onclick="openFibonacciCalculator()">
+                <i class="fas fa-calculator"></i>
+                <h3>حاسبة فيبوناتشي</h3>
+                <p>حساب مستويات فيبوناتشي</p>
+            </div>
+            <div class="tool-card" onclick="openRiskCalculator()">
+                <i class="fas fa-chart-line"></i>
+                <h3>إدارة رأس المال</h3>
+                <p>حساب حجم الصفقة</p>
+            </div>
+            <div class="tool-card" onclick="openPivotCalculator()">
+                <i class="fas fa-balance-scale"></i>
+                <h3>حاسبة النقاط المحورية</h3>
+                <p>Pivot Points Calculator</p>
+            </div>
+        </div>
+    `;
+}
+
+function playVideo(videoId, title, courseId) {
     document.getElementById('videoTitle').textContent = title;
-    document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
-}
-
-// تشغيل الفيديو السابق
-function playPreviousVideo() {
-    if (currentVideoIndex > 0) {
-        currentVideoIndex--;
-        const video = currentVideos[currentVideoIndex];
-        playVideo(video.id, video.title);
-        updateVideoList();
-        document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
+    document.getElementById('videoPlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+    
+    let infoHTML = '';
+    let course;
+    
+    if (courseId === 'premium') {
+        course = courses.premium;
+    } else {
+        course = courses.free.find(c => c.id === courseId);
     }
-}
-
-// تشغيل الفيديو التالي
-function playNextVideo() {
-    if (currentVideoIndex < currentVideos.length - 1) {
-        currentVideoIndex++;
-        const video = currentVideos[currentVideoIndex];
-        playVideo(video.id, video.title);
-        updateVideoList();
-        document.getElementById('currentVideoNumber').textContent = currentVideoIndex + 1;
+    
+    if (course) {
+        infoHTML = `
+            <h4>معلومات الكورس:</h4>
+            <p><strong>العنوان:</strong> ${course.title}</p>
+            <p><strong>المدرب:</strong> ${course.instructor}</p>
+            ${course.rights.channel ? `<p><strong>قناة تلجرام:</strong> <a href="${course.rights.channel}" target="_blank">${course.rights.channel}</a></p>` : ''}
+            ${course.rights.account ? `<p><strong>حساب تلجرام:</strong> <a href="${course.rights.account}" target="_blank">${course.rights.account}</a></p>` : ''}
+        `;
     }
+    
+    document.getElementById('videoInfo').innerHTML = infoHTML;
+    document.getElementById('videoModal').classList.add('active');
 }
 
-// إظهار معلومات الدورة
-function showCourseInfo(courseKey) {
-    const course = coursesData[courseKey];
+function showCourseInfo(courseId) {
+    let course;
+    
+    if (courseId === 'premium') {
+        course = courses.premium;
+    } else {
+        course = courses.free.find(c => c.id === courseId);
+    }
+    
     if (!course) return;
     
-    document.getElementById('infoTitle').textContent = `معلومات عن: ${course.title}`;
-    document.getElementById('infoBody').innerHTML = course.info;
+    let infoHTML = `
+        <h3>${course.title}</h3>
+        <p><strong>المدرب:</strong> ${course.instructor}</p>
+        <p><strong>عدد الدروس:</strong> ${course.videos.length} درس</p>
+        <hr>
+        <h4>حقوق الكورس:</h4>
+    `;
     
-    document.getElementById('infoModal').style.display = 'flex';
-}
-
-// إظهار قسم التفعيل
-function showActivationSection() {
-    if (!currentUser) {
-        showError('غير مسجل', 'يرجى إنشاء حساب أولاً للوصول لدورات المتقدمين');
-        showAuthModal();
-        return;
+    if (course.rights.channel) {
+        infoHTML += `<p><i class="fab fa-telegram"></i> <a href="${course.rights.channel}" target="_blank">قناة تلجرام</a></p>`;
     }
     
-    document.getElementById('activationSection').style.display = 'block';
-    
-    // التمرير للقسم
-    document.getElementById('activationSection').scrollIntoView({ behavior: 'smooth' });
-}
-
-// تفعيل الاشتراك المميز
-function activatePremium() {
-    if (!currentUser) return;
-    
-    const code = document.getElementById('activationCode').value.trim();
-    
-    if (!code) {
-        showError('كود مطلوب', 'يرجى إدخال كود التفعيل');
-        return;
+    if (course.rights.account) {
+        infoHTML += `<p><i class="fab fa-telegram"></i> <a href="${course.rights.account}" target="_blank">حساب تلجرام</a></p>`;
     }
     
-    // البحث عن الكود
-    const codeIndex = premiumCodes.findIndex(c => c.code === code && !c.used);
-    
-    if (codeIndex === -1) {
-        showError('كود غير صالح', 'كود التفعيل غير صالح أو مستخدم مسبقاً');
-        return;
+    if (courseId === 'premium') {
+        infoHTML += `<hr><p style="color: #ffd700;">${course.note}</p>`;
     }
     
-    // تفعيل الكود
-    const premiumCode = premiumCodes[codeIndex];
-    premiumCode.used = true;
-    premiumCode.usedBy = currentUser.id;
-    premiumCode.usedAt = new Date().toISOString();
-    
-    // تفعيل المستخدم
-    currentUser.premium = true;
-    currentUser.premiumExpiry = premiumCode.expiry;
-    
-    // تحديث القوائم
-    const userIndex = users.findIndex(u => u.id === currentUser.id);
-    if (userIndex !== -1) {
-        users[userIndex] = currentUser;
-    }
-    
-    premiumCodes[codeIndex] = premiumCode;
-    
-    // حفظ التغييرات
-    localStorage.setItem('trading_users', JSON.stringify(users));
-    localStorage.setItem('premium_codes', JSON.stringify(premiumCodes));
-    sessionStorage.setItem('current_user', JSON.stringify(currentUser));
-    
-    // تحديث الواجهة
-    updateUIForLoggedInUser();
-    
-    // إخفاء قسم التفعيل
-    document.getElementById('activationSection').style.display = 'none';
-    
-    // إظهار رسالة نجاح
-    showError('تم التفعيل', 'مبروك! تم تفعيل الاشتراك المميز بنجاح.');
-    
-    // فتح الدورة مباشرة
-    openCourse('ict');
+    alertCustom('معلومات الكورس', infoHTML);
 }
 
-// إظهار نافذة الأداة
-function showToolModal(toolId) {
-    document.getElementById(toolId).style.display = 'flex';
+function openFibonacciCalculator() {
+    const content = `
+        <div class="page">
+            <h2 style="margin-bottom: 1.5rem;">حاسبة فيبوناتشي</h2>
+            <div class="calculator-form">
+                <select id="fibDirection" class="calc-input">
+                    <option value="low-high">من القاع إلى القمة</option>
+                    <option value="high-low">من القمة إلى القاع</option>
+                </select>
+                <input type="number" id="fibHigh" class="calc-input" placeholder="السعر المرتفع (القمة)">
+                <input type="number" id="fibLow" class="calc-input" placeholder="السعر المنخفض (القاع)">
+                <button class="btn-primary" onclick="calculateFibonacci()">حساب</button>
+            </div>
+            <div class="calc-results" id="fibResults" style="display: none;"></div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = content;
 }
 
-// إخفاء نافذة الأداة
-function hideToolModal(toolId) {
-    document.getElementById(toolId).style.display = 'none';
-}
-
-// حساب فيبوناتشي
 function calculateFibonacci() {
-    const direction = document.querySelector('input[name="fibDirection"]:checked').value;
-    const low = parseFloat(document.getElementById('fibLow').value);
+    const direction = document.getElementById('fibDirection').value;
     const high = parseFloat(document.getElementById('fibHigh').value);
+    const low = parseFloat(document.getElementById('fibLow').value);
     
-    if (!low || !high || low >= high) {
-        showError('قيم غير صحيحة', 'يرجى إدخال قيم صحيحة (القاع يجب أن يكون أقل من القمة)');
+    if (!high || !low) {
+        alert('يرجى إدخال جميع القيم');
         return;
     }
     
+    const diff = Math.abs(high - low);
     const levels = {
-        '0.0': direction === 'lowToHigh' ? low : high,
-        '0.236': direction === 'lowToHigh' ? low + (high - low) * 0.236 : high - (high - low) * 0.236,
-        '0.382': direction === 'lowToHigh' ? low + (high - low) * 0.382 : high - (high - low) * 0.382,
-        '0.5': direction === 'lowToHigh' ? low + (high - low) * 0.5 : high - (high - low) * 0.5,
-        '0.618': direction === 'lowToHigh' ? low + (high - low) * 0.618 : high - (high - low) * 0.618,
-        '0.786': direction === 'lowToHigh' ? low + (high - low) * 0.786 : high - (high - low) * 0.786,
-        '1.0': direction === 'lowToHigh' ? high : low,
-        '1.272': direction === 'lowToHigh' ? high + (high - low) * 0.272 : low - (high - low) * 0.272,
-        '1.618': direction === 'lowToHigh' ? high + (high - low) * 0.618 : low - (high - low) * 0.618
+        '0%': direction === 'low-high' ? low : high,
+        '23.6%': direction === 'low-high' ? low + diff * 0.236 : high - diff * 0.236,
+        '38.2%': direction === 'low-high' ? low + diff * 0.382 : high - diff * 0.382,
+        '50%': direction === 'low-high' ? low + diff * 0.5 : high - diff * 0.5,
+        '61.8%': direction === 'low-high' ? low + diff * 0.618 : high - diff * 0.618,
+        '78.6%': direction === 'low-high' ? low + diff * 0.786 : high - diff * 0.786,
+        '100%': direction === 'low-high' ? high : low,
+        '161.8%': direction === 'low-high' ? low + diff * 1.618 : high - diff * 1.618
     };
     
     let resultsHTML = '<h4>مستويات فيبوناتشي:</h4>';
-    resultsHTML += '<div class="results-grid">';
-    
-    for (const [level, value] of Object.entries(levels)) {
+    Object.keys(levels).forEach(level => {
         resultsHTML += `
-            <div class="result-item">
-                <span class="result-label">مستوى ${level}:</span>
-                <span class="result-value">${value.toFixed(4)}</span>
+            <div class="result-row">
+                <span>${level}</span>
+                <span>${levels[level].toFixed(5)}</span>
             </div>
         `;
-    }
-    
-    resultsHTML += '</div>';
+    });
     
     document.getElementById('fibResults').innerHTML = resultsHTML;
+    document.getElementById('fibResults').style.display = 'block';
 }
 
-// إدارة رأس المال
-function calculateRiskManagement() {
+function openRiskCalculator() {
+    const content = `
+        <div class="page">
+            <h2 style="margin-bottom: 1.5rem;">إدارة رأس المال</h2>
+            <div class="calculator-form">
+                <input type="number" id="riskCapital" class="calc-input" placeholder="رأس المال ($)">
+                <input type="number" id="riskPercent" class="calc-input" placeholder="نسبة المخاطرة (%)" value="2" min="0.1" max="100" step="0.1">
+                <input type="number" id="riskEntry" class="calc-input" placeholder="سعر الدخول">
+                <input type="number" id="riskStopLoss" class="calc-input" placeholder="سعر Stop Loss">
+                <button class="btn-primary" onclick="calculateRisk()">حساب</button>
+            </div>
+            <div class="calc-results" id="riskResults" style="display: none;"></div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = content;
+}
+
+function calculateRisk() {
     const capital = parseFloat(document.getElementById('riskCapital').value);
-    const riskPercent = parseFloat(document.getElementById('riskPercentage').value);
-    const entryPrice = parseFloat(document.getElementById('entryPrice').value);
-    const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+    const riskPercent = parseFloat(document.getElementById('riskPercent').value);
+    const entry = parseFloat(document.getElementById('riskEntry').value);
+    const stopLoss = parseFloat(document.getElementById('riskStopLoss').value);
     
-    if (!capital || !riskPercent || !entryPrice || !stopLoss) {
-        showError('حقول مطلوبة', 'يرجى ملء جميع الحقول');
+    if (!capital || !riskPercent || !entry || !stopLoss) {
+        alert('يرجى إدخال جميع القيم');
         return;
     }
     
-    if (riskPercent < 0.1 || riskPercent > 10) {
-        showError('نسبة غير صحيحة', 'نسبة المخاطرة يجب أن تكون بين 0.1% و 10%');
-        return;
-    }
-    
-    // حساب مبلغ المخاطرة
     const riskAmount = capital * (riskPercent / 100);
+    const riskPerUnit = Math.abs(entry - stopLoss);
     
-    // حساب النقاط بين الدخول والوقف
-    const points = Math.abs(entryPrice - stopLoss);
-    
-    if (points === 0) {
-        showError('قيم متطابقة', 'سعر الدخول لا يمكن أن يساوي سعر وقف الخسارة');
+    if (riskPerUnit === 0) {
+        alert('سعر الدخول و Stop Loss لا يمكن أن يكونا متساويين');
         return;
     }
     
-    // حساب حجم الصفقة (مبسط)
-    const positionSize = (riskAmount / points).toFixed(2);
+    const positionSize = riskAmount / riskPerUnit;
+    const riskReward = riskPerUnit * 3; // Assuming 1:3 risk-reward
     
-    let resultsHTML = '<h4>نتائج إدارة رأس المال:</h4>';
-    resultsHTML += '<div class="results-grid">';
-    resultsHTML += `<div class="result-item"><span class="result-label">رأس المال:</span><span class="result-value">$${capital.toFixed(2)}</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">نسبة المخاطرة:</span><span class="result-value">${riskPercent}%</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">مبلغ المخاطرة:</span><span class="result-value">$${riskAmount.toFixed(2)}</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">سعر الدخول:</span><span class="result-value">${entryPrice}</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">وقف الخسارة:</span><span class="result-value">${stopLoss}</span></div>`;
-    resultsHTML += `<div class="result-item"><span class="result-label">النقاط بين الدخول والوقف:</span><span class="result-value">${points.toFixed(4)}</span></div>`;
-    resultsHTML += `<div class="result-item" style="background: rgba(231, 76, 60, 0.1);"><span class="result-label">الحجم المقترح:</span><span class="result-value" style="color: #e74c3c;">${positionSize}</span></div>`;
-    resultsHTML += '</div>';
-    
-    document.getElementById('riskResults').innerHTML = resultsHTML;
+    document.getElementById('riskResults').innerHTML = `
+        <h4>نتائج الحساب:</h4>
+        <div class="result-row">
+            <span>مبلغ المخاطرة:</span>
+            <span>$${riskAmount.toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+            <span>حجم الصفقة:</span>
+            <span>${positionSize.toFixed(2)} وحدة</span>
+        </div>
+        <div class="result-row">
+            <span>الخسارة المحتملة:</span>
+            <span>${riskPercent}% من رأس المال</span>
+        </div>
+        <div class="result-row">
+            <span>المكسب المحتمل (1:3):</span>
+            <span>$${(riskAmount * 3).toFixed(2)}</span>
+        </div>
+    `;
+    document.getElementById('riskResults').style.display = 'block';
 }
 
-// إعداد أيقونة الدعم العائمة
-function setupFloatingSupport() {
-    const supportIcon = document.getElementById('floatingSupport');
-    let isDragging = false;
+function openPivotCalculator() {
+    const content = `
+        <div class="page">
+            <h2 style="margin-bottom: 1.5rem;">حاسبة النقاط المحورية</h2>
+            <div class="calculator-form">
+                <input type="number" id="pivotHigh" class="calc-input" placeholder="أعلى سعر">
+                <input type="number" id="pivotLow" class="calc-input" placeholder="أقل سعر">
+                <input type="number" id="pivotClose" class="calc-input" placeholder="سعر الإغلاق">
+                <button class="btn-primary" onclick="calculatePivot()">حساب</button>
+            </div>
+            <div class="calc-results" id="pivotResults" style="display: none;"></div>
+        </div>
+    `;
     
-    supportIcon.addEventListener('mousedown', startDrag);
-    supportIcon.addEventListener('touchstart', startDragTouch);
-    supportIcon.addEventListener('click', function(e) {
-        if (!isDragging) {
-            if (!currentUser) {
-                showError('غير مسجل', 'يرجى إنشاء حساب للوصول للدعم الفني');
-                showAuthModal();
-                return;
-            }
-            navigateToPage('support');
-        }
-    });
-    
-    function startDrag(e) {
-        isDragging = false;
-        const rect = supportIcon.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left;
-        const offsetY = e.clientY - rect.top;
-        
-        function drag(e) {
-            isDragging = true;
-            supportIcon.style.left = (e.clientX - offsetX) + 'px';
-            supportIcon.style.top = (e.clientY - offsetY) + 'px';
-        }
-        
-        function stopDrag() {
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', stopDrag);
-            setTimeout(() => {
-                isDragging = false;
-            }, 100);
-        }
-        
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', stopDrag);
-    }
-    
-    function startDragTouch(e) {
-        isDragging = false;
-        const touch = e.touches[0];
-        const rect = supportIcon.getBoundingClientRect();
-        const offsetX = touch.clientX - rect.left;
-        const offsetY = touch.clientY - rect.top;
-        
-        function dragTouch(e) {
-            isDragging = true;
-            const touch = e.touches[0];
-            supportIcon.style.left = (touch.clientX - offsetX) + 'px';
-            supportIcon.style.top = (touch.clientY - offsetY) + 'px';
-        }
-        
-        function stopDrag() {
-            document.removeEventListener('touchmove', dragTouch);
-            document.removeEventListener('touchend', stopDrag);
-            setTimeout(() => {
-                isDragging = false;
-            }, 100);
-        }
-        
-        document.addEventListener('touchmove', dragTouch);
-        document.addEventListener('touchend', stopDrag);
-    }
+    document.getElementById('mainContent').innerHTML = content;
 }
 
-// تحميل رسائل الدعم
-function loadSupportMessages() {
-    const messagesContainer = document.getElementById('supportMessages');
-    messagesContainer.innerHTML = '';
+function calculatePivot() {
+    const high = parseFloat(document.getElementById('pivotHigh').value);
+    const low = parseFloat(document.getElementById('pivotLow').value);
+    const close = parseFloat(document.getElementById('pivotClose').value);
     
-    const userMessages = supportMessages.filter(msg => 
-        msg.userId === (currentUser ? currentUser.id : 'anonymous')
-    );
+    if (!high || !low || !close) {
+        alert('يرجى إدخال جميع القيم');
+        return;
+    }
     
-    if (userMessages.length === 0) {
-        messagesContainer.innerHTML = `
-            <div style="text-align: center; padding: 50px 20px; color: #95a5a6;">
-                <p>لا توجد رسائل حالياً</p>
-                <p>اكتب رسالتك وسيتم الرد عليك قريباً</p>
+    const pivot = (high + low + close) / 3;
+    const r1 = (2 * pivot) - low;
+    const s1 = (2 * pivot) - high;
+    const r2 = pivot + (high - low);
+    const s2 = pivot - (high - low);
+    const r3 = high + 2 * (pivot - low);
+    const s3 = low - 2 * (high - pivot);
+    
+    document.getElementById('pivotResults').innerHTML = `
+        <h4>النقاط المحورية:</h4>
+        <div class="result-row">
+            <span>النقطة المحورية (PP):</span>
+            <span>${pivot.toFixed(5)}</span>
+        </div>
+        <div class="result-row">
+            <span>المقاومة 1 (R1):</span>
+            <span>${r1.toFixed(5)}</span>
+        </div>
+        <div class="result-row">
+            <span>الدعم 1 (S1):</span>
+            <span>${s1.toFixed(5)}</span>
+        </div>
+        <div class="result-row">
+            <span>المقاومة 2 (R2):</span>
+            <span>${r2.toFixed(5)}</span>
+        </div>
+        <div class="result-row">
+            <span>الدعم 2 (S2):</span>
+            <span>${s2.toFixed(5)}</span>
+        </div>
+        <div class="result-row">
+            <span>المقاومة 3 (R3):</span>
+            <span>${r3.toFixed(5)}</span>
+        </div>
+        <div class="result-row">
+            <span>الدعم 3 (S3):</span>
+            <span>${s3.toFixed(5)}</span>
+        </div>
+    `;
+    document.getElementById('pivotResults').style.display = 'block';
+}
+
+function editProfile() {
+    database.ref('users').child(currentUser.uid).once('value').then(snapshot => {
+        const userData = snapshot.val();
+        
+        const content = `
+            <div class="page">
+                <h2 style="margin-bottom: 1.5rem;">تعديل البيانات</h2>
+                <div class="calculator-form">
+                    <input type="text" id="editName" class="calc-input" value="${userData.name}" placeholder="الاسم الكامل">
+                    <input type="text" id="editUsername" class="calc-input" value="${userData.username}" placeholder="اسم المستخدم">
+                    <input type="password" id="editPassword" class="calc-input" placeholder="كلمة المرور الجديدة">
+                    <input type="file" id="editPhoto" class="calc-input" accept="image/*">
+                    <small>اترك كلمة المرور فارغة إذا لم ترد تغييرها</small>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                        <button class="btn-secondary" onclick="navigateToPage('account')">إلغاء</button>
+                        <button class="btn-primary" onclick="saveProfileChanges()">حفظ التغييرات</button>
+                    </div>
+                </div>
             </div>
         `;
+        
+        document.getElementById('mainContent').innerHTML = content;
+    });
+}
+
+async function saveProfileChanges() {
+    const name = document.getElementById('editName').value;
+    const username = document.getElementById('editUsername').value;
+    const password = document.getElementById('editPassword').value;
+    const photo = document.getElementById('editPhoto').files[0];
+    
+    if (!/^[a-zA-Z].{3,}$/.test(username)) {
+        alert('اسم المستخدم يجب أن يبدأ بحرف ويكون 4 رموز على الأقل');
         return;
     }
     
-    userMessages.forEach(msg => {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${msg.type}`;
-        messageDiv.innerHTML = `
-            <p>${msg.text}</p>
-            <div class="message-time">${formatTime(msg.timestamp)}</div>
-        `;
-        messagesContainer.appendChild(messageDiv);
+    try {
+        const updates = {};
+        
+        // التحقق من اسم المستخدم
+        if (username !== currentUser.username) {
+            const usernameSnapshot = await database.ref('usernames').child(username).once('value');
+            if (usernameSnapshot.exists() && usernameSnapshot.val() !== currentUser.uid) {
+                alert('اسم المستخدم موجود مسبقاً');
+                return;
+            }
+            
+            // تحديث اسم المستخدم
+            await database.ref('usernames').child(username).set(currentUser.uid);
+            await database.ref('usernames').child(currentUser.username).remove();
+            updates.username = username;
+        }
+        
+        // تحديث الاسم
+        updates.name = name;
+        
+        // رفع الصورة
+        if (photo) {
+            const storageRef = storage.ref(`profile_photos/${currentUser.uid}`);
+            await storageRef.put(photo);
+            const photoURL = await storageRef.getDownloadURL();
+            updates.photoURL = photoURL;
+        }
+        
+        // تحديث كلمة المرور
+        if (password) {
+            await currentUser.updatePassword(password);
+        }
+        
+        // تحديث البيانات في قاعدة البيانات
+        await database.ref('users').child(currentUser.uid).update(updates);
+        
+        alert('تم تحديث البيانات بنجاح');
+        navigateToPage('account');
+        
+    } catch (error) {
+        alert('خطأ في تحديث البيانات: ' + error.message);
+    }
+}
+
+function confirmLogout() {
+    showConfirmModal('تأكيد تسجيل الخروج', 'هل أنت متأكد من تسجيل الخروج؟', () => {
+        auth.signOut().then(() => {
+            window.location.reload();
+        });
+    });
+}
+
+function showPremiumModal() {
+    document.getElementById('premiumModal').classList.add('active');
+}
+
+function closePremiumModal() {
+    document.getElementById('premiumModal').classList.remove('active');
+    document.getElementById('premiumCode').value = '';
+}
+
+async function activatePremium() {
+    const code = document.getElementById('premiumCode').value.trim();
+    
+    if (!code) {
+        alert('يرجى إدخال كود التفعيل');
+        return;
+    }
+    
+    const codeRef = database.ref('premiumCodes').child(code);
+    const codeSnapshot = await codeRef.once('value');
+    const codeData = codeSnapshot.val();
+    
+    if (!codeData) {
+        alert('كود التفعيل غير صحيح');
+        return;
+    }
+    
+    if (codeData.used) {
+        alert('هذا الكود تم استخدامه مسبقاً');
+        return;
+    }
+    
+    if (codeData.userId && codeData.userId !== currentUser.uid) {
+        alert('هذا الكود خاص بمستخدم آخر');
+        return;
+    }
+    
+    // حساب تاريخ الانتهاء
+    const now = new Date();
+    let expiryDate = new Date(now);
+    
+    switch(codeData.duration) {
+        case 'minute':
+            expiryDate.setMinutes(now.getMinutes() + 1);
+            break;
+        case 'hour':
+            expiryDate.setHours(now.getHours() + 1);
+            break;
+        case 'day':
+            expiryDate.setDate(now.getDate() + 1);
+            break;
+        case 'month':
+            expiryDate.setMonth(now.getMonth() + 1);
+            break;
+        case 'year':
+            expiryDate.setFullYear(now.getFullYear() + 1);
+            break;
+    }
+    
+    // تحديث حالة المستخدم
+    await database.ref('users').child(currentUser.uid).update({
+        status: 'premium',
+        premiumExpiry: expiryDate.toISOString(),
+        premiumCode: code
     });
     
-    // التمرير للأسفل
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // تحديث حالة الكود
+    await codeRef.update({
+        used: true,
+        userId: currentUser.uid,
+        usedAt: new Date().toISOString()
+    });
+    
+    // إرسال إشعار
+    await database.ref('messages').child(currentUser.uid).push({
+        from: 'admin',
+        message: 'مبروك! تم تفعيل الاشتراك Premium بنجاح.',
+        timestamp: new Date().toISOString(),
+        read: false
+    });
+    
+    alert('تم تفعيل الاشتراك Premium بنجاح!');
+    closePremiumModal();
+    navigateToPage('premium');
 }
 
-// إرسال رسالة دعم
-function sendSupportMessage() {
-    if (!currentUser) {
-        showError('غير مسجل', 'يرجى إنشاء حساب لإرسال رسائل الدعم');
-        showAuthModal();
-        return;
-    }
-    
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
-    
-    if (!text) {
-        showError('رسالة فارغة', 'يرجى كتابة رسالة');
-        return;
-    }
-    
-    // إنشاء الرسالة
-    const message = {
-        id: Date.now().toString(),
-        userId: currentUser.id,
-        text: text,
-        type: 'sent',
-        timestamp: new Date().toISOString()
-    };
-    
-    // إضافة الرسالة
-    supportMessages.push(message);
-    localStorage.setItem('support_messages', JSON.stringify(supportMessages));
-    
-    // تحديث الواجهة
-    loadSupportMessages();
-    
-    // مسح حقل الإدخال
-    input.value = '';
-    
-    // إضافة رد آلي (محاكاة)
-    setTimeout(() => {
-        const autoReply = {
-            id: Date.now().toString() + 'auto',
-            userId: currentUser.id,
-            text: 'شكراً لتواصلكم. تم استلام رسالتك وسيتم الرد عليك في أقرب وقت ممكن.',
-            type: 'received',
-            timestamp: new Date().toISOString()
-        };
-        
-        supportMessages.push(autoReply);
-        localStorage.setItem('support_messages', JSON.stringify(supportMessages));
-        loadSupportMessages();
-        updateSupportBadge();
-    }, 2000);
+function openSidebar() {
+    document.getElementById('sidebarOverlay').classList.add('active');
+    document.getElementById('sidebar').classList.add('active');
 }
 
-// تحديث شعار الإشعارات
-function updateSupportBadge() {
+function closeSidebar() {
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    document.getElementById('sidebar').classList.remove('active');
+}
+
+function goBack() {
+    if (pageHistory.length > 0) {
+        const prevPage = pageHistory.pop();
+        navigateToPage(prevPage);
+    }
+}
+
+let confirmCallback = null;
+
+function showConfirmModal(title, message, callback) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    confirmCallback = callback;
+    document.getElementById('confirmModal').classList.add('active');
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.remove('active');
+    confirmCallback = null;
+}
+
+function confirmAction() {
+    if (confirmCallback) {
+        confirmCallback();
+    }
+    closeConfirmModal();
+}
+
+function openSupport() {
+    loadMessages();
+    document.getElementById('supportModal').classList.add('active');
+    markMessagesAsRead();
+}
+
+function closeSupport() {
+    document.getElementById('supportModal').classList.remove('active');
+}
+
+async function loadMessages() {
     if (!currentUser) return;
     
-    const unreadCount = supportMessages.filter(msg => 
-        msg.userId === currentUser.id && 
-        msg.type === 'received' &&
-        !msg.read
-    ).length;
-    
-    const badge = document.getElementById('notificationBadge');
-    badge.textContent = unreadCount;
-    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
-}
-
-// تنسيق الوقت
-function formatTime(timestamp) {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('ar-EG', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: true 
+    const messagesRef = database.ref('messages').child(currentUser.uid);
+    messagesRef.on('value', (snapshot) => {
+        const messagesContainer = document.getElementById('messagesContainer');
+        messagesContainer.innerHTML = '';
+        
+        const messages = [];
+        snapshot.forEach(child => {
+            messages.push({
+                id: child.key,
+                ...child.val()
+            });
+        });
+        
+        // ترتيب الرسائل من الأقدم إلى الأحدث
+        messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        
+        messages.forEach(msg => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${msg.from === 'admin' ? 'admin' : ''}`;
+            
+            const time = new Date(msg.timestamp).toLocaleString('ar-EG');
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span>${msg.from === 'admin' ? 'الدعم الفني' : 'أنت'}</span>
+                    <span>${time}</span>
+                </div>
+                <div class="message-body">${msg.message}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+        });
+        
+        // التمرير للأسفل
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 }
+
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    if (!currentUser) {
+        alert('يجب تسجيل الدخول أولاً');
+        return;
+    }
+    
+    try {
+        await database.ref('messages').child(currentUser.uid).push({
+            from: currentUser.uid,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false
+        });
+        
+        input.value = '';
+        
+    } catch (error) {
+        alert('خطأ في إرسال الرسالة: ' + error.message);
+    }
+}
+
+async function checkUnreadMessages() {
+    if (!currentUser) return;
+    
+    const messagesRef = database.ref('messages').child(currentUser.uid);
+    messagesRef.on('value', (snapshot) => {
+        let unreadCount = 0;
+        
+        snapshot.forEach(child => {
+            if (!child.val().read && child.val().from === 'admin') {
+                unreadCount++;
+            }
+        });
+        
+        const badge = document.getElementById('messageCount');
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'block' : 'none';
+    });
+}
+
+async function markMessagesAsRead() {
+    if (!currentUser) return;
+    
+    const messagesRef = database.ref('messages').child(currentUser.uid);
+    const snapshot = await messagesRef.once('value');
+    
+    const updates = {};
+    snapshot.forEach(child => {
+        if (!child.val().read && child.val().from === 'admin') {
+            updates[child.key + '/read'] = true;
+        }
+    });
+    
+    if (Object.keys(updates).length > 0) {
+        await messagesRef.update(updates);
+    }
+}
+
+function showPrivacyPolicy() {
+    const content = `
+        <div class="page">
+            <h2 style="margin-bottom: 1.5rem;">سياسة الخصوصية</h2>
+            <div style="background: #222; padding: 1.5rem; border-radius: 10px;">
+                <h3 style="color: #4CAF50; margin-bottom: 1rem;">حماية خصوصيتك أولويتنا</h3>
+                <p style="margin-bottom: 1rem;">
+                    نحن في تطبيق "اكزم لتداول" نلتزم بحماية خصوصية مستخدمينا بشكل كامل. نضمن أن جميع البيانات الشخصية محفوظة بأمان ولا يتم مشاركتها مع أي طرف ثالث دون موافقتك.
+                </p>
+                <h4 style="color: #4CAF50; margin: 1rem 0;">البيانات التي نجمعها:</h4>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 5px 0; border-bottom: 1px solid #333;">✅ معلومات الحساب الأساسية (الاسم، البريد الإلكتروني)</li>
+                    <li style="padding: 5px 0; border-bottom: 1px solid #333;">✅ بيانات الاستخدام لتحسين تجربتك</li>
+                    <li style="padding: 5px 0;">✅ رسائل الدعم الفني للرد على استفساراتك</li>
+                </ul>
+                <p style="margin-top: 1rem; color: #aaa; font-size: 0.9rem;">
+                    نستخدم أحدث تقنيات التشفير لحماية بياناتك، ولديك دائمًا الحق في حذف حسابك أو تصحيح بياناتك.
+                </p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = content;
+}
+
+function showAboutUs() {
+    const content = `
+        <div class="page">
+            <h2 style="margin-bottom: 1.5rem;">من نحن</h2>
+            <div style="background: #222; padding: 1.5rem; border-radius: 10px; text-align: center;">
+                <h3 style="color: #4CAF50; margin-bottom: 1rem;">فريق اكزم لتداول</h3>
+                <p style="margin-bottom: 1rem; font-size: 1.1rem;">
+                    نحن فريق من المطورين والمحترفين في مجال التداول، نعمل بجد لتقديم أفضل الحلول التعليمية للمتداولين العرب.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-rocket" style="font-size: 2rem; color: #4CAF50;"></i>
+                        <h4 style="margin: 0.5rem 0;">الرؤية</h4>
+                        <p style="font-size: 0.9rem;">تطوير مهارات التداول في العالم العربي</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <i class="fas fa-bullseye" style="font-size: 2rem; color: #4CAF50;"></i>
+                        <h4 style="margin: 0.5rem 0;">الرسالة</h4>
+                        <p style="font-size: 0.9rem;">توفير محتوى تعليمي احترافي ومجاني للجميع</p>
+                    </div>
+                </div>
+                <p style="color: #aaa; font-size: 0.9rem;">
+                    نسعى دائمًا لتطوير التطبيق وإضافة المزيد من الميزات والأدوات المفيدة لمستخدمينا الأعزاء.
+                </p>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #333;">
+                    <h4 style="color: #4CAF50; margin-bottom: 1rem;">روابط التواصل:</h4>
+                    <div style="display: flex; justify-content: center; gap: 1rem;">
+                        <a href="https://wa.me/442031375274" target="_blank" style="color: #25D366;">
+                            <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i>
+                        </a>
+                        <a href="https://t.me/ASQ412" target="_blank" style="color: #0088cc;">
+                            <i class="fab fa-telegram" style="font-size: 1.5rem;"></i>
+                        </a>
+                        <a href="https://t.me/pine_Scripts0" target="_blank" style="color: #0088cc;">
+                            <i class="fab fa-telegram" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('mainContent').innerHTML = content;
+}
+
+function alertCustom(title, message) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').innerHTML = message;
+    document.getElementById('confirmCancel').style.display = 'none';
+    document.getElementById('confirmOk').textContent = 'موافق';
+    document.getElementById('confirmOk').className = 'btn-primary';
+    
+    confirmCallback = () => {
+        document.getElementById('confirmCancel').style.display = 'block';
+        document.getElementById('confirmOk').textContent = 'نعم';
+        document.getElementById('confirmOk').className = 'btn-danger';
+        closeConfirmModal();
+    };
+    
+    document.getElementById('confirmModal').classList.add('active');
+}
+
+// إضافة سحب وإفلات لدعم الفني العائم
+const supportFloat = document.getElementById('supportFloat');
+let isDragging = false;
+let offsetX, offsetY;
+
+supportFloat.addEventListener('mousedown', startDrag);
+supportFloat.addEventListener('touchstart', startDragTouch);
+
+function startDrag(e) {
+    isDragging = true;
+    const rect = supportFloat.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', stopDrag);
+}
+
+function startDragTouch(e) {
+    isDragging = true;
+    const touch = e.touches[0];
+    const rect = supportFloat.getBoundingClientRect();
+    offsetX = touch.clientX - rect.left;
+    offsetY = touch.clientY - rect.top;
+    
+    document.addEventListener('touchmove', onDragTouch);
+    document.addEventListener('touchend', stopDrag);
+}
+
+function onDrag(e) {
+    if (!isDragging) return;
+    
+    const x = e.clientX - offsetX;
+    const y = e.clientY - offsetY;
+    
+    // الحدود
+    const maxX = window.innerWidth - supportFloat.offsetWidth;
+    const maxY = window.innerHeight - supportFloat.offsetHeight;
+    
+    supportFloat.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+    supportFloat.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+}
+
+function onDragTouch(e) {
+    if (!isDragging) return;
+    
+    const touch = e.touches[0];
+    const x = touch.clientX - offsetX;
+    const y = touch.clientY - offsetY;
+    
+    // الحدود
+    const maxX = window.innerWidth - supportFloat.offsetWidth;
+    const maxY = window.innerHeight - supportFloat.offsetHeight;
+    
+    supportFloat.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+    supportFloat.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+}
+
+function stopDrag() {
+    isDragging = false;
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('touchmove', onDragTouch);
+    document.removeEventListener('mouseup', stopDrag);
+    document.removeEventListener('touchend', stopDrag);
+}
+
+// إغلاق الفيديو
+document.getElementById('closeVideo').addEventListener('click', () => {
+    document.getElementById('videoModal').classList.remove('active');
+    document.getElementById('videoPlayer').src = '';
+});
