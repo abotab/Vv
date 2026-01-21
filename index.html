@@ -7,225 +7,545 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
-<body>
-    <!-- شاشة التحميل -->
-    <div id="loadingScreen">
-        <div class="loader">
-            <div class="logo">
-                <i class="fas fa-chart-line"></i>
-                <h1>اكزم لتداول</h1>
-            </div>
-            <div class="spinner"></div>
-            <p>جاري التحميل...</p>
+<body class="dark-mode">
+    <!-- قائمة جانبية -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-header">
+            <h3>اكزم لتداول</h3>
+            <button class="close-menu" id="closeMenu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="side-links">
+            <a href="#" data-page="account"><i class="fas fa-user"></i> الحساب</a>
+            <a href="#" data-page="home"><i class="fas fa-home"></i> الرئيسية</a>
+            <a href="#" data-page="courses"><i class="fas fa-graduation-cap"></i> الدورات</a>
+            <a href="#" data-page="premium"><i class="fas fa-crown"></i> المتقدمين</a>
+            <a href="#" data-page="tools"><i class="fas fa-tools"></i> الأدوات</a>
+            <a href="#" data-page="support"><i class="fas fa-headset"></i> الدعم الفني</a>
+            <a href="#" id="privacyBtn"><i class="fas fa-shield-alt"></i> سياسة الخصوصية</a>
+            <a href="#" id="aboutBtn"><i class="fas fa-info-circle"></i> من نحن</a>
+        </div>
+        <div class="side-footer">
+            <h4>روابط التواصل</h4>
+            <a href="https://wa.me/442031375274" target="_blank" class="contact-link">
+                <i class="fab fa-whatsapp"></i> الدعم الفني (واتساب)
+            </a>
+            <a href="https://t.me/ASQ412" target="_blank" class="contact-link">
+                <i class="fab fa-telegram"></i> حساب المطور
+            </a>
+            <a href="https://t.me/pine_Scripts0" target="_blank" class="contact-link">
+                <i class="fab fa-telegram"></i> قناة تلجرام
+            </a>
         </div>
     </div>
 
-    <!-- شاشة تسجيل الدخول / إنشاء حساب -->
-    <div id="authScreen" class="screen">
-        <div class="auth-container">
-            <div class="auth-header">
-                <i class="fas fa-chart-line"></i>
-                <h1>اكزم لتداول</h1>
-                <p>التطبيق التعليمي الاحترافي للتداول</p>
-            </div>
+    <!-- شريط العنوان -->
+    <header class="main-header">
+        <button class="menu-btn" id="menuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="logo">اكزم لتداول</h1>
+        <button class="back-btn" id="backBtn" style="display: none;">
+            <i class="fas fa-arrow-right"></i> رجوع
+        </button>
+    </header>
 
-            <div id="loginForm">
-                <h2>تسجيل الدخول</h2>
-                <div class="input-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required>
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content" id="mainContent">
+        <!-- صفحة تسجيل الدخول / إنشاء حساب -->
+        <div class="page active" id="authPage">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">تسجيل الدخول</button>
+                    <button class="auth-tab" data-tab="register">إنشاء حساب</button>
                 </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="loginPassword" placeholder="كلمة المرور" required>
-                </div>
-                <button id="loginBtn" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
-                </button>
-                <p class="switch-auth">ليس لديك حساب؟ <a href="#" id="showRegister">أنشئ حساب جديد</a></p>
-            </div>
 
-            <div id="registerForm" style="display: none;">
-                <h2>إنشاء حساب جديد</h2>
-                <div class="input-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="registerName" placeholder="الاسم الكامل" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-at"></i>
-                    <input type="text" id="registerUsername" placeholder="اسم المستخدم" required>
-                    <small>يبدأ بحرف، 4 رموز على الأقل</small>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="registerEmail" placeholder="البريد الإلكتروني" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="registerPassword" placeholder="كلمة المرور" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-image"></i>
-                    <input type="file" id="registerPhoto" accept="image/*">
-                    <small>اختياري: صورة الحساب</small>
-                </div>
-                <button id="registerBtn" class="btn-primary">
-                    <i class="fas fa-user-plus"></i> إنشاء حساب
-                </button>
-                <p class="switch-auth">لديك حساب بالفعل؟ <a href="#" id="showLogin">تسجيل الدخول</a></p>
-            </div>
+                <!-- نموذج تسجيل الدخول -->
+                <form class="auth-form active" id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">البريد الإلكتروني</label>
+                        <input type="email" id="loginEmail" placeholder="example@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">كلمة المرور</label>
+                        <input type="password" id="loginPassword" placeholder="كلمة المرور" required>
+                    </div>
+                    <button type="submit" class="btn-primary">تسجيل الدخول</button>
+                    <p class="auth-message" id="loginMessage"></p>
+                </form>
 
-            <div class="admin-link">
-                <a href="admin.html" id="adminAccess">الدخول كأدمن</a>
+                <!-- نموذج إنشاء حساب -->
+                <form class="auth-form" id="registerForm">
+                    <div class="form-group">
+                        <label for="fullName">الاسم الكامل</label>
+                        <input type="text" id="fullName" placeholder="أدخل اسمك الكامل" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">اسم المستخدم</label>
+                        <input type="text" id="username" placeholder="يبدأ بحرف، 4 رموز على الأقل" required>
+                        <small>مثال: user123</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" id="email" placeholder="example@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <input type="password" id="password" placeholder="كلمة مرور قوية" required>
+                    </div>
+                    <button type="submit" class="btn-primary">إنشاء حساب</button>
+                    <p class="auth-message" id="registerMessage"></p>
+                </form>
             </div>
         </div>
+
+        <!-- صفحة الحساب -->
+        <div class="page" id="accountPage">
+            <div class="account-header">
+                <div class="profile-image" id="profileImage">
+                    <img src="https://j.top4top.io/p_3670reejg0.png" alt="صورة المستخدم" id="userImage">
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <button class="edit-image-btn" id="editImageBtn">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <h2 id="userFullName">زائر</h2>
+                <p id="userUsername">@username</p>
+                <div class="account-status">
+                    <span class="status-badge" id="userStatus">عادي</span>
+                </div>
+            </div>
+
+            <div class="account-actions">
+                <button class="action-btn" id="editDataBtn">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </button>
+                <button class="action-btn logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
+            </div>
+
+            <!-- تعديل البيانات -->
+            <div class="edit-data-form" id="editDataForm" style="display: none;">
+                <h3>تعديل البيانات</h3>
+                <form id="updateForm">
+                    <div class="form-group">
+                        <label for="editName">الاسم الكامل</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editUsername">اسم المستخدم</label>
+                        <input type="text" id="editUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPassword">كلمة المرور الجديدة (اختياري)</label>
+                        <input type="password" id="editPassword">
+                    </div>
+                    <div class="form-buttons">
+                        <button type="submit" class="btn-primary">حفظ التغييرات</button>
+                        <button type="button" class="btn-secondary" id="cancelEditBtn">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- صفحة الرئيسية -->
+        <div class="page" id="homePage">
+            <div class="welcome-section">
+                <h2>مرحباً بك في اكزم لتداول</h2>
+                <p>منصة التعليم الاحترافي لتداول الأسواق المالية</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>دورات مجانية</h3>
+                    <p>تعلم التداول من الصفر للإحتراف مع أفضل المدربين</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h3>دورات مميزة</h3>
+                    <p>دورات حصرية للمتقدمين بمفاهيم متقدمة</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3>أدوات مساعدة</h3>
+                    <p>مجموعة أدوات عملية تساعدك في التداول</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>دعم فني</h3>
+                    <p>دعم مباشر ومساعدة على مدار الساعة</p>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <h3>ابدأ رحلتك التعليمية الآن</h3>
+                <p>انضم إلى آلاف المتداولين الذين طوروا مهاراتهم معنا</p>
+                <button class="btn-primary" data-page="courses">استعرض الدورات</button>
+            </div>
+        </div>
+
+        <!-- صفحة الدورات -->
+        <div class="page" id="coursesPage">
+            <h2 class="page-title">الدورات المجانية</h2>
+            <div class="courses-list" id="coursesList">
+                <!-- سيتم إضافتها بواسطة JavaScript -->
+            </div>
+        </div>
+
+        <!-- صفحة الدورة التفصيلية -->
+        <div class="page" id="courseDetailPage">
+            <div class="course-detail-header">
+                <h2 id="courseTitle"></h2>
+                <p id="courseInstructor"></p>
+                <button class="btn-secondary course-info-btn" id="courseInfoBtn">
+                    <i class="fas fa-info-circle"></i> معلومات
+                </button>
+            </div>
+
+            <div class="video-container" id="videoContainer">
+                <!-- مشغل الفيديو -->
+                <div class="plyr-container" id="plyrContainer"></div>
+            </div>
+
+            <div class="videos-list" id="videosList">
+                <!-- قائمة الفيديوهات -->
+            </div>
+        </div>
+
+        <!-- صفحة معلومات الدورة -->
+        <div class="page" id="courseInfoPage">
+            <div class="info-container">
+                <h3 id="infoCourseTitle"></h3>
+                <div class="info-details">
+                    <p><strong>المدرب:</strong> <span id="infoInstructor"></span></p>
+                    <p><strong>عدد الفيديوهات:</strong> <span id="infoVideosCount"></span></p>
+                </div>
+                <div class="info-rights">
+                    <h4>حقوق الدورة:</h4>
+                    <a href="#" class="rights-link" id="infoChannelLink" target="_blank">
+                        قناة تلجرام
+                    </a>
+                    <a href="#" class="rights-link" id="infoAccountLink" target="_blank">
+                        حساب تلجرام
+                    </a>
+                </div>
+                <div class="info-note">
+                    <p>هذه الدورة مجانية بالكامل ومتاحة لجميع المستخدمين.</p>
+                </div>
+                <button class="btn-primary close-info-btn" id="closeInfoBtn">إغلاق</button>
+            </div>
+        </div>
+
+        <!-- صفحة المتقدمين -->
+        <div class="page" id="premiumPage">
+            <div class="premium-header">
+                <h2>قسم المتقدمين</h2>
+                <p>دورات حصرية تتطلب تفعيل الاشتراك المميز</p>
+            </div>
+
+            <div class="premium-courses">
+                <div class="premium-course-card">
+                    <h3>كورس ICT من الصفر للمبتدئين</h3>
+                    <p class="instructor">محمد سماره</p>
+                    <p class="course-desc">دورة متكاملة لتعلم مفهوم ICT في التداول من الصفر</p>
+                    <button class="btn-premium" id="premiumCourseBtn">
+                        مشاهدة الدورة (تتطلب تفعيل)
+                    </button>
+                </div>
+            </div>
+
+            <div class="premium-note">
+                <p>هذا الكورس مجاني 100% وتم وضعه في خانة البرمويوم لتجربة ميزات البرمويوم فقط.</p>
+            </div>
+        </div>
+
+        <!-- نافذة تفعيل البرمويوم -->
+        <div class="modal" id="premiumModal" style="display: none;">
+            <div class="modal-content">
+                <button class="close-modal" id="closePremiumModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3>تفعيل الاشتراك المميز</h3>
+                <p>للمشاهدة يرجى إدخال كود التفعيل:</p>
+                <div class="form-group">
+                    <input type="text" id="premiumCode" placeholder="أدخل الكود هنا">
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-primary" id="activatePremiumBtn">تفعيل</button>
+                    <button class="btn-secondary" id="cancelPremiumBtn">إلغاء</button>
+                </div>
+                <p class="modal-message" id="premiumMessage"></p>
+            </div>
+        </div>
+
+        <!-- صفحة الأدوات -->
+        <div class="page" id="toolsPage">
+            <h2 class="page-title">الأدوات المساعدة</h2>
+            <div class="tools-grid">
+                <div class="tool-card" data-tool="fibonacci">
+                    <div class="tool-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>حاسبة فيبوناتشي</h3>
+                    <p>حساب مستويات فيبوناتشي للتحليل الفني</p>
+                </div>
+                <div class="tool-card" data-tool="risk">
+                    <div class="tool-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>إدارة رأس المال</h3>
+                    <p>حساب حجم المركز ونسبة المخاطرة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- أداة فيبوناتشي -->
+        <div class="page" id="fibonacciPage">
+            <div class="tool-header">
+                <h2>حاسبة فيبوناتشي</h2>
+                <p>احسب مستويات فيبوناتشي للتحليل الفني</p>
+            </div>
+
+            <form id="fibonacciForm">
+                <div class="form-group">
+                    <label>اتجاه الحساب</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="direction" value="lowToHigh" checked>
+                            <span>من القاع للقمة</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="direction" value="highToLow">
+                            <span>من القمة للقاع</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lowPrice">القاع (Low)</label>
+                    <input type="number" id="lowPrice" step="0.0001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="highPrice">القمة (High)</label>
+                    <input type="number" id="highPrice" step="0.0001" required>
+                </div>
+
+                <button type="submit" class="btn-primary">احسب</button>
+            </form>
+
+            <div class="results-container" id="fibonacciResults" style="display: none;">
+                <h3>نتائج فيبوناتشي</h3>
+                <div class="results-grid" id="fibonacciLevels"></div>
+                <button class="btn-secondary close-results" id="closeFibonacciResults">إغلاق</button>
+            </div>
+        </div>
+
+        <!-- أداة إدارة رأس المال -->
+        <div class="page" id="riskPage">
+            <div class="tool-header">
+                <h2>إدارة رأس المال</h2>
+                <p>حساب حجم المركز ونسبة المخاطرة</p>
+            </div>
+
+            <form id="riskForm">
+                <div class="form-group">
+                    <label for="accountBalance">رأس المال ($)</label>
+                    <input type="number" id="accountBalance" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="riskPercent">نسبة المخاطرة (%)</label>
+                    <input type="number" id="riskPercent" min="0.1" max="10" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="entryPrice">سعر الدخول</label>
+                    <input type="number" id="entryPrice" step="0.0001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stopLoss">سعر وقف الخسارة</label>
+                    <input type="number" id="stopLoss" step="0.0001" required>
+                </div>
+
+                <button type="submit" class="btn-primary">احسب</button>
+            </form>
+
+            <div class="results-container" id="riskResults" style="display: none;">
+                <h3>نتائج الإدارة</h3>
+                <div class="risk-results">
+                    <p><strong>مبلغ المخاطرة:</strong> <span id="riskAmount"></span> $</p>
+                    <p><strong>حجم المركز:</strong> <span id="positionSize"></span> وحدة</p>
+                    <p><strong>الفرق بين الدخول والستوب:</strong> <span id="priceDifference"></span> نقاط</p>
+                    <p><strong>الخسارة المحتملة:</strong> <span id="potentialLoss"></span> $</p>
+                </div>
+                <button class="btn-secondary close-results" id="closeRiskResults">إغلاق</button>
+            </div>
+        </div>
+
+        <!-- صفحة الدعم الفني -->
+        <div class="page" id="supportPage">
+            <div class="support-header">
+                <h2>الدعم الفني</h2>
+                <p>نحن هنا لمساعدتك على مدار الساعة</p>
+            </div>
+
+            <div class="support-options">
+                <a href="https://wa.me/442031375274" target="_blank" class="support-card">
+                    <div class="support-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h3>الدعم عبر واتساب</h3>
+                    <p>تواصل مباشر مع فريق الدعم</p>
+                </a>
+
+                <a href="https://t.me/ASQ412" target="_blank" class="support-card">
+                    <div class="support-icon">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <h3>حساب المطور</h3>
+                    <p>تواصل مع مطور التطبيق</p>
+                </a>
+
+                <a href="https://t.me/pine_Scripts0" target="_blank" class="support-card">
+                    <div class="support-icon">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <h3>قناة تلجرام</h3>
+                    <p>آخر التحديثات والدروس</p>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- الشريط السفلي -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-page="account">
+            <i class="fas fa-user"></i>
+            <span>الحساب</span>
+        </a>
+        <a href="#" class="nav-item" data-page="home">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="#" class="nav-item" data-page="courses">
+            <i class="fas fa-graduation-cap"></i>
+            <span>الدورات</span>
+        </a>
+        <a href="#" class="nav-item" data-page="premium">
+            <i class="fas fa-crown"></i>
+            <span>المتقدمين</span>
+        </a>
+        <a href="#" class="nav-item" data-page="tools">
+            <i class="fas fa-tools"></i>
+            <span>الأدوات</span>
+        </a>
+    </nav>
+
+    <!-- أيقونة الدعم الفني العائمة -->
+    <div class="floating-support" id="floatingSupport">
+        <i class="fas fa-headset"></i>
+        <span class="notification-badge" id="supportBadge" style="display: none;">0</span>
     </div>
 
-    <!-- التطبيق الرئيسي -->
-    <div id="appScreen" class="screen" style="display: none;">
-        <!-- الشريط العلوي -->
-        <div class="top-bar">
-            <button class="menu-btn" id="menuBtn">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h2 id="pageTitle">الرئيسية</h2>
-            <button class="back-btn" id="backBtn" style="display: none;">
-                <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-
-        <!-- المحتوى الرئيسي -->
-        <div id="mainContent" class="content">
-            <!-- محتوى الصفحات سيتم تحميله هنا -->
-        </div>
-
-        <!-- الشريط السفلي -->
-        <div class="bottom-nav">
-            <button class="nav-btn" data-page="account">
-                <i class="fas fa-user"></i>
-                <span>الحساب</span>
-            </button>
-            <button class="nav-btn active" data-page="home">
-                <i class="fas fa-home"></i>
-                <span>الرئيسية</span>
-            </button>
-            <button class="nav-btn" data-page="courses">
-                <i class="fas fa-graduation-cap"></i>
-                <span>الدورات</span>
-            </button>
-            <button class="nav-btn" data-page="premium">
-                <i class="fas fa-crown"></i>
-                <span>المتقدمين</span>
-            </button>
-            <button class="nav-btn" data-page="tools">
-                <i class="fas fa-tools"></i>
-                <span>الأدوات</span>
-            </button>
-        </div>
-
-        <!-- القائمة الجانبية -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <img id="sidebarUserPhoto" src="" alt="" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random'">
-                <div>
-                    <h3 id="sidebarUserName">اسم المستخدم</h3>
-                    <p id="sidebarUserStatus">حساب عادي</p>
-                </div>
-                <button class="close-sidebar" id="closeSidebar">
+    <!-- نافذة الرسائل -->
+    <div class="support-modal" id="supportModal" style="display: none;">
+        <div class="support-modal-content">
+            <div class="support-modal-header">
+                <h3>الدعم الفني</h3>
+                <button class="close-support-modal" id="closeSupportModal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
-            <div class="sidebar-menu">
-                <a href="#" data-page="account"><i class="fas fa-user"></i> الحساب</a>
-                <a href="#" data-page="home"><i class="fas fa-home"></i> الرئيسية</a>
-                <a href="#" data-page="courses"><i class="fas fa-graduation-cap"></i> الدورات</a>
-                <a href="#" data-page="premium"><i class="fas fa-crown"></i> المتقدمين</a>
-                <a href="#" data-page="tools"><i class="fas fa-tools"></i> الأدوات</a>
-                <hr>
-                <a href="#" id="supportBtn"><i class="fas fa-headset"></i> الدعم الفني</a>
-                <a href="#" id="privacyBtn"><i class="fas fa-shield-alt"></i> سياسة الخصوصية</a>
-                <a href="#" id="aboutBtn"><i class="fas fa-info-circle"></i> من نحن</a>
-                <hr>
-                <h4>روابط التواصل:</h4>
-                <a href="https://wa.me/442031375274" target="_blank"><i class="fab fa-whatsapp"></i> الدعم الفني</a>
-                <a href="https://t.me/ASQ412" target="_blank"><i class="fab fa-telegram"></i> حساب المطور</a>
-                <a href="https://t.me/pine_Scripts0" target="_blank"><i class="fab fa-telegram"></i> قناة تلجرام</a>
-            </div>
-        </div>
-
-        <!-- دعم الفني العائم -->
-        <div class="support-float" id="supportFloat" draggable="true">
-            <i class="fas fa-headset"></i>
-            <span class="notification-badge" id="messageCount">0</span>
+            <div class="messages-container" id="messagesContainer"></div>
         </div>
     </div>
 
-    <!-- نافذة الدعم الفني -->
-    <div class="support-modal" id="supportModal">
-        <div class="support-content">
-            <div class="support-header">
-                <h3><i class="fas fa-headset"></i> الدعم الفني</h3>
-                <button class="close-modal" id="closeSupport">&times;</button>
-            </div>
-            <div class="messages-container" id="messagesContainer">
-                <!-- الرسائل تظهر هنا -->
-            </div>
-            <div class="message-input">
-                <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا...">
-                <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة إدخال كود Premium -->
-    <div class="modal" id="premiumModal">
+    <!-- نافذة سياسة الخصوصية -->
+    <div class="modal" id="privacyModal" style="display: none;">
         <div class="modal-content">
-            <h3><i class="fas fa-crown"></i> تفعيل Premium</h3>
-            <p>أدخل كود التفعيل لفتح المحتوى المميز</p>
-            <input type="text" id="premiumCode" placeholder="أدخل الكود هنا">
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="cancelPremium">إلغاء</button>
-                <button class="btn-primary" id="activatePremium">تفعيل</button>
+            <div class="modal-header">
+                <h3>سياسة الخصوصية</h3>
+                <button class="close-modal" id="closePrivacyModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>نحن في تطبيق اكزم لتداول نحترم خصوصية مستخدمينا ونلتزم بحماية بياناتهم الشخصية. هذه السياسة توضح كيفية جمع واستخدام وحماية معلوماتكم.</p>
+                <h4>المعلومات التي نجمعها:</h4>
+                <ul>
+                    <li>الاسم الكامل واسم المستخدم</li>
+                    <li>البريد الإلكتروني</li>
+                    <li>صورة الحساب (اختياري)</li>
+                    <li>بيانات الاستخدام داخل التطبيق</li>
+                </ul>
+                <h4>كيف نستخدم المعلومات:</h4>
+                <ul>
+                    <li>توفير خدمات التطبيق وتحسين تجربة المستخدم</li>
+                    <li>إرسال إشعارات وتحديثات مهمة</li>
+                    <li>تطوير وتحسين خدماتنا</li>
+                </ul>
+                <p>نحن لا نشارك معلوماتكم الشخصية مع أطراف ثالثة بدون موافقتكم إلا إذا كان ذلك مطلوباً بموجب القانون.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="acceptPrivacyBtn">موافق</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة التأكيد -->
-    <div class="modal" id="confirmModal">
+    <!-- نافذة من نحن -->
+    <div class="modal" id="aboutModal" style="display: none;">
         <div class="modal-content">
-            <h3 id="confirmTitle">تأكيد العملية</h3>
-            <p id="confirmMessage">هل أنت متأكد من تنفيذ هذه العملية؟</p>
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="confirmCancel">إلغاء</button>
-                <button class="btn-danger" id="confirmOk">نعم</button>
+            <div class="modal-header">
+                <h3>من نحن</h3>
+                <button class="close-modal" id="closeAboutModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>نحن فريق من المطورين والمتداولين المحترفين الذين يجمعون الشغف بالتكنولوجيا والأسواق المالية.</p>
+                <h4>رسالتنا:</h4>
+                <p>تقديم تعليم مالي احترافي ومجاني باللغة العربية، مع توفير أدوات عملية تساعد المتداولين على تطوير مهاراتهم واتخاذ قرارات استثمارية مدروسة.</p>
+                <h4>رؤيتنا:</h4>
+                <p>أن نكون المنصة العربية الرائدة في تعليم التداول والتحليل المالي، نساهم في بناء جيل من المتداولين الواعيين والمحترفين.</p>
+                <h4>قيمنا:</h4>
+                <ul>
+                    <li>الشفافية والمصداقية</li>
+                    <li>الجودة والاحترافية</li>
+                    <li>الابتكار والتطوير المستمر</li>
+                    <li>دعم المجتمع التعليمي</li>
+                </ul>
+                <p>نعمل باستمرار على تطوير تطبيق اكزم لتداول وإضافة ميزات جديدة تخدم مجتمع المتداولين العرب.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="acceptAboutBtn">موافق</button>
             </div>
         </div>
     </div>
 
-    <!-- مشغل الفيديو -->
-    <div class="video-modal" id="videoModal">
-        <div class="video-container">
-            <div class="video-header">
-                <h3 id="videoTitle"></h3>
-                <button class="close-video" id="closeVideo">&times;</button>
-            </div>
-            <div class="video-wrapper">
-                <iframe id="videoPlayer" frameborder="0" allowfullscreen></iframe>
-            </div>
-            <div class="video-info" id="videoInfo">
-                <!-- معلومات الكورس تظهر هنا -->
-            </div>
+    <!-- رسائل تنبيه -->
+    <div class="alert-modal" id="alertModal" style="display: none;">
+        <div class="alert-content">
+            <p id="alertMessage"></p>
+            <button class="btn-primary" id="alertOkBtn">حسناً</button>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
