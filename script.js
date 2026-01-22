@@ -511,7 +511,7 @@ function renderAccountPage() {
                             `<i class="fas fa-user"></i>`
                         }
                     </div>
-                    <div class="avatar-upload" onclick="changeAvatar()">
+                    <div class="avatar-upload" onclick="openChangeAvatarModal()">
                         <i class="fas fa-camera"></i>
                     </div>
                 </div>
@@ -526,11 +526,11 @@ function renderAccountPage() {
             </div>
             
             <div class="account-actions">
-                <button class="action-btn" onclick="editProfile()">
+                <button class="action-btn" onclick="openEditProfileModal()">
                     <span>تعديل البيانات الشخصية</span>
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="action-btn" onclick="changePassword()">
+                <button class="action-btn" onclick="openChangePasswordModal()">
                     <span>تغيير كلمة المرور</span>
                     <i class="fas fa-key"></i>
                 </button>
@@ -712,6 +712,293 @@ function renderToolsPage() {
     `;
     
     document.getElementById('mainContent').innerHTML = html;
+}
+
+// ====== نافذة تغيير الصورة الشخصية ======
+function openChangeAvatarModal() {
+    const html = `
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h3>تغيير الصورة الشخصية</h3>
+                <button class="close-modal" onclick="closeModal('changeAvatarModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-options">
+                    <p class="modal-text">اختر طريقة تغيير الصورة:</p>
+                    <div class="avatar-options-grid">
+                        <button class="avatar-option-btn" onclick="selectDefaultAvatar()">
+                            <i class="fas fa-user-circle"></i>
+                            <span>صورة افتراضية</span>
+                        </button>
+                        <button class="avatar-option-btn" onclick="uploadAvatarFromDevice()">
+                            <i class="fas fa-upload"></i>
+                            <span>رفع من الجهاز</span>
+                        </button>
+                    </div>
+                    <div class="avatar-preview" id="avatarPreviewContainer" style="display: none;">
+                        <h4>معاينة الصورة:</h4>
+                        <div class="preview-img" id="avatarPreview"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('changeAvatarModal')">إلغاء</button>
+                <button class="modal-btn" onclick="saveNewAvatar()" id="saveAvatarBtn" style="display: none;">حفظ الصورة</button>
+            </div>
+        </div>
+    `;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'changeAvatarModal';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+}
+
+function selectDefaultAvatar() {
+    // صورة افتراضية
+    const defaultAvatar = 'https://j.top4top.io/p_3670reejg0.png';
+    
+    document.getElementById('avatarPreviewContainer').style.display = 'block';
+    document.getElementById('avatarPreview').innerHTML = `
+        <img src="${defaultAvatar}" alt="صورة افتراضية">
+    `;
+    document.getElementById('saveAvatarBtn').style.display = 'block';
+    
+    window.selectedAvatarUrl = defaultAvatar;
+}
+
+function uploadAvatarFromDevice() {
+    // إنشاء عنصر input للصور
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    
+    fileInput.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.match('image.*')) {
+            showAlert('خطأ', 'الرجاء اختيار ملف صورة فقط');
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) { // 5MB حد أقصى
+            showAlert('خطأ', 'حجم الصورة كبير جداً (الحد الأقصى 5MB)');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreviewContainer').style.display = 'block';
+            document.getElementById('avatarPreview').innerHTML = `
+                <img src="${e.target.result}" alt="صورة جديدة">
+            `;
+            document.getElementById('saveAvatarBtn').style.display = 'block';
+            
+            window.selectedAvatarUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+}
+
+function saveNewAvatar() {
+    if (!window.selectedAvatarUrl) {
+        showAlert('خطأ', 'الرجاء اختيار صورة أولاً');
+        return;
+    }
+    
+    if (!currentUser) return;
+    
+    currentUser.avatar = window.selectedAvatarUrl;
+    saveUserData();
+    loadUserData();
+    
+    // إغلاق النافذة
+    const modal = document.getElementById('changeAvatarModal');
+    if (modal) {
+        modal.remove();
+    }
+    
+    showAlert('نجاح', 'تم تغيير الصورة الشخصية بنجاح');
+    window.selectedAvatarUrl = null;
+}
+
+// ====== نافذة تعديل البيانات الشخصية ======
+function openEditProfileModal() {
+    if (!currentUser) return;
+    
+    const html = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل البيانات الشخصية</h3>
+                <button class="close-modal" onclick="closeModal('editProfileModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="edit-form">
+                    <div class="input-group">
+                        <label for="editName">الاسم الكامل</label>
+                        <input type="text" id="editName" value="${currentUser.name}" placeholder="أدخل الاسم الكامل">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="editUsername">اسم المستخدم</label>
+                        <input type="text" id="editUsername" value="${currentUser.username}" placeholder="أدخل اسم المستخدم">
+                        <small class="input-hint">يبدأ بحرف، 4 رموز على الأقل</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="editEmail">البريد الإلكتروني</label>
+                        <input type="email" id="editEmail" value="${currentUser.email}" placeholder="أدخل البريد الإلكتروني" disabled>
+                        <small class="input-hint">لا يمكن تغيير البريد الإلكتروني</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('editProfileModal')">إلغاء</button>
+                <button class="modal-btn" onclick="saveProfileChanges()">حفظ التغييرات</button>
+            </div>
+        </div>
+    `;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'editProfileModal';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+}
+
+function saveProfileChanges() {
+    if (!currentUser) return;
+    
+    const newName = document.getElementById('editName').value.trim();
+    const newUsername = document.getElementById('editUsername').value.trim();
+    
+    if (!newName || !newUsername) {
+        showAlert('خطأ', 'الرجاء ملء جميع الحقول المطلوبة');
+        return;
+    }
+    
+    // التحقق من صحة اسم المستخدم
+    if (!/^[a-zA-Z].{3,}$/.test(newUsername)) {
+        showAlert('خطأ', 'اسم المستخدم يجب أن يبدأ بحرف ويتكون من 4 رموز على الأقل');
+        return;
+    }
+    
+    // التحقق من تكرار اسم المستخدم
+    if (newUsername !== currentUser.username) {
+        const users = getUsers();
+        if (users.some(u => u.id !== currentUser.id && u.username === newUsername)) {
+            showAlert('خطأ', 'اسم المستخدم مستخدم مسبقاً');
+            return;
+        }
+    }
+    
+    currentUser.name = newName;
+    currentUser.username = newUsername;
+    saveUserData();
+    loadUserData();
+    
+    // إغلاق النافذة
+    const modal = document.getElementById('editProfileModal');
+    if (modal) {
+        modal.remove();
+    }
+    
+    showAlert('نجاح', 'تم تحديث البيانات الشخصية بنجاح');
+}
+
+// ====== نافذة تغيير كلمة المرور ======
+function openChangePasswordModal() {
+    if (!currentUser) return;
+    
+    const html = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تغيير كلمة المرور</h3>
+                <button class="close-modal" onclick="closeModal('changePasswordModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="password-form">
+                    <div class="input-group">
+                        <label for="currentPassword">كلمة المرور الحالية</label>
+                        <input type="password" id="currentPassword" placeholder="أدخل كلمة المرور الحالية">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="newPassword">كلمة المرور الجديدة</label>
+                        <input type="password" id="newPassword" placeholder="أدخل كلمة المرور الجديدة">
+                        <small class="input-hint">يجب أن تكون 6 أحرف على الأقل</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="confirmPassword">تأكيد كلمة المرور الجديدة</label>
+                        <input type="password" id="confirmPassword" placeholder="أكد كلمة المرور الجديدة">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeModal('changePasswordModal')">إلغاء</button>
+                <button class="modal-btn" onclick="saveNewPassword()">تغيير كلمة المرور</button>
+            </div>
+        </div>
+    `;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'changePasswordModal';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+}
+
+function saveNewPassword() {
+    if (!currentUser) return;
+    
+    const currentPass = document.getElementById('currentPassword').value;
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    
+    if (!currentPass || !newPass || !confirmPass) {
+        showAlert('خطأ', 'الرجاء ملء جميع الحقول المطلوبة');
+        return;
+    }
+    
+    if (currentPass !== currentUser.password) {
+        showAlert('خطأ', 'كلمة المرور الحالية غير صحيحة');
+        return;
+    }
+    
+    if (newPass.length < 6) {
+        showAlert('خطأ', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+        return;
+    }
+    
+    if (newPass !== confirmPass) {
+        showAlert('خطأ', 'كلمات المرور غير متطابقة');
+        return;
+    }
+    
+    currentUser.password = newPass;
+    saveUserData();
+    
+    // إغلاق النافذة
+    const modal = document.getElementById('changePasswordModal');
+    if (modal) {
+        modal.remove();
+    }
+    
+    showAlert('نجاح', 'تم تغيير كلمة المرور بنجاح');
 }
 
 // ====== إدارة الدورات ======
@@ -1052,87 +1339,6 @@ function calculateRisk() {
     document.getElementById('riskLossPercent').textContent = riskPercent.toFixed(1);
 }
 
-// ====== إدارة الحساب ======
-
-// تغيير الصورة الشخصية
-function changeAvatar() {
-    if (!currentUser) return;
-    
-    // في بيئة حقيقية، هنا نستخدم input type=file
-    // لكن لعدم وجود خادم، سنستخدم صورة افتراضية
-    showConfirm('تغيير الصورة', 'هل تريد تغيير الصورة الشخصية؟', () => {
-        // صورة افتراضية للمستخدم
-        const defaultAvatar = 'https://j.top4top.io/p_3670reejg0.png';
-        
-        currentUser.avatar = defaultAvatar;
-        saveUserData();
-        loadUserData();
-        
-        showAlert('نجاح', 'تم تغيير الصورة الشخصية بنجاح');
-    });
-}
-
-// تعديل الملف الشخصي
-function editProfile() {
-    if (!currentUser) return;
-    
-    const newName = prompt('أدخل الاسم الجديد:', currentUser.name);
-    if (!newName || newName.trim() === '') return;
-    
-    const newUsername = prompt('أدخل اسم المستخدم الجديد:', currentUser.username);
-    if (!newUsername || newUsername.trim() === '') return;
-    
-    // التحقق من اسم المستخدم
-    if (!/^[a-zA-Z].{3,}$/.test(newUsername)) {
-        showAlert('خطأ', 'اسم المستخدم يجب أن يبدأ بحرف ويتكون من 4 رموز على الأقل');
-        return;
-    }
-    
-    // التحقق من تكرار اسم المستخدم
-    const users = getUsers();
-    if (users.some(u => u.id !== currentUser.id && u.username === newUsername)) {
-        showAlert('خطأ', 'اسم المستخدم مستخدم مسبقاً');
-        return;
-    }
-    
-    currentUser.name = newName.trim();
-    currentUser.username = newUsername.trim();
-    saveUserData();
-    loadUserData();
-    
-    showAlert('نجاح', 'تم تحديث البيانات الشخصية بنجاح');
-}
-
-// تغيير كلمة المرور
-function changePassword() {
-    if (!currentUser) return;
-    
-    const currentPass = prompt('أدخل كلمة المرور الحالية:');
-    if (!currentPass) return;
-    
-    if (currentPass !== currentUser.password) {
-        showAlert('خطأ', 'كلمة المرور الحالية غير صحيحة');
-        return;
-    }
-    
-    const newPass = prompt('أدخل كلمة المرور الجديدة:');
-    if (!newPass || newPass.length < 6) {
-        showAlert('خطأ', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-        return;
-    }
-    
-    const confirmPass = prompt('أكد كلمة المرور الجديدة:');
-    if (newPass !== confirmPass) {
-        showAlert('خطأ', 'كلمات المرور غير متطابقة');
-        return;
-    }
-    
-    currentUser.password = newPass;
-    saveUserData();
-    
-    showAlert('نجاح', 'تم تغيير كلمة المرور بنجاح');
-}
-
 // ====== الدعم الفني ======
 
 // فتح الدعم الفني
@@ -1321,12 +1527,18 @@ function toggleTheme() {
 
 // فتح نافذة
 function openModal(modalId) {
-    document.getElementById(modalId).classList.add('active');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+    }
 }
 
 // إغلاق نافذة
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 // عرض رسالة تأكيد
