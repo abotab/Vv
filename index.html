@@ -2,555 +2,253 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>اكزم لتداول</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تطبيق ليزي رمضان - رفيقك المثالي في الشهر الكريم">
+    <title>ليزي رمضان</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="dark-mode">
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo-animation">
+                    <div class="logo-text">ليزي رمضان</div>
+                    <div class="logo-glow"></div>
+                </div>
+                <div class="date-display">
+                    <div class="hijri-date" id="hijriDate">1 رمضان 1447</div>
+                    <div class="gregorian-date" id="gregorianDate">الأحد 1 مارس 2026</div>
+                    <button class="date-toggle" id="dateToggle">تبديل التاريخ</button>
+                </div>
+            </div>
+            
+            <div class="weather-prayer">
+                <div class="weather" id="weather">
+                    <i class="fas fa-sun"></i>
+                    <span>21°C</span>
+                </div>
+                <div class="next-prayer" id="nextPrayer">
+                    <span>المغرب</span>
+                    <div class="countdown" id="prayerCountdown">00:23:14</div>
+                </div>
+            </div>
+        </header>
 
-    <!-- شاشة التحميل -->
-    <div id="loadingScreen">
-        <div class="loader">
-            <div class="loader-circle"></div>
-            <p class="loader-text">جاري التحميل...</p>
-        </div>
-    </div>
-
-    <!-- شاشة تسجيل الدخول / إنشاء حساب -->
-    <div id="authScreen" class="screen active">
-        <div class="auth-container">
-            <div class="auth-header">
-                <div class="logo">
-                    <span class="logo-icon">📈</span>
-                    <h1 class="logo-text">اكزم لتداول</h1>
-                </div>
-                <p class="auth-subtitle">منصة تعليم التداول الاحترافية</p>
-            </div>
-            
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</button>
-                <button class="auth-tab" onclick="switchAuthTab('register')">إنشاء حساب</button>
-            </div>
-            
-            <!-- تسجيل الدخول -->
-            <div id="loginForm" class="auth-form active">
-                <div class="input-group">
-                    <label for="loginEmail">البريد الإلكتروني</label>
-                    <input type="email" id="loginEmail" placeholder="example@email.com">
-                </div>
-                <div class="input-group">
-                    <label for="loginPassword">كلمة المرور</label>
-                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور">
-                </div>
-                <button class="auth-btn" onclick="login()">تسجيل الدخول</button>
-                <p class="auth-note">سيتم نقل تلقائي بعد التسجيل</p>
-            </div>
-            
-            <!-- إنشاء حساب -->
-            <div id="registerForm" class="auth-form">
-                <div class="input-group">
-                    <label for="regName">الاسم الكامل</label>
-                    <input type="text" id="regName" placeholder="أدخل اسمك الكامل">
-                </div>
-                <div class="input-group">
-                    <label for="regUsername">اسم المستخدم</label>
-                    <input type="text" id="regUsername" placeholderيبدأ بحرف، 4 رموز على الأقل">
-                    <small class="input-hint">مثال: user123</small>
-                </div>
-                <div class="input-group">
-                    <label for="regEmail">البريد الإلكتروني</label>
-                    <input type="email" id="regEmail" placeholder="example@email.com">
-                </div>
-                <div class="input-group">
-                    <label for="regPassword">كلمة المرور</label>
-                    <input type="password" id="regPassword" placeholder="كلمة مرور قوية">
-                </div>
-                <button class="auth-btn" onclick="register()">إنشاء حساب</button>
-                <p class="auth-note">سيتم دخول تلقائي بعد الإنشاء</p>
-            </div>
-            
-            <div class="auth-footer">
-                <p class="terms-text">بإنشاء حسابك فإنك توافق على <a href="#" onclick="showPrivacyPolicy()">سياسة الخصوصية</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- التطبيق الرئيسي -->
-    <div id="appScreen" class="screen">
-        
-        <!-- زر القائمة الجانبية -->
-        <div class="menu-toggle" onclick="toggleSideMenu()">
-            <i class="fas fa-bars"></i>
-        </div>
-        
-        <!-- زر الرجوع -->
-        <div class="back-btn" onclick="goBack()">
-            <i class="fas fa-arrow-right"></i>
-            <span>رجوع</span>
-        </div>
-        
-        <!-- القائمة الجانبية -->
-        <div id="sideMenu" class="side-menu">
-            <div class="side-menu-header">
-                <div class="user-side-info">
-                    <div class="user-side-avatar" id="sideAvatar">
-                        <i class="fas fa-user"></i>
+        <main class="main-content">
+            <section class="prayer-times-section">
+                <h2 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    مواقيت الصلاة
+                </h2>
+                <div class="prayer-times-container">
+                    <div class="current-day" id="currentDay">السبت</div>
+                    <div class="ramadan-day" id="ramadanDay">16 رمضان</div>
+                    
+                    <div class="prayer-times-grid">
+                        <div class="prayer-time">
+                            <div class="prayer-name">الفجر</div>
+                            <div class="prayer-time-value" id="fajrTime">05:04</div>
+                            <div class="prayer-eqama" id="fajrEqama">05:53</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">الشروق</div>
+                            <div class="prayer-time-value" id="sunriseTime">06:23</div>
+                            <div class="prayer-eqama">-</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">الظهر</div>
+                            <div class="prayer-time-value" id="dhuhrTime">12:19</div>
+                            <div class="prayer-eqama" id="dhuhrEqama">12:29</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">العصر</div>
+                            <div class="prayer-time-value" id="asrTime">03:40</div>
+                            <div class="prayer-eqama" id="asrEqama">03:20</div>
+                        </div>
+                        <div class="prayer-time current-prayer">
+                            <div class="prayer-name">المغرب</div>
+                            <div class="prayer-time-value" id="maghribTime">06:05</div>
+                            <div class="prayer-eqama" id="maghribEqama">05:36</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">العشاء</div>
+                            <div class="prayer-time-value" id="ishaTime">07:30</div>
+                            <div class="prayer-eqama" id="ishaEqama">06:58</div>
+                        </div>
                     </div>
-                    <div class="user-side-details">
-                        <h3 id="sideName">المستخدم</h3>
-                        <p id="sideUsername">@username</p>
-                        <span class="user-badge" id="sideBadge">عادي</span>
-                    </div>
-                </div>
-                <button class="close-side-menu" onclick="toggleSideMenu()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="side-menu-links">
-                <a href="#" onclick="navigateTo('account')" class="side-link">
-                    <i class="fas fa-user"></i>
-                    <span>الحساب</span>
-                </a>
-                <a href="#" onclick="navigateTo('home')" class="side-link">
-                    <i class="fas fa-home"></i>
-                    <span>الرئيسية</span>
-                </a>
-                <a href="#" onclick="navigateTo('courses')" class="side-link">
-                    <i class="fas fa-book"></i>
-                    <span>الدورات</span>
-                </a>
-                <a href="#" onclick="navigateTo('premium')" class="side-link">
-                    <i class="fas fa-crown"></i>
-                    <span>المتقدمين</span>
-                </a>
-                <a href="#" onclick="navigateTo('tools')" class="side-link">
-                    <i class="fas fa-tools"></i>
-                    <span>الأدوات</span>
-                </a>
-                <a href="#" onclick="openSupport()" class="side-link">
-                    <i class="fas fa-headset"></i>
-                    <span>الدعم الفني</span>
-                </a>
-                <a href="#" onclick="showPrivacyPolicy()" class="side-link">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>سياسة الخصوصية</span>
-                </a>
-                <a href="#" onclick="showAboutUs()" class="side-link">
-                    <i class="fas fa-info-circle"></i>
-                    <span>من نحن</span>
-                </a>
-            </div>
-            
-            <div class="side-menu-footer">
-                <h4 class="contact-title">روابط التواصل</h4>
-                <div class="contact-links">
-                    <a href="https://wa.me/442031375274" target="_blank" class="contact-link">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>الدعم الفني (واتساب)</span>
-                    </a>
-                    <a href="https://t.me/ASQ412" target="_blank" class="contact-link">
-                        <i class="fab fa-telegram"></i>
-                        <span>حساب المطور</span>
-                    </a>
-                    <a href="https://t.me/pine_Scripts0" target="_blank" class="contact-link">
-                        <i class="fab fa-telegram"></i>
-                        <span>قناة تلجرام</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- المحتوى الرئيسي -->
-        <main id="mainContent">
-            <!-- سيتم تحميل المحتوى هنا ديناميكياً -->
-        </main>
-        
-        <!-- الشريط السفلي -->
-        <nav class="bottom-nav">
-            <a href="#" class="nav-item" onclick="navigateTo('account')">
-                <i class="fas fa-user"></i>
-                <span>الحساب</span>
-            </a>
-            <a href="#" class="nav-item" onclick="navigateTo('home')">
-                <i class="fas fa-home"></i>
-                <span>الرئيسية</span>
-            </a>
-            <a href="#" class="nav-item" onclick="navigateTo('courses')">
-                <i class="fas fa-book"></i>
-                <span>الدورات</span>
-            </a>
-            <a href="#" class="nav-item" onclick="navigateTo('premium')">
-                <i class="fas fa-crown"></i>
-                <span>المتقدمين</span>
-            </a>
-            <a href="#" class="nav-item" onclick="navigateTo('tools')">
-                <i class="fas fa-tools"></i>
-                <span>الأدوات</span>
-            </a>
-        </nav>
-        
-        <!-- أيقونة الدعم الفني العائمة -->
-        <div id="supportFloat" class="support-float" onclick="openSupport()">
-            <i class="fas fa-headset"></i>
-            <span class="notification-badge" id="messageBadge">0</span>
-        </div>
-        
-        <!-- زر تفعيل الوضع الليلي/النهاري -->
-        <div class="theme-toggle" onclick="toggleTheme()">
-            <i class="fas fa-moon"></i>
-        </div>
-    </div>
-    
-    <!-- النوافذ المنبثقة -->
-    
-    <!-- نافذة معلومات الكورس -->
-    <div id="courseInfoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="courseInfoTitle">معلومات عن الكورس</h3>
-                <button class="close-modal" onclick="closeModal('courseInfoModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="course-info-details">
-                    <div class="info-row">
-                        <span class="info-label">المدرب:</span>
-                        <span id="courseInfoInstructor" class="info-value"></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">عدد الفيديوهات:</span>
-                        <span id="courseInfoVideos" class="info-value"></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">مستوى الدورة:</span>
-                        <span id="courseInfoLevel" class="info-value"></span>
+                    
+                    <div class="location-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="locationText">حسب موقعك الحالي</span>
                     </div>
                 </div>
                 
-                <div class="course-rights">
-                    <h4 class="rights-title">حقوق الدورة:</h4>
-                    <div class="rights-links">
-                        <a href="#" id="courseTelegramChannel" target="_blank" class="rights-link">
-                            <i class="fab fa-telegram"></i>
-                            <span id="channelText">قناة تلجرام</span>
-                        </a>
-                        <a href="#" id="courseTelegramAccount" target="_blank" class="rights-link">
-                            <i class="fab fa-telegram"></i>
-                            <span id="accountText">حساب تلجرام</span>
-                        </a>
+                <div class="fasting-info">
+                    <div class="fasting-item">
+                        <div class="fasting-label">الإمساك</div>
+                        <div class="fasting-value" id="imsakTime">04:04</div>
                     </div>
-                    <div class="rights-note">
-                        <p>ملاحظة: هذه الحسابات تابعة لصاحب الدورة وليست إدارة التطبيق</p>
+                    <div class="fasting-separator"></div>
+                    <div class="fasting-item">
+                        <div class="fasting-label">الإفطار</div>
+                        <div class="fasting-value" id="iftarTime">06:05</div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn" onclick="closeModal('courseInfoModal')">رجوع</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- نافذة تفعيل الكود -->
-    <div id="activateModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>تفعيل الاشتراك المميز</h3>
-                <button class="close-modal" onclick="closeModal('activateModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="activate-info">
-                    <p>للمشاهدة يرجى إدخال كود التفعيل الخاص بك</p>
-                    <div class="input-group">
-                        <input type="text" id="activationCode" placeholder="أدخل الكود المكون من 8 أرقام">
+            </section>
+
+            <section class="daily-content">
+                <div class="daily-item">
+                    <h3 class="daily-title">
+                        <i class="fas fa-book-quran"></i>
+                        آية اليوم
+                    </h3>
+                    <div class="daily-text" id="verseOfDay">
+                        ﴿ وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا ﴾
                     </div>
-                    <p class="hint-text">يمكنك الحصول على الكود من الإدارة</p>
+                    <div class="daily-reference" id="verseReference">سورة الطلاق - الآية 2</div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeModal('activateModal')">إلغاء</button>
-                <button class="modal-btn" onclick="activatePremium()">تفعيل</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- نافذة حاسبة فيبوناتشي -->
-    <div id="fibonacciModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>حاسبة فيبوناتشي</h3>
-                <button class="close-modal" onclick="closeModal('fibonacciModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="fibonacci-options">
-                    <div class="option-group">
-                        <label class="option-label">اتجاه الحساب:</label>
-                        <div class="option-buttons">
-                            <button class="option-btn active" onclick="setFibonacciDirection('lowToHigh')">من القاع للقمة</button>
-                            <button class="option-btn" onclick="setFibonacciDirection('highToLow')">من القمة للقاع</button>
-                        </div>
+                
+                <div class="daily-item">
+                    <h3 class="daily-title">
+                        <i class="fas fa-comment"></i>
+                        حديث اليوم
+                    </h3>
+                    <div class="daily-text" id="hadithOfDay">
+                        من صام رمضان إيماناً واحتساباً غفر له ما تقدم من ذنبه
                     </div>
-                    
-                    <div class="input-row">
-                        <div class="input-group half">
-                            <label for="fibLow">القاع (Low)</label>
-                            <input type="number" id="fibLow" placeholder="0.00">
-                        </div>
-                        <div class="input-group half">
-                            <label for="fibHigh">القمة (High)</label>
-                            <input type="number" id="fibHigh" placeholder="0.00">
-                        </div>
-                    </div>
-                    
-                    <button class="calculate-btn" onclick="calculateFibonacci()">حساب مستويات فيبوناتشي</button>
-                    
-                    <div class="results-container">
-                        <h4 class="results-title">المستويات:</h4>
-                        <div id="fibonacciResults" class="results-grid">
-                            <!-- سيتم عرض النتائج هنا -->
-                        </div>
-                    </div>
+                    <div class="daily-reference" id="hadithReference">رواه البخاري ومسلم</div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn" onclick="closeModal('fibonacciModal')">رجوع</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- نافذة إدارة رأس المال -->
-    <div id="riskModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إدارة رأس المال</h3>
-                <button class="close-modal" onclick="closeModal('riskModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="risk-calculator">
-                    <div class="input-group">
-                        <label for="capitalAmount">رأس المال ($)</label>
-                        <input type="number" id="capitalAmount" placeholder="أدخل رأس المال">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="riskPercentage">نسبة المخاطرة (%)</label>
-                        <input type="number" id="riskPercentage" placeholder="عادة بين 1% إلى 5%" min="0.1" max="100" step="0.1">
-                        <small class="input-hint">نصيحة: لا تتجاوز 2% من رأس المال</small>
-                    </div>
-                    
-                    <div class="input-row">
-                        <div class="input-group half">
-                            <label for="entryPrice">سعر الدخول</label>
-                            <input type="number" id="entryPrice" placeholder="سعر الدخول">
-                        </div>
-                        <div class="input-group half">
-                            <label for="stopLoss">سعر وقف الخسارة</label>
-                            <input type="number" id="stopLoss" placeholder="سعر الستوب">
-                        </div>
-                    </div>
-                    
-                    <button class="calculate-btn" onclick="calculateRisk()">حساب حجم الصفقة</button>
-                    
-                    <div id="riskResults" class="risk-results">
-                        <!-- سيتم عرض النتائج هنا -->
-                    </div>
-                    
-                    <div class="risk-note">
-                        <p><strong>ملاحظة:</strong> إذا خسرت هذه الصفقة، ستخسر <span id="riskLossAmount">0</span> دولار فقط (<span id="riskLossPercent">0</span>% من رأس مالك).</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn" onclick="closeModal('riskModal')">رجوع</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- نافذة الدعم الفني -->
-    <div id="supportModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>الدعم الفني</h3>
-                <button class="close-modal" onclick="closeModal('supportModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="support-chat" id="supportChat">
-                    <!-- سيتم عرض الرسائل هنا -->
-                </div>
-                <div class="support-input">
-                    <input type="text" id="supportMessage" placeholder="اكتب رسالتك هنا...">
-                    <button class="send-btn" onclick="sendSupportMessage()">
-                        <i class="fas fa-paper-plane"></i>
+            </section>
+
+            <section class="quick-actions">
+                <h2 class="section-title">
+                    <i class="fas fa-bolt"></i>
+                    اختصارات سريعة
+                </h2>
+                <div class="actions-grid">
+                    <button class="action-btn" id="quranBtn">
+                        <i class="fas fa-quran"></i>
+                        <span>القرآن</span>
+                    </button>
+                    <button class="action-btn" id="tasbihBtn">
+                        <i class="fas fa-praying-hands"></i>
+                        <span>المسبحة</span>
+                    </button>
+                    <button class="action-btn" id="azkarBtn">
+                        <i class="fas fa-dharmachakra"></i>
+                        <span>الأذكار</span>
+                    </button>
+                    <button class="action-btn" id="compassBtn">
+                        <i class="fas fa-compass"></i>
+                        <span>القبلة</span>
+                    </button>
+                    <button class="action-btn" id="radioBtn">
+                        <i class="fas fa-radio"></i>
+                        <span>البث المباشر</span>
+                    </button>
+                    <button class="action-btn" id="imsakiyahBtn">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>الإمساكية</span>
+                    </button>
+                    <button class="action-btn" id="seerahBtn">
+                        <i class="fas fa-book-open"></i>
+                        <span>السيرة</span>
+                    </button>
+                    <button class="action-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                        <span>الإعدادات</span>
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- نافذة سياسة الخصوصية -->
-    <div id="privacyModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>سياسة الخصوصية</h3>
-                <button class="close-modal" onclick="closeModal('privacyModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="privacy-content">
-                    <h4>حماية خصوصيتك أولويتنا</h4>
-                    <p>نحن في تطبيق "اكزم لتداول" نحرص على حماية خصوصية بيانات مستخدمينا ونسعى جاهدين لتوفير بيئة آمنة ومحمية.</p>
-                    
-                    <h4>البيانات التي نجمعها:</h4>
-                    <ul>
-                        <li>الاسم الكامل (اختياري للتعديل)</li>
-                        <li>اسم المستخدم (فريد وغير قابل للتكرار)</li>
-                        <li>البريد الإلكتروني (للتواصل والاسترجاع)</li>
-                        <li>صورة الحساب (اختيارية)</li>
-                        <li>تاريخ التسجيل ونوع الاشتراك</li>
-                    </ul>
-                    
-                    <h4>كيف نستخدم بياناتك:</h4>
-                    <ul>
-                        <li>لتقديم خدمة شخصية داخل التطبيق</li>
-                        <li>لتحسين تجربة المستخدم وتطوير الميزات</li>
-                        <li>لإرسال إشعارات وتحديثات مهمة</li>
-                        <li>للتواصل الفني والدعم</li>
-                    </ul>
-                    
-                    <h4>حماية البيانات:</h4>
-                    <p>نستخدم تقنيات تشفير متقدمة لحماية بياناتك، ولا نشارك معلوماتك الشخصية مع أي طرف ثالث بدون موافقتك الصريحة.</p>
-                    
-                    <h4>اتصل بنا:</h4>
-                    <p>لأي استفسار حول سياسة الخصوصية، يمكنك التواصل مع فريق الدعم الفني عبر الواتساب أو التلجرام الموجود في التطبيق.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn" onclick="closeModal('privacyModal')">رجوع</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- نافذة من نحن -->
-    <div id="aboutModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>من نحن</h3>
-                <button class="close-modal" onclick="closeModal('aboutModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="about-content">
-                    <div class="about-header">
-                        <h2>فريق اكزم لتداول</h2>
-                        <p class="about-tagline">نحو تعليم تداول احترافي للجميع</p>
+            </section>
+
+            <section class="ramadan-counter">
+                <h2 class="section-title">
+                    <i class="fas fa-moon"></i>
+                    عدّاد رمضان
+                </h2>
+                <div class="counter-container">
+                    <div class="counter-item">
+                        <div class="counter-value" id="ramadanDays">16</div>
+                        <div class="counter-label">يوم مضى</div>
                     </div>
-                    
-                    <div class="about-mission">
-                        <h4>رسالتنا:</h4>
-                        <p>نحن فريق من المطورين والمتداولين المحترفين الذين يؤمنون بأن التعليم هو الأساس للنجاح في الأسواق المالية. هدفنا تبسيط تعلم التداول وجعله متاحاً للجميع بجودة عالية.</p>
+                    <div class="counter-item">
+                        <div class="counter-value" id="ramadanRemaining">14</div>
+                        <div class="counter-label">يوم متبقي</div>
                     </div>
-                    
-                    <div class="about-features">
-                        <h4>ما نقدمه:</h4>
-                        <ul>
-                            <li>دورات تعليمية احترافية مجانية</li>
-                            <li>أدوات تداول عملية ومجانية</li>
-                            <li>منصة متكاملة وسهلة الاستخدام</li>
-                            <li>دعم فني متواصل</li>
-                            <li>تحديثات مستمرة وتحسينات</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="about-vision">
-                        <h4>رؤيتنا:</h4>
-                        <p>أن نكون المنصة التعليمية الرائدة في الوطن العربي في مجال تعليم التداول والتحليل الفني، وأن نساهم في بناء جيل من المتداولين الواعيين والمحترفين.</p>
-                    </div>
-                    
-                    <div class="about-team">
-                        <h4>فريقنا:</h4>
-                        <p>يتكون فريقنا من متخصصين في البرمجة، التصميم، التحليل الفني، وإدارة المحتوى. نعمل معاً لتطوير "اكزم لتداول" وتقديم أفضل تجربة للمستخدم.</p>
-                    </div>
-                    
-                    <div class="about-contact">
-                        <h4>تواصل معنا:</h4>
-                        <p>نحن دائماً هنا لمساعدتك. يمكنك التواصل معنا عبر روابط الدعم الموجودة في التطبيق.</p>
+                    <div class="counter-item">
+                        <div class="counter-value" id="fastingDays">16</div>
+                        <div class="counter-label">يوم صيام</div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn" onclick="closeModal('aboutModal')">رجوع</button>
-            </div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="prayer.html" class="nav-item">
+                <i class="fas fa-mosque"></i>
+                <span>المؤذن</span>
+            </a>
+            <a href="quran.html" class="nav-item">
+                <i class="fas fa-book-quran"></i>
+                <span>القرآن</span>
+            </a>
+            <a href="duas.html" class="nav-item">
+                <i class="fas fa-hands-praying"></i>
+                <span>أدعية</span>
+            </a>
+            <a href="more.html" class="nav-item">
+                <i class="fas fa-ellipsis-h"></i>
+                <span>المزيد</span>
+            </a>
+        </nav>
+
+        <div class="notification-bell" id="notificationBell">
+            <i class="fas fa-bell"></i>
+            <span class="notification-count" id="notificationCount">3</span>
         </div>
     </div>
-    
-    <!-- نافذة رسالة تأكيد -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content small">
+
+    <div id="notificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>التنبيهات</h3>
+                <button class="modal-close">&times;</button>
+            </div>
             <div class="modal-body">
-                <h4 id="confirmTitle">تأكيد العملية</h4>
-                <p id="confirmMessage">هل أنت متأكد من تنفيذ هذا الإجراء؟</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeModal('confirmModal')">إلغاء</button>
-                <button class="modal-btn" id="confirmActionBtn" onclick="confirmAction()">تأكيد</button>
+                <div class="notification-item">
+                    <div class="notification-text">تبقى 30 دقيقة على أذان المغرب</div>
+                    <div class="notification-time">قبل 5 دقائق</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-text">تذكير بقراءة ورد القرآن اليومي</div>
+                    <div class="notification-time">قبل 2 ساعة</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-text">تذكير بأذكار الصباح</div>
+                    <div class="notification-time">قبل 5 ساعات</div>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- نافذة رسالة تنبيه -->
-    <div id="alertModal" class="modal">
-        <div class="modal-content small">
+
+    <div id="adhanVideoModal" class="modal">
+        <div class="modal-content video-modal">
+            <div class="modal-header">
+                <h3>أذان المغرب</h3>
+                <button class="modal-close">&times;</button>
+            </div>
             <div class="modal-body">
-                <h4 id="alertTitle">تنبيه</h4>
-                <p id="alertMessage">رسالة التنبيه تظهر هنا</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn" onclick="closeModal('alertModal')">حسناً</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- مشغل الفيديو -->
-    <div id="videoPlayer" class="video-player">
-        <div class="video-header">
-            <button class="video-back" onclick="closeVideoPlayer()">
-                <i class="fas fa-arrow-right"></i>
-                <span>رجوع</span>
-            </button>
-            <h3 id="videoTitle">مشغل الفيديو</h3>
-        </div>
-        <div class="video-container">
-            <div class="video-wrapper">
-                <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-        </div>
-        <div class="video-controls">
-            <div class="video-info">
-                <p id="currentVideoInfo">جاري التشغيل...</p>
-            </div>
-            <div class="control-buttons">
-                <button class="control-btn" onclick="prevVideo()">
-                    <i class="fas fa-backward"></i>
-                    <span>السابق</span>
-                </button>
-                <button class="control-btn" onclick="nextVideo()">
-                    <span>التالي</span>
-                    <i class="fas fa-forward"></i>
-                </button>
+                <video id="adhanVideo" controls autoplay>
+                    <source src="https://f.top4top.io/m_3675e4zi30.mp4" type="video/mp4">
+                </video>
             </div>
         </div>
     </div>
