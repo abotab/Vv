@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2E7D32">
+    <title>ليزي رمضان</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="logo-container">
+                <div class="animated-logo">
+                    <div class="moon"></div>
+                    <div class="star star1"></div>
+                    <div class="star star2"></div>
+                    <div class="star star3"></div>
+                </div>
+                <h1 class="app-title">ليزي رمضان</h1>
+            </div>
+            <div class="header-controls">
+                <button class="btn-icon" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn-icon" id="notificationsBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="btn-icon" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="datetime-display">
+            <div class="hijri-date">
+                <span id="hijriDate">1 رمضان 1447</span>
+                <button class="btn-switch" id="dateSwitch">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+                <span id="gregorianDate" class="hidden">23 فبراير 2026</span>
+            </div>
+            <div class="current-time">
+                <i class="far fa-clock"></i>
+                <span id="currentTime">05:06</span>
+            </div>
+            <div class="ramadan-counter">
+                <span id="ramadanDay">اليوم 16 من رمضان</span>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="nav-container">
+                <button class="nav-btn active" data-page="home">
+                    <i class="fas fa-home"></i>
+                    <span>الرئيسية</span>
+                </button>
+                <button class="nav-btn" data-page="prayer">
+                    <i class="fas fa-mosque"></i>
+                    <span>الصلاة</span>
+                </button>
+                <button class="nav-btn" data-page="quran">
+                    <i class="fas fa-book-quran"></i>
+                    <span>القرآن</span>
+                </button>
+                <button class="nav-btn" data-page="tasbeeh">
+                    <i class="fas fa-dharmachakra"></i>
+                    <span>التسبيح</span>
+                </button>
+                <button class="nav-btn" data-page="azkar">
+                    <i class="fas fa-praying-hands"></i>
+                    <span>الأذكار</span>
+                </button>
+                <button class="nav-btn" data-page="fasting">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>الصيام</span>
+                </button>
+                <button class="nav-btn" data-page="more">
+                    <i class="fas fa-ellipsis-h"></i>
+                    <span>المزيد</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <section id="homePage" class="page active">
+                <div class="weather-card">
+                    <div class="weather-info">
+                        <i class="fas fa-sun"></i>
+                        <div>
+                            <span class="temp">21°C</span>
+                            <span class="location">مكة المكرمة</span>
+                        </div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="detail">
+                            <span>الإفطار</span>
+                            <strong>05:53</strong>
+                        </div>
+                        <div class="detail">
+                            <span>السحور حتى</span>
+                            <strong>04:46</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prayer-times-card">
+                    <div class="prayer-header">
+                        <h3><i class="fas fa-clock"></i> مواقيت الصلاة</h3>
+                        <div class="next-prayer">
+                            <span>الصلاة القادمة</span>
+                            <strong id="nextPrayerName">المغرب</strong>
+                            <div class="countdown" id="nextPrayerCountdown">00:23</div>
+                        </div>
+                    </div>
+                    <div class="prayer-times-grid">
+                        <div class="prayer-time">
+                            <div class="prayer-name">الفجر</div>
+                            <div class="prayer-time-azan">05:37</div>
+                            <div class="prayer-time-iqama">05:53</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">الشروق</div>
+                            <div class="prayer-time-azan">07:02</div>
+                            <div class="prayer-time-iqama">09:40</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">الظهر</div>
+                            <div class="prayer-time-azan">12:19</div>
+                            <div class="prayer-time-iqama">12:29</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">العصر</div>
+                            <div class="prayer-time-azan">15:40</div>
+                            <div class="prayer-time-iqama">15:50</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">المغرب</div>
+                            <div class="prayer-time-azan">18:29</div>
+                            <div class="prayer-time-iqama">18:36</div>
+                        </div>
+                        <div class="prayer-time">
+                            <div class="prayer-name">العشاء</div>
+                            <div class="prayer-time-azan">19:43</div>
+                            <div class="prayer-time-iqama">19:58</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" id="qiblaBtn">
+                        <i class="fas fa-compass"></i>
+                        <span>القبلة</span>
+                    </button>
+                    <button class="quick-btn" id="adhanBtn">
+                        <i class="fas fa-volume-up"></i>
+                        <span>الأذان</span>
+                    </button>
+                    <button class="quick-btn" id="duaBtn">
+                        <i class="fas fa-hands-praying"></i>
+                        <span>دعاء</span>
+                    </button>
+                    <button class="quick-btn" id="recipesBtn">
+                        <i class="fas fa-utensils"></i>
+                        <span>وصفات</span>
+                    </button>
+                </div>
+
+                <div class="daily-content">
+                    <div class="ayah-card">
+                        <h3><i class="fas fa-book"></i> آية اليوم</h3>
+                        <p class="ayah-text">إِنَّ الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ كَانَتْ لَهُمْ جَنَّاتُ الْفِرْدَوْسِ نُزُلًا</p>
+                        <span class="ayah-reference">سورة الكهف - الآية 107</span>
+                    </div>
+
+                    <div class="hadith-card">
+                        <h3><i class="fas fa-quote-right"></i> حديث اليوم</h3>
+                        <p class="hadith-text" id="dailyHadith">من صام رمضان إيماناً واحتساباً غفر له ما تقدم من ذنبه</p>
+                        <span class="hadith-reference" id="hadithReference">رواه البخاري ومسلم</span>
+                    </div>
+                </div>
+
+                <div class="fasting-tracker">
+                    <h3><i class="fas fa-calendar-check"></i> متابعة الصيام</h3>
+                    <div class="tracker-grid">
+                        <div class="tracker-item">
+                            <span>أيام صمتها</span>
+                            <strong>15</strong>
+                        </div>
+                        <div class="tracker-item">
+                            <span>متبقي من رمضان</span>
+                            <strong>15</strong>
+                        </div>
+                        <div class="tracker-item">
+                            <span>وقت الإفطار</span>
+                            <strong id="iftarCountdown">05:32</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="prayerPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-mosque"></i> المؤذن الذكي</h2>
+                </div>
+                <div class="compass-container">
+                    <div class="compass">
+                        <div class="compass-rose">
+                            <div class="compass-direction">N</div>
+                            <div class="compass-direction">E</div>
+                            <div class="compass-direction">S</div>
+                            <div class="compass-direction">W</div>
+                            <div class="compass-needle"></div>
+                            <div class="compass-qibla" id="qiblaIndicator"></div>
+                        </div>
+                    </div>
+                    <div class="qibla-info">
+                        <p>اتجاه القبلة: <span id="qiblaAngle">45°</span></p>
+                        <button class="btn-primary" id="findQibla">تحديد القبلة</button>
+                    </div>
+                </div>
+
+                <div class="adhan-settings">
+                    <h3>إعدادات الأذان</h3>
+                    <div class="setting-item">
+                        <label>المؤذن</label>
+                        <select id="muezzinSelect">
+                            <option value="1">المسجد الحرام</option>
+                            <option value="2">المسجد النبوي</option>
+                            <option value="3">الأقصى</option>
+                            <option value="4">محلي</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>تنبيه قبل الأذان</label>
+                        <select id="adhanReminder">
+                            <option value="5">5 دقائق</option>
+                            <option value="10" selected>10 دقائق</option>
+                            <option value="15">15 دقائق</option>
+                            <option value="30">30 دقائق</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>طريقة الحساب</label>
+                        <select id="calculationMethod">
+                            <option value="ummalqura">أم القرى</option>
+                            <option value="egyptian">الهيئة المصرية</option>
+                            <option value="karachi">جامعة العلوم الإسلامية</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prayer-history">
+                    <h3>سجل الصلوات</h3>
+                    <div class="history-grid" id="prayerHistory">
+                    </div>
+                </div>
+            </section>
+
+            <section id="quranPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-book-quran"></i> القرآن الكريم</h2>
+                    <button class="btn-icon" id="quranSearchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="quran-player">
+                    <div class="player-info">
+                        <h4 id="currentSurahName">سورة الفاتحة</h4>
+                        <p id="currentReciter">القارئ: مشاري العفاسي</p>
+                    </div>
+                    <div class="player-controls">
+                        <button class="player-btn" id="prevAyah">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="player-btn play-btn" id="playPauseBtn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="player-btn" id="nextAyah">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="audioProgress"></div>
+                    </div>
+                </div>
+
+                <div class="quran-surahs">
+                    <div class="surah-list" id="surahList">
+                    </div>
+                </div>
+
+                <div class="quran-progress">
+                    <h3>ختمة القرآن</h3>
+                    <div class="progress-circle">
+                        <div class="circle">
+                            <span id="quranProgress">23%</span>
+                        </div>
+                    </div>
+                    <div class="progress-details">
+                        <div class="detail">
+                            <span>الأجزاء المكتملة</span>
+                            <strong>7/30</strong>
+                        </div>
+                        <div class="detail">
+                            <span>الصفحات اليوم</span>
+                            <strong>15/20</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tasbeehPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-dharmachakra"></i> المسبحة الإلكترونية</h2>
+                </div>
+
+                <div class="tasbeeh-counter">
+                    <div class="counter-display" id="tasbeehCount">0</div>
+                    <div class="counter-label" id="tasbeehText">سبحان الله</div>
+                </div>
+
+                <div class="tasbeeh-beads">
+                    <div class="bead" data-dhikr="سبحان الله"></div>
+                    <div class="bead" data-dhikr="الحمد لله"></div>
+                    <div class="bead" data-dhikr="الله أكبر"></div>
+                    <div class="bead" data-dhikr="لا إله إلا الله"></div>
+                </div>
+
+                <div class="tasbeeh-controls">
+                    <button class="tasbeeh-btn" id="resetTasbeeh">
+                        <i class="fas fa-redo"></i>
+                        <span>إعادة</span>
+                    </button>
+                    <button class="tasbeeh-btn" id="saveTasbeeh">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ</span>
+                    </button>
+                    <button class="tasbeeh-btn" id="setGoal">
+                        <i class="fas fa-bullseye"></i>
+                        <span>هدف</span>
+                    </button>
+                </div>
+
+                <div class="tasbeeh-presets">
+                    <h3>نماذج التسبيح</h3>
+                    <div class="presets-grid">
+                        <button class="preset-btn" data-preset="morning">أذكار الصباح</button>
+                        <button class="preset-btn" data-preset="evening">أذكار المساء</button>
+                        <button class="preset-btn" data-preset="afterPrayer">بعد الصلاة</button>
+                        <button class="preset-btn" data-preset="sleep">قبل النوم</button>
+                    </div>
+                </div>
+
+                <div class="tasbeeh-history">
+                    <h3>سجل التسبيح</h3>
+                    <div class="history-list" id="tasbeehHistory">
+                    </div>
+                </div>
+            </section>
+
+            <section id="azkarPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-praying-hands"></i> الأذكار والأدعية</h2>
+                </div>
+
+                <div class="azkar-tabs">
+                    <button class="tab-btn active" data-tab="morning">أذكار الصباح</button>
+                    <button class="tab-btn" data-tab="evening">أذكار المساء</button>
+                    <button class="tab-btn" data-tab="prayer">أذكار الصلاة</button>
+                    <button class="tab-btn" data-tab="ramadan">رمضانية</button>
+                </div>
+
+                <div class="azkar-content">
+                    <div class="azkar-list" id="morningAzkar">
+                    </div>
+                    <div class="azkar-list hidden" id="eveningAzkar">
+                    </div>
+                    <div class="azkar-list hidden" id="prayerAzkar">
+                    </div>
+                    <div class="azkar-list hidden" id="ramadanAzkar">
+                    </div>
+                </div>
+
+                <div class="dua-section">
+                    <h3>الأدعية المأثورة</h3>
+                    <div class="dua-categories">
+                        <button class="category-btn" data-category="quran">أدعية قرآنية</button>
+                        <button class="category-btn" data-category="prophet">أدعية نبوية</button>
+                        <button class="category-btn" data-category="iftar">دعاء الإفطار</button>
+                        <button class="category-btn" data-category="qadr">ليلة القدر</button>
+                    </div>
+                    <div class="dua-list" id="duaList">
+                    </div>
+                </div>
+            </section>
+
+            <section id="fastingPage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-calendar-alt"></i> الصيام والإمساك</h2>
+                </div>
+
+                <div class="fasting-timer">
+                    <div class="timer-display">
+                        <div class="timer" id="fastingTimer">
+                            <div class="timer-part">
+                                <span class="timer-value" id="fastingHours">14</span>
+                                <span class="timer-label">ساعة</span>
+                            </div>
+                            <div class="timer-part">
+                                <span class="timer-value" id="fastingMinutes">32</span>
+                                <span class="timer-label">دقيقة</span>
+                            </div>
+                        </div>
+                        <div class="timer-status" id="fastingStatus">متبقي للإفطار</div>
+                    </div>
+                    <div class="timer-buttons">
+                        <button class="btn-primary" id="startFasting">بدأ الصيام</button>
+                        <button class="btn-secondary" id="breakFasting">إفطار</button>
+                    </div>
+                </div>
+
+                <div class="imsakiyah-table">
+                    <h3>إمساكية رمضان 2026</h3>
+                    <div class="table-container">
+                        <table id="imsakiyahTable">
+                            <thead>
+                                <tr>
+                                    <th>اليوم</th>
+                                    <th>رمضان</th>
+                                    <th>الميلادي</th>
+                                    <th>السحور</th>
+                                    <th>الفجر</th>
+                                    <th>المغرب</th>
+                                </tr>
+                            </thead>
+                            <tbody id="imsakiyahBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="fasting-tips">
+                    <h3>نصائح صحية للصائمين</h3>
+                    <div class="tips-slider" id="healthTips">
+                    </div>
+                </div>
+
+                <div class="recipes-section">
+                    <h3>وصفات رمضانية</h3>
+                    <div class="recipes-grid" id="recipesGrid">
+                    </div>
+                </div>
+            </section>
+
+            <section id="morePage" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-ellipsis-h"></i> المزيد</h2>
+                </div>
+
+                <div class="more-grid">
+                    <button class="more-btn" id="liveRadioBtn">
+                        <i class="fas fa-radio"></i>
+                        <span>البث المباشر</span>
+                    </button>
+                    <button class="more-btn" id="seerahBtn">
+                        <i class="fas fa-book-open"></i>
+                        <span>السيرة النبوية</span>
+                    </button>
+                    <button class="more-btn" id="laylatQadrBtn">
+                        <i class="fas fa-star-and-crescent"></i>
+                        <span>ليلة القدر</span>
+                    </button>
+                    <button class="more-btn" id="nightPrayerBtn">
+                        <i class="fas fa-moon"></i>
+                        <span>قيام الليل</span>
+                    </button>
+                    <button class="more-btn" id="settingsPageBtn">
+                        <i class="fas fa-cog"></i>
+                        <span>الإعدادات</span>
+                    </button>
+                    <button class="more-btn" id="aboutBtn">
+                        <i class="fas fa-info-circle"></i>
+                        <span>حول التطبيق</span>
+                    </button>
+                </div>
+
+                <div class="more-content">
+                    <div class="live-radio hidden" id="liveRadio">
+                        <h3>البث المباشر</h3>
+                        <div class="radio-player">
+                            <div class="radio-info">
+                                <h4>إذاعة القرآن الكريم - القاهرة</h4>
+                                <p>بث مباشر 24/7</p>
+                            </div>
+                            <button class="radio-btn play-btn" id="radioPlayBtn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-content hidden" id="settingsContent">
+                        <h3>إعدادات التطبيق</h3>
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <label>الوضع الليلي</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="darkModeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label>الإشعارات</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="notificationsToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label>الاهتزاز</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="vibrationToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label>تحديد الموقع التلقائي</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="locationToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label>صوت المؤذن</label>
+                                <select id="adhanSoundSelect">
+                                    <option value="default">تلقائي</option>
+                                    <option value="makkah">مكة</option>
+                                    <option value="madinah">المدينة</option>
+                                    <option value="alaksa">الأقصى</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>حجم الخط</label>
+                                <input type="range" id="fontSizeSlider" min="12" max="24" value="16">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div class="adhan-notification hidden" id="adhanNotification">
+            <div class="notification-content">
+                <h3>حان وقت صلاة <span id="prayerNameNotif">المغرب</span></h3>
+                <p>الوقت الآن: <span id="currentPrayerTime">18:29</span></p>
+                <div class="notification-buttons">
+                    <button class="btn-secondary" id="snoozeAdhan">تأجيل 5 دقائق</button>
+                    <button class="btn-primary" id="playAdhanNow">تشغيل الأذان</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="adhan-player hidden" id="adhanPlayer">
+            <div class="player-header">
+                <h3>أذان <span id="adhanPrayerName">المغرب</span></h3>
+                <button class="btn-icon" id="closeAdhan">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="player-body">
+                <video id="adhanVideo" controls>
+                    <source src="https://j.top4top.io/m_3675du7yg0.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
