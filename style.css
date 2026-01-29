@@ -1,0 +1,521 @@
+/* أساسيات الصفحة */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+}
+
+body {
+    background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* شاشة التحميل */
+#loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loader {
+    border: 8px solid #333;
+    border-top: 8px solid #00ff88;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* الشاشات العامة */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, #0a0a0a 0%, #1a1a2e 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 900;
+    padding: 20px;
+    text-align: center;
+}
+
+.screen h1 {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+    color: #00ff88;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+.screen p {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-bottom: 30px;
+    max-width: 600px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* زر البداية */
+.btn-start {
+    background: linear-gradient(45deg, #00ff88, #00cc6a);
+    color: #000;
+    border: none;
+    padding: 18px 45px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+}
+
+.btn-start:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 35px rgba(0, 255, 136, 0.7);
+}
+
+/* اختيار الصعوبة */
+.difficulty-selector {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.difficulty-selector label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #00ff88;
+}
+
+.difficulty-selector select {
+    background: #111;
+    color: #fff;
+    border: 2px solid #00ff88;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    width: 200px;
+    text-align: center;
+}
+
+/* معلومات اللعبة */
+.game-info {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 30px;
+    max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-info h3 {
+    color: #00ff88;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.game-info ul {
+    list-style: none;
+    text-align: right;
+}
+
+.game-info li {
+    padding: 8px 0;
+    color: #ccc;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.game-info li:last-child {
+    border-bottom: none;
+}
+
+/* حاوية اللعبة */
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* HUD - واجهة اللاعب */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* الجزء العلوي من HUD */
+.hud-top {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: auto;
+}
+
+/* شريط الصحة */
+.health-bar {
+    background: rgba(0, 0, 0, 0.7);
+    width: 250px;
+    height: 35px;
+    border-radius: 20px;
+    border: 2px solid #333;
+    overflow: hidden;
+    position: relative;
+}
+
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #ff8800, #00ff88);
+    width: 100%;
+    transition: width 0.3s ease;
+}
+
+#healthText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px black;
+}
+
+/* مؤقت الزون */
+.zone-timer, .players-left {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    border: 2px solid #ffaa00;
+}
+
+.zone-timer {
+    border-color: #ffaa00;
+    color: #ffaa00;
+}
+
+.players-left {
+    border-color: #00aaff;
+    color: #00aaff;
+}
+
+/* الجزء الأوسط من HUD */
+.hud-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.crosshair {
+    width: 25px;
+    height: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    position: relative;
+}
+
+.crosshair::before, .crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.crosshair::before {
+    width: 15px;
+    height: 2px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.crosshair::after {
+    width: 2px;
+    height: 15px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.weapon-info {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    pointer-events: auto;
+}
+
+/* الجزء السفلي من HUD (أزرار التحكم) */
+.hud-bottom {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: auto;
+}
+
+/* عصا التحكم */
+.joystick-area {
+    width: 120px;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    touch-action: none;
+}
+
+.joystick {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* أزرار الإجراءات */
+.action-controls {
+    display: flex;
+    gap: 15px;
+    flex-direction: column;
+}
+
+.btn-action {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action:active {
+    background: rgba(0, 255, 136, 0.3);
+    transform: scale(0.95);
+}
+
+/* الخريطة المصغرة */
+#miniMap {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 180px;
+    height: 180px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    border: 3px solid rgba(0, 255, 136, 0.5);
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.map-border {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#mapCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+.map-player-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #00ff88;
+    font-size: 12px;
+    text-shadow: 0 0 5px #000;
+}
+
+/* لوحة النقاط */
+#scorePanel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    width: 250px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    pointer-events: auto;
+}
+
+#scorePanel h3 {
+    color: #00ff88;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.killfeed h4 {
+    color: #ffaa00;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+#killList {
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#killList li {
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 5px;
+    border-radius: 5px;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+/* شاشة النهاية */
+.end-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 30px 0;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 15px;
+    min-width: 100px;
+    border: 2px solid rgba(0, 255, 136, 0.3);
+}
+
+.stat i {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.stat span {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #00ff88;
+}
+
+.stat small {
+    color: #aaa;
+    margin-top: 5px;
+}
+
+/* التجاوب مع الشاشات المختلفة */
+@media (max-width: 768px) {
+    .hud-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .health-bar {
+        width: 200px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .action-controls {
+        flex-direction: row;
+        order: -1;
+        margin-bottom: 20px;
+    }
+    
+    .btn-action {
+        width: 60px;
+        height: 60px;
+    }
+    
+    #miniMap {
+        width: 120px;
+        height: 120px;
+        top: 80px;
+    }
+    
+    #scorePanel {
+        width: 200px;
+        right: 10px;
+    }
+}

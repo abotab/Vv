@@ -2,349 +2,153 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1a5d1a">
-    <meta name="description" content="تطبيق ليزي رمضان - رفيقك المثالي في الشهر الفضيل">
-    <title>ليزي رمضان - تطبيق رمضان المتكامل</title>
-    
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap">
-    
-    <!-- Icons -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لعبة باتل رويال - PUBG Style</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loading-content">
-            <div class="logo-animation">
-                <div class="logo-text">ليزي رمضان</div>
-                <div class="moon"></div>
-                <div class="star star1"></div>
-                <div class="star star2"></div>
-                <div class="star star3"></div>
-            </div>
-            <div class="loading-progress">
-                <div class="progress-bar"></div>
-                <div class="progress-text">جاري التحميل...</div>
-            </div>
+    <div id="loadingScreen">
+        <div class="loader"></div>
+        <p>جاري تحميل اللعبة...</p>
+    </div>
+
+    <div id="startScreen" class="screen">
+        <h1><i class="fas fa-crosshairs"></i> معركة البقاء</h1>
+        <p>لعبة باتل رويال واقعية - آخر من يبقى يفوز</p>
+        
+        <div class="difficulty-selector">
+            <label for="difficulty">اختر مستوى الصعوبة:</label>
+            <select id="difficulty">
+                <option value="easy">سهل</option>
+                <option value="medium" selected>بسيط</option>
+                <option value="hard">صعب</option>
+                <option value="expert">خبير</option>
+            </select>
+        </div>
+
+        <button id="startBtn" class="btn-start">
+            <i class="fas fa-play"></i> بدء اللعبة
+        </button>
+
+        <div class="game-info">
+            <h3><i class="fas fa-info-circle"></i> معلومات اللعبة</h3>
+            <ul>
+                <li>1 لاعب حقيقي ضد 15 بوت ذكي</li>
+                <li>خريطة 1000 متر مع بيوت وجدران</li>
+                <li>نظام أسلحة وعلاجات واقعي</li>
+                <li>منطقة اللعب تتقلص تدريجياً</li>
+            </ul>
         </div>
     </div>
 
-    <!-- Main Container -->
-    <div class="container" id="main-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-top">
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-moon"></i>
-                    </div>
-                    <h1 class="logo-text">ليزي رمضان</h1>
+    <div id="gameContainer" class="hidden">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="hud">
+            <div class="hud-top">
+                <div class="health-bar">
+                    <div class="health-fill" id="healthFill"></div>
+                    <span id="healthText">100%</span>
                 </div>
-                
-                <div class="header-actions">
-                    <button class="icon-btn" id="themeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <button class="icon-btn" id="searchToggle">
-                        <i class="fas fa-search"></i>
-                    </button>
+                <div class="zone-timer">
+                    <i class="fas fa-radiation"></i>
+                    <span id="zoneTimer">02:30</span>
                 </div>
-            </div>
-            
-            <!-- Date Display -->
-            <div class="date-display">
-                <div class="hijri-date" id="hijriDate">السبت 1 رمضان 1447</div>
-                <div class="gregorian-date" id="gregorianDate">الأحد 1 مارس 2026</div>
-                <div class="day-counter" id="dayCounter">اليوم 1 من رمضان</div>
-            </div>
-        </header>
-
-        <!-- Search Bar -->
-        <div class="search-bar" id="searchBar">
-            <input type="text" placeholder="ابحث في التطبيق..." id="searchInput">
-            <button class="search-close" id="searchClose">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Prayer Times Widget -->
-            <section class="widget prayer-widget">
-                <div class="widget-header">
-                    <h2><i class="fas fa-clock"></i> مواقيت الصلاة</h2>
-                    <button class="widget-settings" id="prayerSettings">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                </div>
-                <div class="prayer-times" id="prayerTimes">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
-                <div class="next-prayer" id="nextPrayer">
-                    <div class="next-prayer-info">
-                        <span class="prayer-name">الفجر</span>
-                        <span class="countdown" id="prayerCountdown">04:21:15</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Quick Actions -->
-            <section class="quick-actions">
-                <h2 class="section-title">الوصول السريع</h2>
-                <div class="actions-grid">
-                    <a href="#quran" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-quran"></i>
-                        </div>
-                        <span class="action-text">القرآن الكريم</span>
-                    </a>
-                    
-                    <a href="#tasbih" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-pray"></i>
-                        </div>
-                        <span class="action-text">المسبحة</span>
-                    </a>
-                    
-                    <a href="#qibla" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-compass"></i>
-                        </div>
-                        <span class="action-text">القبلة</span>
-                    </a>
-                    
-                    <a href="#azkar" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-hands-praying"></i>
-                        </div>
-                        <span class="action-text">الأذكار</span>
-                    </a>
-                    
-                    <a href="#hadith" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <span class="action-text">الأحاديث</span>
-                    </a>
-                    
-                    <a href="#recipes" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-utensils"></i>
-                        </div>
-                        <span class="action-text">الوصفات</span>
-                    </a>
-                </div>
-            </section>
-
-            <!-- Daily Content -->
-            <section class="daily-content">
-                <div class="daily-card verse-of-day">
-                    <h3><i class="fas fa-star"></i> آية اليوم</h3>
-                    <div class="verse-text" id="verseOfDay">
-                        "شَهْرُ رَمَضَانَ ٱلَّذِىٓ أُنزِلَ فِيهِ ٱلْقُرْءَانُ هُدًۭى لِّلنَّاسِ وَبَيِّنَـٰتٍۢ مِّنَ ٱلْهُدَىٰ وَٱلْفُرْقَانِ"
-                    </div>
-                    <div class="verse-reference">البقرة: 185</div>
-                </div>
-                
-                <div class="daily-card hadith-of-day">
-                    <h3><i class="fas fa-quote-right"></i> حديث اليوم</h3>
-                    <div class="hadith-text" id="hadithOfDay">
-                        قال رسول الله صلى الله عليه وسلم: "من صام رمضان إيماناً واحتساباً غفر له ما تقدم من ذنبه"
-                    </div>
-                    <div class="hadith-reference" id="hadithReference">صحيح البخاري</div>
-                </div>
-            </section>
-
-            <!-- Imsakiya -->
-            <section class="imsakiya-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-calendar-alt"></i> إمساكية رمضان</h2>
-                    <a href="#imsakiya" class="view-all">عرض الكل</a>
-                </div>
-                <div class="imsakiya-widget" id="imsakiyaWidget">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
-            </section>
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <a href="#home" class="nav-item active">
-                <i class="fas fa-home"></i>
-                <span>الرئيسية</span>
-            </a>
-            
-            <a href="#prayer" class="nav-item">
-                <i class="fas fa-mosque"></i>
-                <span>الصلاة</span>
-            </a>
-            
-            <a href="#quran" class="nav-item">
-                <i class="fas fa-quran"></i>
-                <span>القرآن</span>
-            </a>
-            
-            <a href="#more" class="nav-item">
-                <i class="fas fa-bars"></i>
-                <span>المزيد</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Sidebar Menu -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="user-info">
-                <div class="user-avatar">
+                <div class="players-left">
                     <i class="fas fa-user"></i>
+                    <span id="playersLeft">16</span>
                 </div>
-                <div class="user-name">مرحباً بك</div>
             </div>
-            <button class="sidebar-close" id="sidebarClose">
-                <i class="fas fa-times"></i>
-            </button>
+
+            <div class="hud-center">
+                <div class="crosshair"></div>
+                <div class="weapon-info">
+                    <i class="fas fa-gun" id="weaponIcon"></i>
+                    <span id="weaponName">AK-47</span>
+                    <span id="ammoCount">30/120</span>
+                </div>
+            </div>
+
+            <div class="hud-bottom">
+                <div class="controls">
+                    <div class="movement-controls">
+                        <div class="joystick-area" id="movementJoystick">
+                            <div class="joystick"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-controls">
+                        <button class="btn-action" id="jumpBtn">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="btn-action" id="crouchBtn">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <button class="btn-action" id="reloadBtn">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="btn-action" id="healBtn">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="camera-controls">
+                        <div class="joystick-area" id="cameraJoystick">
+                            <div class="joystick"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="sidebar-menu">
-            <a href="#home" class="menu-item">
-                <i class="fas fa-home"></i>
-                <span>الرئيسية</span>
-            </a>
-            
-            <a href="#prayer-times" class="menu-item">
-                <i class="fas fa-clock"></i>
-                <span>مواقيت الصلاة</span>
-            </a>
-            
-            <a href="#quran-reader" class="menu-item">
-                <i class="fas fa-book-open"></i>
-                <span>قارئ القرآن</span>
-            </a>
-            
-            <a href="#tasbih" class="menu-item">
-                <i class="fas fa-pray"></i>
-                <span>المسبحة الإلكترونية</span>
-            </a>
-            
-            <a href="#qibla" class="menu-item">
-                <i class="fas fa-compass"></i>
-                <span>بوصلة القبلة</span>
-            </a>
-            
-            <a href="#azkar" class="menu-item">
-                <i class="fas fa-hands-praying"></i>
-                <span>الأدعية والأذكار</span>
-            </a>
-            
-            <a href="#hadith" class="menu-item">
-                <i class="fas fa-book"></i>
-                <span>الأحاديث النبوية</span>
-            </a>
-            
-            <a href="#imsakiya" class="menu-item">
-                <i class="fas fa-calendar-alt"></i>
-                <span>إمساكية رمضان</span>
-            </a>
-            
-            <a href="#recipes" class="menu-item">
-                <i class="fas fa-utensils"></i>
-                <span>الوصفات الرمضانية</span>
-            </a>
-            
-            <a href="#radio" class="menu-item">
-                <i class="fas fa-radio"></i>
-                <span>إذاعة القرآن الكريم</span>
-            </a>
-            
-            <a href="#seerah" class="menu-item">
-                <i class="fas fa-history"></i>
-                <span>السيرة النبوية</span>
-            </a>
-            
-            <a href="#settings" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span>الإعدادات</span>
-            </a>
+
+        <div id="miniMap">
+            <div class="map-border">
+                <canvas id="mapCanvas"></canvas>
+            </div>
+            <div class="map-player-icon">
+                <i class="fas fa-circle"></i>
+            </div>
         </div>
-        
-        <div class="sidebar-footer">
-            <div class="app-version">الإصدار 1.0.0</div>
-            <div class="copyright">© 2026 ليزي رمضان</div>
+
+        <div id="scorePanel">
+            <h3><i class="fas fa-trophy"></i> النقاط: <span id="scoreValue">0</span></h3>
+            <div class="killfeed">
+                <h4>آخر الأحداث:</h4>
+                <ul id="killList"></ul>
+            </div>
         </div>
     </div>
 
-    <!-- Quran Section -->
-    <section class="page-section" id="quran-section">
-        <!-- Content will be loaded dynamically -->
-    </section>
-
-    <!-- Audio Player -->
-    <div class="audio-player" id="audioPlayer">
-        <div class="player-controls">
-            <button class="player-btn" id="prevBtn">
-                <i class="fas fa-step-backward"></i>
+    <div id="endScreen" class="screen hidden">
+        <div id="endContent">
+            <h1 id="endTitle"></h1>
+            <p id="endMessage"></p>
+            <div class="end-stats">
+                <div class="stat">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <span id="killsStat">0</span>
+                    <small>عمليات قتل</small>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-clock"></i>
+                    <span id="timeStat">00:00</span>
+                    <small>الوقت</small>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-trophy"></i>
+                    <span id="scoreStat">0</span>
+                    <small>النقاط</small>
+                </div>
+            </div>
+            <button id="restartBtn" class="btn-start">
+                <i class="fas fa-redo"></i> لعب مرة أخرى
             </button>
-            <button class="player-btn" id="playBtn">
-                <i class="fas fa-play"></i>
-            </button>
-            <button class="player-btn" id="nextBtn">
-                <i class="fas fa-step-forward"></i>
-            </button>
-        </div>
-        <div class="player-info">
-            <div class="player-title" id="playerTitle">سورة الفاتحة</div>
-            <div class="player-subtitle" id="playerSubtitle">عبد الباسط عبد الصمد</div>
-        </div>
-        <div class="player-progress">
-            <input type="range" id="progressBar" min="0" max="100" value="0">
         </div>
     </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <div class="notification-content" id="notificationContent"></div>
-    </div>
-
-    <!-- JavaScript Files -->
-    <script src="js/utils.js"></script>
-    <script src="js/api-handler.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/prayer-times.js"></script>
-    <script src="js/quran.js"></script>
-    <script src="js/tasbih.js"></script>
-    <script src="js/qibla.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/recipes.js"></script>
-    
-    <!-- Initialize Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
