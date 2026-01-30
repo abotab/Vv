@@ -3,517 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>معركة البقاء - PUBG Style</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+    <title>PUBG Mobile - No Lag Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
+        * { box-sizing: border-box; user-select: none; touch-action: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Cairo', sans-serif; }
+        
+        canvas { display: block; width: 100%; height: 100%; background: #222; }
+
+        /* HUD - واجهة المستخدم */
+        #ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        
+        /* ميني ماب */
+        #minimap { position: absolute; top: 10px; right: 10px; width: 110px; height: 110px; background: rgba(0,0,0,0.5); border: 2px solid #fff; border-radius: 8px; overflow: hidden; }
+        #player-marker { position: absolute; width: 6px; height: 6px; background: #0f0; border-radius: 50%; transform: translate(-50%, -50%); }
+
+        /* أزرار التحكم */
+        .btn { position: absolute; border-radius: 50%; display: flex; justify-content: center; align-items: center; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #fire-btn { bottom: 30px; right: 30px; width: 90px; height: 90px; background: rgba(255, 0, 0, 0.6); border: 4px solid #fff; font-size: 40px; }
+        #jump-btn { bottom: 130px; right: 40px; width: 55px; height: 55px; background: rgba(255,255,255,0.2); border: 2px solid #fff; color: #fff; font-size: 14px; }
+        
+        /* الصحة والإحصائيات */
+        #health-wrap { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 12px; background: #333; border: 2px solid #fff; border-radius: 10px; overflow: hidden; }
+        #health-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #f00, #0f0); }
+
+        #weapon-card { position: absolute; bottom: 20px; right: 130px; color: #ffcc00; text-shadow: 1px 1px 2px #000; text-align: right; }
+        #game-info { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 5px; font-size: 14px; }
+
+        /* شاشة التحميل السريعة */
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; color:orange; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2000; }
+        #start-bt { padding: 15px 50px; background: orange; color: #000; border: none; border-radius: 30px; font-weight: bold; font-size: 20px; cursor: pointer; display: none; }
+        
+        /* فلاش عند الإصابة */
+        #damage-flash { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,0,0,0.3); pointer-events: none; display: none; }
+    </style>
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loader-container">
-            <div class="loader">
-                <div class="loader-bar"></div>
-            </div>
-            <div class="loading-text">
-                <span class="loading-dots">جاري تحميل اللعبة</span>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
-                <div class="loading-percentage" id="loadingPercentage">0%</div>
-            </div>
-        </div>
+
+<div id="loading">
+    <h1 style="margin-bottom:10px;">PUBG MOBILE</h1>
+    <p id="status">جاري الاتصال السريع...</p>
+    <button id="start-bt">ابدأ المعركة</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+<div id="damage-flash"></div>
+
+<div id="ui-overlay">
+    <div id="game-info">👤 الأحياء: <span id="alive">16</span> | 💀 القتلى: <span id="kills">0</span></div>
+    
+    <div id="minimap">
+        <div id="zone-circle" style="position:absolute; border:1px solid #00f; border-radius:50%; transform:translate(-50%,-50%);"></div>
+        <div id="player-marker"></div>
     </div>
 
-    <!-- شاشة القائمة الرئيسية -->
-    <div id="mainMenu" class="screen main-menu active">
-        <div class="game-header">
-            <h1 class="game-title">
-                <span class="title-text">معركة البقاء</span>
-                <span class="title-sub">BATTLE ROYALE</span>
-            </h1>
-            <div class="version">نسخة 1.0</div>
-        </div>
+    <div id="health-wrap"><div id="health-fill"></div></div>
 
-        <div class="menu-options">
-            <button class="menu-btn play-btn" id="playBtn">
-                <i class="fas fa-play"></i>
-                <span>بدء اللعبة</span>
-            </button>
-            
-            <button class="menu-btn" id="settingsBtn">
-                <i class="fas fa-cog"></i>
-                <span>الإعدادات</span>
-            </button>
-            
-            <button class="menu-btn" id="difficultyBtn">
-                <i class="fas fa-chart-line"></i>
-                <span>مستوى الصعوبة: <span id="currentDifficulty">بسيط</span></span>
-            </button>
-            
-            <button class="menu-btn" id="controlsBtn">
-                <i class="fas fa-gamepad"></i>
-                <span>أزرار التحكم</span>
-            </button>
-            
-            <button class="menu-btn" id="aboutBtn">
-                <i class="fas fa-info-circle"></i>
-                <span>عن اللعبة</span>
-            </button>
-        </div>
-
-        <div class="game-stats">
-            <div class="stat-item">
-                <i class="fas fa-crosshairs"></i>
-                <span>15 بوت ذكي</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-map"></i>
-                <span>خريطة 1000 متر</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-shield-alt"></i>
-                <span>واقعية 100%</span>
-            </div>
-        </div>
-
-        <div class="menu-footer">
-            <div class="credits">
-                <p>تم التطوير بواسطة محمد</p>
-                <p>باستخدام HTML5, CSS3, JavaScript</p>
-            </div>
-        </div>
+    <div id="weapon-card">
+        <div style="font-size: 20px;">M416</div>
+        <div id="ammo">∞ / 30</div>
     </div>
 
-    <!-- شاشة اختيار الصعوبة -->
-    <div id="difficultyMenu" class="screen difficulty-menu">
-        <div class="back-btn" id="backFromDifficulty">
-            <i class="fas fa-arrow-right"></i>
-            <span>رجوع</span>
-        </div>
-        
-        <h2 class="menu-title">اختر مستوى الصعوبة</h2>
-        
-        <div class="difficulty-options">
-            <div class="difficulty-option" data-level="easy">
-                <div class="difficulty-icon">
-                    <i class="fas fa-child"></i>
-                </div>
-                <h3>سهل</h3>
-                <p>مناسب للمبتدئين، البوتات بطيئة وغير دقيقة</p>
-                <div class="difficulty-stats">
-                    <span><i class="fas fa-bullseye"></i> دقة البوت: 30%</span>
-                    <span><i class="fas fa-bolt"></i> سرعة البوت: 70%</span>
-                </div>
-            </div>
-            
-            <div class="difficulty-option active" data-level="normal">
-                <div class="difficulty-icon">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3>بسيط</h3>
-                <p>متوازن، تحدي مناسب لمعظم اللاعبين</p>
-                <div class="difficulty-stats">
-                    <span><i class="fas fa-bullseye"></i> دقة البوت: 50%</span>
-                    <span><i class="fas fa-bolt"></i> سرعة البوت: 85%</span>
-                </div>
-            </div>
-            
-            <div class="difficulty-option" data-level="hard">
-                <div class="difficulty-icon">
-                    <i class="fas fa-user-ninja"></i>
-                </div>
-                <h3>صعب</h3>
-                <p>تحدي كبير، البوتات سريعة ودقيقة</p>
-                <div class="difficulty-stats">
-                    <span><i class="fas fa-bullseye"></i> دقة البوت: 70%</span>
-                    <span><i class="fas fa-bolt"></i> سرعة البوت: 100%</span>
-                </div>
-            </div>
-            
-            <div class="difficulty-option" data-level="expert">
-                <div class="difficulty-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3>خبير</h3>
-                <p>للمحترفين فقط، البوتات تشبه اللاعبين المحترفين</p>
-                <div class="difficulty-stats">
-                    <span><i class="fas fa-bullseye"></i> دقة البوت: 90%</span>
-                    <span><i class="fas fa-bolt"></i> سرعة البوت: 120%</span>
-                </div>
-            </div>
-        </div>
-        
-        <button class="confirm-btn" id="confirmDifficulty">
-            <i class="fas fa-check"></i>
-            <span>تأكيد الاختيار</span>
-        </button>
-    </div>
+    <div id="fire-btn" class="btn">🔫</div>
+    <div id="jump-btn" class="btn">UP</div>
+</div>
 
-    <!-- شاشة اللعبة الرئيسية -->
-    <div id="gameScreen" class="screen game-screen">
-        <!-- Canvas للعبة -->
-        <canvas id="gameCanvas"></canvas>
-        
-        <!-- واجهة اللاعب أثناء اللعب -->
-        <div class="hud">
-            <!-- معلومات الصحة -->
-            <div class="health-container">
-                <div class="health-bar">
-                    <div class="health-fill" id="healthFill"></div>
-                    <div class="health-text">
-                        <i class="fas fa-heart"></i>
-                        <span id="healthText">100</span>
-                    </div>
-                </div>
-                <div class="armor-indicator">
-                    <i class="fas fa-shield-alt"></i>
-                    <span id="armorText">0</span>
-                </div>
-            </div>
-            
-            <!-- معلومات الخريطة والزون -->
-            <div class="map-container">
-                <div class="mini-map" id="miniMap"></div>
-                <div class="zone-info">
-                    <i class="fas fa-radiation"></i>
-                    <span id="zoneTimer">02:45</span>
-                </div>
-            </div>
-            
-            <!-- معلومات الذخيرة والسلاح -->
-            <div class="weapon-container">
-                <div class="weapon-info">
-                    <div class="weapon-name" id="currentWeapon">AKM</div>
-                    <div class="ammo-count">
-                        <span id="currentAmmo">30</span> / <span id="totalAmmo">120</span>
-                    </div>
-                </div>
-                <div class="weapon-icon">
-                    <i class="fas fa-crosshairs"></i>
-                </div>
-            </div>
-            
-            <!-- معلومات اللاعبين المتبقين -->
-            <div class="players-info">
-                <i class="fas fa-users"></i>
-                <span id="playersLeft">16</span>
-            </div>
-            
-            <!-- أزرار التحكم للهواتف -->
-            <div class="mobile-controls">
-                <div class="movement-controls">
-                    <div class="joystick-area" id="joystickArea">
-                        <div class="joystick" id="joystick"></div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="mobile-btn jump-btn" id="jumpBtn">
-                            <i class="fas fa-arrow-up"></i>
-                        </button>
-                        <button class="mobile-btn crouch-btn" id="crouchBtn">
-                            <i class="fas fa-arrow-down"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="combat-controls">
-                    <button class="mobile-btn shoot-btn" id="shootBtn">
-                        <i class="fas fa-bullseye"></i>
-                    </button>
-                    <button class="mobile-btn reload-btn" id="reloadBtn">
-                        <i class="fas fa-redo"></i>
-                    </button>
-                    <button class="mobile-btn scope-btn" id="scopeBtn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- قائمة الإعدادات أثناء اللعب -->
-        <div class="pause-menu" id="pauseMenu">
-            <h2>لعبة متوقفة</h2>
-            <div class="pause-options">
-                <button class="pause-btn" id="resumeBtn">
-                    <i class="fas fa-play"></i>
-                    <span>استئناف اللعب</span>
-                </button>
-                <button class="pause-btn" id="restartBtn">
-                    <i class="fas fa-redo"></i>
-                    <span>إعادة تشغيل</span>
-                </button>
-                <button class="pause-btn" id="settingsInGameBtn">
-                    <i class="fas fa-cog"></i>
-                    <span>الإعدادات</span>
-                </button>
-                <button class="pause-btn" id="quitBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>العودة للقائمة</span>
-                </button>
-            </div>
-        </div>
-    </div>
+<script>
+/**
+ * محرك لعبة PUBG Mobile - نسخة الأداء الفائق
+ * تم بناؤه بدون مكتبات خارجية لحل مشكلة الشاشة السوداء والتعليق
+ */
 
-    <!-- شاشة الإعدادات -->
-    <div id="settingsScreen" class="screen settings-screen">
-        <div class="back-btn" id="backFromSettings">
-            <i class="fas fa-arrow-right"></i>
-            <span>رجوع</span>
-        </div>
-        
-        <h2 class="menu-title">الإعدادات</h2>
-        
-        <div class="settings-sections">
-            <div class="settings-section">
-                <h3><i class="fas fa-sliders-h"></i> إعدادات الرسوميات</h3>
-                <div class="setting-item">
-                    <label>جودة الرسوميات</label>
-                    <select id="graphicsQuality">
-                        <option value="low">منخفضة</option>
-                        <option value="medium" selected>متوسطة</option>
-                        <option value="high">عالية</option>
-                        <option value="ultra">فائقة</option>
-                    </select>
-                </div>
-                
-                <div class="setting-item">
-                    <label>دقة العرض</label>
-                    <select id="resolution">
-                        <option value="auto" selected>تلقائي</option>
-                        <option value="720p">720p</option>
-                        <option value="1080p">1080p</option>
-                    </select>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="shadows" checked>
-                        تفعيل الظلال
-                    </label>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="particles" checked>
-                        تأثيرات الجسيمات
-                    </label>
-                </div>
-            </div>
-            
-            <div class="settings-section">
-                <h3><i class="fas fa-volume-up"></i> إعدادات الصوت</h3>
-                <div class="setting-item">
-                    <label>مستوى الصوت العام</label>
-                    <input type="range" id="masterVolume" min="0" max="100" value="80">
-                    <span id="masterVolumeValue">80%</span>
-                </div>
-                
-                <div class="setting-item">
-                    <label>صوت الأسلحة</label>
-                    <input type="range" id="sfxVolume" min="0" max="100" value="90">
-                    <span id="sfxVolumeValue">90%</span>
-                </div>
-                
-                <div class="setting-item">
-                    <label>الموسيقى</label>
-                    <input type="range" id="musicVolume" min="0" max="100" value="60">
-                    <span id="musicVolumeValue">60%</span>
-                </div>
-            </div>
-            
-            <div class="settings-section">
-                <h3><i class="fas fa-gamepad"></i> إعدادات التحكم</h3>
-                <div class="setting-item">
-                    <label>حساسية الماوس</label>
-                    <input type="range" id="mouseSensitivity" min="1" max="20" value="10">
-                    <span id="mouseSensitivityValue">10</span>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="invertMouse" checked>
-                        عكس تحكم الماوس
-                    </label>
-                </div>
-                
-                <div class="setting-item">
-                    <label>سرعة الحركة</label>
-                    <input type="range" id="movementSpeed" min="1" max="10" value="5">
-                    <span id="movementSpeedValue">5</span>
-                </div>
-            </div>
-        </div>
-        
-        <button class="save-btn" id="saveSettings">
-            <i class="fas fa-save"></i>
-            <span>حفظ الإعدادات</span>
-        </button>
-    </div>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let width, height;
 
-    <!-- شاشة نهاية اللعبة -->
-    <div id="gameOverScreen" class="screen game-over-screen">
-        <div class="result-container">
-            <div class="result-icon" id="resultIcon">
-                <i class="fas fa-trophy"></i>
-            </div>
-            
-            <h2 id="resultTitle">لقد فزت!</h2>
-            <p id="resultMessage">قمت بالقضاء على جميع الخصوم ونجوت</p>
-            
-            <div class="result-stats">
-                <div class="stat-box">
-                    <h3>الترتيب</h3>
-                    <div class="stat-value" id="rank">#1</div>
-                </div>
-                
-                <div class="stat-box">
-                    <h3>القتلى</h3>
-                    <div class="stat-value" id="kills">15</div>
-                </div>
-                
-                <div class="stat-box">
-                    <h3>الوقت</h3>
-                    <div class="stat-value" id="time">04:32</div>
-                </div>
-                
-                <div class="stat-box">
-                    <h3>الدقة</h3>
-                    <div class="stat-value" id="accuracy">68%</div>
-                </div>
-            </div>
-            
-            <div class="result-actions">
-                <button class="result-btn play-again-btn" id="playAgainBtn">
-                    <i class="fas fa-redo"></i>
-                    <span>لعب مرة أخرى</span>
-                </button>
-                
-                <button class="result-btn menu-btn" id="menuFromGameOverBtn">
-                    <i class="fas fa-home"></i>
-                    <span>القائمة الرئيسية</span>
-                </button>
-                
-                <button class="result-btn share-btn" id="shareBtn">
-                    <i class="fas fa-share"></i>
-                    <span>مشاركة النتيجة</span>
-                </button>
-            </div>
-        </div>
-    </div>
+// حالة اللاعب
+const player = {
+    x: 0, z: 0, 
+    yaw: 0, pitch: 0,
+    hp: 100, kills: 0,
+    vY: 0, onGround: true,
+    moveF: 0, moveS: 0
+};
 
-    <!-- شاشة حول اللعبة -->
-    <div id="aboutScreen" class="screen about-screen">
-        <div class="back-btn" id="backFromAbout">
-            <i class="fas fa-arrow-right"></i>
-            <span>رجوع</span>
-        </div>
-        
-        <h2 class="menu-title">عن اللعبة</h2>
-        
-        <div class="about-content">
-            <div class="about-card">
-                <div class="about-icon">
-                    <i class="fas fa-code"></i>
-                </div>
-                <h3>التطوير</h3>
-                <p>تم تطوير هذه اللعبة باستخدام تقنيات الويب فقط: HTML5، CSS3، و JavaScript (Vanilla JS).</p>
-            </div>
-            
-            <div class="about-card">
-                <div class="about-icon">
-                    <i class="fas fa-bullseye"></i>
-                </div>
-                <h3>الهدف</h3>
-                <p>البقاء كآخر لاعب حي في معركة ضد 15 بوت ذكي في خريطة تتقلص باستمرار.</p>
-            </div>
-            
-            <div class="about-card">
-                <div class="about-icon">
-                    <i class="fas fa-cogs"></i>
-                </div>
-                <h3>المميزات</h3>
-                <ul>
-                    <li>رسومات 3D واقعية</li>
-                    <li>4 مستويات صعوبة</li>
-                    <li>أسلحة متنوعة</li>
-                    <li>نظام علاج وذخيرة</li>
-                    <li>أصوات واقعية</li>
-                </ul>
-            </div>
-            
-            <div class="about-card">
-                <div class="about-icon">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3>المطور</h3>
-                <p>تم التطوير بواسطة محمد، مطور ألعاب ومواقع مهتم بتقديم أفضل تجربة لعب.</p>
-                <p class="tech-stack">HTML5 • CSS3 • JavaScript • WebGL</p>
-            </div>
-        </div>
-        
-        <div class="controls-info">
-            <h3><i class="fas fa-gamepad"></i> أزرار التحكم</h3>
-            <div class="controls-grid">
-                <div class="control-item">
-                    <span class="key">W/A/S/D</span>
-                    <span class="action">الحركة</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">ماوس</span>
-                    <span class="action">توجيه الكاميرا</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">زر الفأرة</span>
-                    <span class="action">إطلاق النار</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">R</span>
-                    <span class="action">إعادة تعبئة</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">E</span>
-                    <span class="action">التفاعل مع العناصر</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">Space</span>
-                    <span class="action">القفز</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">Shift</span>
-                    <span class="action">الركض</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">ESC</span>
-                    <span class="action">قائمة الإيقاف</span>
-                </div>
-            </div>
-        </div>
-    </div>
+// العالم
+let bots = [];
+let walls = [];
+let zoneRadius = 500;
+const MAP_SIZE = 1000;
 
-    <!-- رسائل التنبيه -->
-    <div id="notification" class="notification">
-        <div class="notification-content">
-            <span id="notificationText"></span>
-        </div>
-    </div>
+// الصوت (برمجي)
+const audio = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(f, d, v, type="square") {
+    try {
+        const o = audio.createOscillator();
+        const g = audio.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f, audio.currentTime);
+        g.gain.setValueAtTime(v, audio.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + d);
+        o.connect(g); g.connect(audio.destination);
+        o.start(); o.stop(audio.currentTime + d);
+    } catch(e) {}
+}
 
-    <!-- الصوتيات -->
-    <audio id="backgroundMusic" loop>
-        <source src="" type="audio/mpeg">
-    </audio>
+function init() {
+    resize();
+    // إنشاء عوائق (بيوت)
+    for(let i=0; i<40; i++) {
+        walls.push({
+            x: (Math.random()-0.5)*800,
+            z: (Math.random()-0.5)*800,
+            w: 15 + Math.random()*20,
+            h: 15 + Math.random()*20,
+            color: '#555'
+        });
+    }
+    // إنشاء بوتات
+    for(let i=0; i<15; i++) {
+        bots.push({
+            x: (Math.random()-0.5)*600,
+            z: (Math.random()-0.5)*600,
+            hp: 100,
+            lastShot: 0
+        });
+    }
 
-    <!-- الأصوات -->
-    <div id="audioElements" style="display: none;"></div>
+    document.getElementById('status').innerText = "جاهز تماماً!";
+    document.getElementById('start-bt').style.display = "block";
+}
 
-    <!-- إشعار تدوير الشاشة للهواتف -->
-    <div id="rotateNotice" class="rotate-notice">
-        <div class="rotate-icon">
-            <i class="fas fa-sync-alt"></i>
-        </div>
-        <p>يرجى تدوير الجهاز إلى الوضع الأفقي</p>
-    </div>
+function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+}
 
-    <script src="game.js"></script>
+window.addEventListener('resize', resize);
+
+document.getElementById('start-bt').onclick = () => {
+    document.getElementById('loading').style.display = 'none';
+    if(audio.state === 'suspended') audio.resume();
+    requestAnimationFrame(update);
+};
+
+// التحكم باللمس
+let touchX, touchY;
+canvas.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    if(t.clientX < width/2) { touchX = t.clientX; touchY = t.clientY; }
+});
+canvas.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if(t.clientX < width/2) {
+        player.moveF = (touchY - t.clientY) / 30;
+        player.moveS = (t.clientX - touchX) / 30;
+    } else {
+        if(player.lx) {
+            player.yaw -= (t.clientX - player.lx) * 0.005;
+            player.pitch -= (t.clientY - player.ly) * 0.005;
+            player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
+        }
+        player.lx = t.clientX; player.ly = t.clientY;
+    }
+});
+window.addEventListener('touchend', () => { player.moveF = 0; player.moveS = 0; player.lx = null; });
+
+document.getElementById('fire-btn').onclick = () => {
+    playSound(150, 0.1, 0.2, "sawtooth");
+    player.pitch += 0.02; // ارتداد
+    // نظام إصابة بسيط
+    bots.forEach(b => {
+        const dx = b.x - player.x;
+        const dz = b.z - player.z;
+        const dist = Math.sqrt(dx*dx + dz*dz);
+        // التحقق من أن البوت في اتجاه النظر
+        const angleToBot = Math.atan2(dx, dz);
+        const diff = Math.abs(angleToBot - (player.yaw + Math.PI));
+        if(dist < 50 && (diff < 0.2 || diff > 6.1)) {
+            b.hp -= 35;
+            if(b.hp <= 0) {
+                b.dead = true;
+                player.kills++;
+                document.getElementById('kills').innerText = player.kills;
+                document.getElementById('alive').innerText = bots.filter(x=>!x.dead).length + 1;
+            }
+        }
+    });
+};
+
+document.getElementById('jump-btn').onclick = () => {
+    if(player.onGround) { player.vY = 8; player.onGround = false; playSound(200, 0.1, 0.1); }
+};
+
+function update() {
+    // الحركة
+    const speed = 0.4;
+    player.x += (Math.sin(player.yaw) * player.moveF + Math.cos(player.yaw) * player.moveS) * speed;
+    player.z += (Math.cos(player.yaw) * player.moveF - Math.sin(player.yaw) * player.moveS) * speed;
+    
+    // جاذبية
+    player.vY -= 0.4;
+    const groundY = 0;
+    let currentY = (player.y || 2) + player.vY;
+    if(currentY < 2) { currentY = 2; player.vY = 0; player.onGround = true; }
+    player.y = currentY;
+
+    // الزون
+    zoneRadius -= 0.05;
+    const dist = Math.sqrt(player.x*player.x + player.z*player.z);
+    if(dist > zoneRadius) {
+        player.hp -= 0.1;
+        document.getElementById('health-fill').style.width = player.hp + "%";
+        document.getElementById('health-fill').style.background = "blue";
+    } else {
+        document.getElementById('health-fill').style.background = "linear-gradient(90deg, #f00, #0f0)";
+    }
+
+    // هجوم البوتات
+    bots.forEach(b => {
+        if(b.dead) return;
+        const d = Math.sqrt((b.x-player.x)**2 + (b.z-player.z)**2);
+        if(d < 60 && Date.now() - b.lastShot > 2000) {
+            b.lastShot = Date.now();
+            playSound(100, 0.1, 0.05, "sine");
+            player.hp -= 5;
+            document.getElementById('health-fill').style.width = player.hp + "%";
+            document.getElementById('damage-flash').style.display = 'block';
+            setTimeout(() => document.getElementById('damage-flash').style.display = 'none', 100);
+        }
+    });
+
+    draw();
+    requestAnimationFrame(update);
+}
+
+function draw() {
+    // مسح الشاشة (السماء)
+    ctx.fillStyle = '#7ec0ff';
+    ctx.fillRect(0, 0, width, height);
+
+    // الأرضية (بمنظور بسيط)
+    ctx.fillStyle = '#3d5e2a';
+    ctx.fillRect(0, height/2, width, height/2);
+
+    // رندر العالم (Pseudo 3D)
+    // ملاحظة: هذا نظام رندر خفيف جداً لا يسبب سواد الشاشة
+    const viewDist = 200;
+    
+    // رسم الجدران
+    walls.forEach(w => {
+        const dx = w.x - player.x;
+        const dz = w.z - player.z;
+        // تحويل الإحداثيات بالنسبة للكاميرا
+        const rx = dx * Math.cos(player.yaw) - dz * Math.sin(player.yaw);
+        const rz = dx * Math.sin(player.yaw) + dz * Math.cos(player.yaw);
+
+        if(rz > 5) {
+            const screenX = (rx / rz) * width + width/2;
+            const size = (w.w / rz) * width;
+            const h = (w.h / rz) * height;
+            ctx.fillStyle = w.color;
+            ctx.fillRect(screenX - size/2, height/2 - h + (player.y*10/rz), size, h);
+        }
+    });
+
+    // رسم البوتات
+    bots.forEach(b => {
+        if(b.dead) return;
+        const dx = b.x - player.x;
+        const dz = b.z - player.z;
+        const rx = dx * Math.cos(player.yaw) - dz * Math.sin(player.yaw);
+        const rz = dx * Math.sin(player.yaw) + dz * Math.cos(player.yaw);
+
+        if(rz > 5) {
+            const screenX = (rx / rz) * width + width/2;
+            const h = (40 / rz) * height;
+            ctx.fillStyle = 'red';
+            ctx.fillRect(screenX - h/4, height/2 - h + (player.y*10/rz), h/2, h);
+        }
+    });
+
+    // رسم السلاح M416 (FPP)
+    ctx.save();
+    ctx.translate(width*0.7, height*0.8 + Math.sin(Date.now()/200)*5);
+    ctx.rotate(-0.2);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, 150, 40); // جسم السلاح
+    ctx.fillRect(100, -20, 10, 40); // الناظور
+    ctx.restore();
+
+    // الكروس هير
+    ctx.strokeStyle = '#0f0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(width/2, height/2, 10, 0, Math.PI*2);
+    ctx.stroke();
+
+    // تحديث الميني ماب
+    document.getElementById('player-marker').style.left = (50 + player.x/10) + "%";
+    document.getElementById('player-marker').style.top = (50 + player.z/10) + "%";
+    const z = document.getElementById('zone-circle');
+    z.style.width = (zoneRadius/5) + "%";
+    z.style.height = (zoneRadius/5) + "%";
+    z.style.left = "50%"; z.style.top = "50%";
+}
+
+init();
+
+</script>
 </body>
 </html>
