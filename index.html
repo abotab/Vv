@@ -97,118 +97,130 @@
             align-items: flex-end;
         }
 
-        /* زر الحركة (جويستيك) */
+        /* جويستيك محسّن */
         #joystick {
             position: relative;
-            width: 140px;
-            height: 140px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-            border: 3px solid rgba(255,255,255,0.3);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, rgba(100,100,255,0.15) 0%, rgba(50,50,150,0.1) 100%);
+            border: 4px solid rgba(100,200,255,0.4);
             border-radius: 50%;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4), inset 0 0 30px rgba(100,200,255,0.2);
             pointer-events: auto;
+            backdrop-filter: blur(10px);
         }
 
         #joystickKnob {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #ff1744 0%, #d01030 100%);
-            border: 4px solid rgba(255,255,255,0.9);
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle at 30% 30%, #ff3366 0%, #cc0044 100%);
+            border: 5px solid rgba(255,255,255,0.95);
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 4px 20px rgba(255, 23, 68, 0.6), inset 0 2px 10px rgba(255,255,255,0.3);
-            transition: all 0.1s ease;
+            box-shadow: 0 6px 25px rgba(255, 51, 102, 0.7), inset 0 3px 15px rgba(255,255,255,0.4), inset 0 -3px 10px rgba(0,0,0,0.2);
+            transition: all 0.05s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* أزرار الحركة الاتجاهية */
-        .direction-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 5px;
-            width: 140px;
-            height: 140px;
-        }
-
-        .dir-btn {
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border: 2px solid rgba(255,255,255,0.4);
-            border-radius: 12px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.1s;
-        }
-
-        .dir-btn:active {
-            background: linear-gradient(135deg, rgba(0,255,136,0.4) 0%, rgba(0,204,102,0.3) 100%);
-            transform: scale(0.95);
-            box-shadow: 0 2px 8px rgba(0,255,136,0.4);
-        }
-
-        .dir-btn.empty {
-            opacity: 0;
-            pointer-events: none;
+        #joystickKnob::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8), transparent);
+            border-radius: 50%;
+            top: 8px;
+            left: 12px;
         }
 
         /* زر القفز */
         #jumpBtn {
-            width: 90px;
-            height: 90px;
-            background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
-            border: 4px solid rgba(255,255,255,0.9);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #ffeb3b 0%, #ff9800 100%);
+            border: 5px solid rgba(255,255,255,0.95);
             border-radius: 50%;
             color: #000;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 900;
-            box-shadow: 0 8px 25px rgba(255, 235, 59, 0.5), inset 0 2px 10px rgba(255,255,255,0.4);
+            box-shadow: 0 10px 35px rgba(255, 193, 7, 0.6), inset 0 3px 15px rgba(255,255,255,0.5), inset 0 -3px 10px rgba(0,0,0,0.1);
             cursor: pointer;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             user-select: none;
-            transition: all 0.15s;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
         }
 
         #jumpBtn:active {
-            transform: scale(0.9) translateY(-5px);
-            box-shadow: 0 12px 30px rgba(255, 235, 59, 0.7);
+            transform: scale(0.92) translateY(-8px);
+            box-shadow: 0 15px 45px rgba(255, 193, 7, 0.9), inset 0 5px 20px rgba(255,255,255,0.6);
+        }
+
+        #jumpBtn::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, rgba(255,255,255,0.6), transparent);
+            border-radius: 50%;
+            top: 12px;
+            left: 20px;
         }
 
         /* زر التسريع */
         #boostBtn {
-            width: 90px;
-            height: 90px;
-            background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%);
-            border: 4px solid rgba(255,255,255,0.9);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #00e5ff 0%, #00acc1 100%);
+            border: 5px solid rgba(255,255,255,0.95);
             border-radius: 50%;
             color: #000;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 900;
-            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5), inset 0 2px 10px rgba(255,255,255,0.4);
+            box-shadow: 0 10px 35px rgba(0, 229, 255, 0.6), inset 0 3px 15px rgba(255,255,255,0.5), inset 0 -3px 10px rgba(0,0,0,0.1);
             cursor: pointer;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             user-select: none;
-            transition: all 0.15s;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            animation: boostPulse 2s infinite;
+        }
+
+        @keyframes boostPulse {
+            0%, 100% { 
+                box-shadow: 0 10px 35px rgba(0, 229, 255, 0.6), inset 0 3px 15px rgba(255,255,255,0.5);
+            }
+            50% { 
+                box-shadow: 0 12px 40px rgba(0, 229, 255, 0.9), inset 0 4px 20px rgba(255,255,255,0.6);
+            }
         }
 
         #boostBtn:active {
-            transform: scale(0.95);
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.8);
-            background: linear-gradient(135deg, #00ffff 0%, #00aaaa 100%);
+            transform: scale(0.92);
+            box-shadow: 0 6px 25px rgba(0, 229, 255, 0.95);
+            background: radial-gradient(circle at 30% 30%, #00ffff 0%, #00d4e8 100%);
+            animation: none;
+        }
+
+        #boostBtn::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, rgba(255,255,255,0.6), transparent);
+            border-radius: 50%;
+            top: 12px;
+            left: 20px;
         }
 
         /* شاشة البداية */
@@ -218,29 +230,69 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             pointer-events: auto;
+            overflow: hidden;
+        }
+
+        #startScreen::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
         }
 
         #startScreen h1 {
             font-family: 'Teko', sans-serif;
-            font-size: 48px;
+            font-size: 56px;
             color: #fff;
-            text-shadow: 0 0 20px rgba(255,68,68,0.8), 0 0 40px rgba(255,68,68,0.5);
+            text-shadow: 0 0 30px rgba(255,68,68,1), 0 0 60px rgba(255,68,68,0.7), 0 5px 15px rgba(0,0,0,0.5);
             margin-bottom: 10px;
-            animation: glow 2s infinite;
+            animation: titleGlow 2s infinite, float 3s ease-in-out infinite;
+            position: relative;
+            z-index: 10;
+            letter-spacing: 2px;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { 
+                text-shadow: 0 0 30px rgba(255,68,68,1), 0 0 60px rgba(255,68,68,0.7), 0 5px 15px rgba(0,0,0,0.5);
+            }
+            50% { 
+                text-shadow: 0 0 40px rgba(255,68,68,1), 0 0 80px rgba(255,68,68,0.9), 0 5px 20px rgba(0,0,0,0.7);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
         #startScreen h2 {
-            font-size: 28px;
-            color: #ff4444;
-            margin-bottom: 40px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 50px;
+            text-shadow: 0 3px 10px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 10;
+            font-weight: 700;
+            letter-spacing: 1px;
+            opacity: 0.95;
         }
 
         @keyframes glow {
@@ -249,34 +301,68 @@
         }
 
         #startBtn {
-            padding: 20px 60px;
-            font-size: 28px;
+            padding: 22px 70px;
+            font-size: 32px;
             font-weight: 900;
-            background: linear-gradient(135deg, #ff1744 0%, #d01030 100%);
+            background: linear-gradient(135deg, #ff1744 0%, #f50057 50%, #d81b60 100%);
             color: white;
             border: none;
-            border-radius: 50px;
+            border-radius: 60px;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.5);
-            transition: all 0.3s;
+            box-shadow: 0 15px 50px rgba(245, 0, 87, 0.6), inset 0 3px 10px rgba(255,255,255,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Cairo', sans-serif;
+            position: relative;
+            z-index: 10;
+            letter-spacing: 1px;
+            overflow: hidden;
+        }
+
+        #startBtn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        #startBtn:hover::before {
+            left: 100%;
         }
 
         #startBtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(255, 23, 68, 0.7);
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 20px 60px rgba(245, 0, 87, 0.8), inset 0 3px 15px rgba(255,255,255,0.4);
         }
 
         #startBtn:active {
-            transform: scale(0.98);
+            transform: scale(0.98) translateY(0);
+            box-shadow: 0 10px 30px rgba(245, 0, 87, 0.9);
         }
 
         .instructions {
-            margin-top: 40px;
-            color: rgba(255,255,255,0.8);
+            margin-top: 50px;
+            color: rgba(255,255,255,0.95);
             text-align: center;
             max-width: 90%;
-            line-height: 1.6;
+            line-height: 1.8;
+            position: relative;
+            z-index: 10;
+            background: rgba(0,0,0,0.2);
+            padding: 25px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .instructions p {
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         /* شاشة انتهاء اللعبة */
@@ -345,18 +431,10 @@
         </div>
 
         <div id="controls">
-            <!-- أزرار الحركة -->
+            <!-- جويستيك التحكم -->
             <div class="control-group">
-                <div class="direction-pad">
-                    <div class="dir-btn empty"></div>
-                    <div class="dir-btn" data-dir="forward">↑</div>
-                    <div class="dir-btn empty"></div>
-                    <div class="dir-btn" data-dir="left">←</div>
-                    <div class="dir-btn empty"></div>
-                    <div class="dir-btn" data-dir="right">→</div>
-                    <div class="dir-btn empty"></div>
-                    <div class="dir-btn" data-dir="backward">↓</div>
-                    <div class="dir-btn empty"></div>
+                <div id="joystick">
+                    <div id="joystickKnob"></div>
                 </div>
             </div>
 
@@ -391,13 +469,22 @@
         // إعداد Three.js
         const canvas = document.getElementById('gameCanvas');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0x87ceeb, 50, 300);
+        scene.fog = new THREE.Fog(0x87ceeb, 100, 500);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // إضافة سماء جميلة
+        const skyGeometry = new THREE.SphereGeometry(900, 32, 32);
+        const skyMaterial = new THREE.MeshBasicMaterial({
+            color: 0x87ceeb,
+            side: THREE.BackSide
+        });
+        const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+        scene.add(sky);
 
         // إضاءة
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -503,11 +590,11 @@
         function createGround() {
             const groundGroup = new THREE.Group();
             
-            // أرضية المدينة الكبيرة
-            const groundSize = 500;
+            // أرضية المدينة الكبيرة جداً
+            const groundSize = 2000;
             const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
             const groundMaterial = new THREE.MeshPhongMaterial({
-                color: 0x2d5a2d,
+                color: 0x1a4d1a,
                 side: THREE.DoubleSide
             });
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -515,12 +602,12 @@
             ground.receiveShadow = true;
             groundGroup.add(ground);
 
-            // شوارع متقاطعة (شبكة كبيرة)
-            const streetMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
-            const streetWidth = 8;
+            // شوارع متقاطعة (شبكة ضخمة)
+            const streetMaterial = new THREE.MeshPhongMaterial({ color: 0x2a2a2a });
+            const streetWidth = 10;
             
             // شوارع أفقية ورأسية
-            for (let i = -10; i <= 10; i++) {
+            for (let i = -40; i <= 40; i++) {
                 // شارع أفقي
                 const streetH = new THREE.Mesh(
                     new THREE.PlaneGeometry(groundSize, streetWidth),
@@ -543,16 +630,16 @@
                 streetV.receiveShadow = true;
                 groundGroup.add(streetV);
 
-                // خطوط الشارع
+                // خطوط الشارع الصفراء
                 if (i % 2 === 0) {
                     const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-                    for (let j = -10; j <= 10; j++) {
+                    for (let j = -40; j <= 40; j++) {
                         const line = new THREE.Mesh(
-                            new THREE.PlaneGeometry(0.3, 3),
+                            new THREE.PlaneGeometry(0.4, 4),
                             lineMaterial
                         );
                         line.rotation.x = -Math.PI / 2;
-                        line.position.set(i * 25, 0.02, j * 10);
+                        line.position.set(i * 25, 0.02, j * 12);
                         groundGroup.add(line);
                     }
                 }
@@ -567,21 +654,26 @@
                 { color: 0x4a5568, height: [10, 20] },
                 { color: 0x2d3748, height: [15, 30] },
                 { color: 0x1a202c, height: [8, 25] },
-                { color: 0x5a6b7d, height: [12, 28] }
+                { color: 0x5a6b7d, height: [12, 28] },
+                { color: 0x3d4d5c, height: [18, 35] },
+                { color: 0x2c3e50, height: [20, 40] }
             ];
 
-            for (let x = -12; x <= 12; x++) {
-                for (let z = -12; z <= 12; z++) {
+            for (let x = -35; x <= 35; x++) {
+                for (let z = -35; z <= 35; z++) {
                     // تخطي الشوارع
                     if (Math.abs(x % 2) < 0.5 || Math.abs(z % 2) < 0.5) continue;
                     
                     // تخطي منطقة البداية
-                    if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
+                    if (Math.abs(x) < 3 && Math.abs(z) < 3) continue;
+
+                    // إضافة تنوع في توزيع المباني
+                    if (Math.random() > 0.85) continue;
 
                     const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
                     const height = type.height[0] + Math.random() * (type.height[1] - type.height[0]);
-                    const width = 8 + Math.random() * 6;
-                    const depth = 8 + Math.random() * 6;
+                    const width = 8 + Math.random() * 8;
+                    const depth = 8 + Math.random() * 8;
 
                     const geometry = new THREE.BoxGeometry(width, height, depth);
                     const material = new THREE.MeshPhongMaterial({
@@ -593,19 +685,21 @@
                     building.castShadow = true;
                     building.receiveShadow = true;
 
-                    // نوافذ
+                    // نوافذ متوهجة
                     const windowMaterial = new THREE.MeshBasicMaterial({
-                        color: Math.random() > 0.3 ? 0xffff88 : 0x333333
+                        color: Math.random() > 0.3 ? 0xffff88 : 0x444444,
+                        transparent: true,
+                        opacity: Math.random() > 0.3 ? 0.9 : 0.3
                     });
                     const windowCount = Math.floor(height / 3);
                     for (let i = 0; i < windowCount; i++) {
-                        for (let j = 0; j < 3; j++) {
+                        for (let j = 0; j < 4; j++) {
                             const window = new THREE.Mesh(
-                                new THREE.PlaneGeometry(1, 1),
-                                windowMaterial
+                                new THREE.PlaneGeometry(1.2, 1.5),
+                                windowMaterial.clone()
                             );
                             window.position.set(
-                                j * 2 - 2,
+                                j * 2.5 - 3.75,
                                 i * 3 - height / 2 + 2,
                                 width / 2 + 0.01
                             );
@@ -732,21 +826,21 @@
                 scene.add(policeCar);
             }
 
-            // إنشاء عوائق
-            for (let i = 0; i < 30; i++) {
-                const x = (Math.random() - 0.5) * 200;
-                const z = (Math.random() - 0.5) * 200;
-                if (Math.abs(x) > 10 || Math.abs(z) > 10) {
+            // إنشاء عوائق أكثر في المدينة الكبيرة
+            for (let i = 0; i < 100; i++) {
+                const x = (Math.random() - 0.5) * 800;
+                const z = (Math.random() - 0.5) * 800;
+                if (Math.abs(x) > 15 || Math.abs(z) > 15) {
                     const obstacle = createObstacle(x, z);
                     obstacles.push(obstacle);
                     scene.add(obstacle);
                 }
             }
 
-            // إنشاء عملات
-            for (let i = 0; i < 50; i++) {
-                const x = (Math.random() - 0.5) * 180;
-                const z = (Math.random() - 0.5) * 180;
+            // إنشاء عملات أكثر
+            for (let i = 0; i < 150; i++) {
+                const x = (Math.random() - 0.5) * 750;
+                const z = (Math.random() - 0.5) * 750;
                 const coin = createCoin(x, z);
                 coins.push(coin);
                 scene.add(coin);
@@ -768,43 +862,118 @@
             camera.lookAt(0, 0, 0);
         }
 
-        // التحكم باللمس
-        const directionButtons = document.querySelectorAll('.dir-btn');
-        directionButtons.forEach(btn => {
-            const dir = btn.dataset.dir;
-            if (!dir) return;
+        // التحكم بالجويستيك
+        const joystick = document.getElementById('joystick');
+        const joystickKnob = document.getElementById('joystickKnob');
+        let joystickActive = false;
+        let joystickCenter = { x: 0, y: 0 };
+        let joystickRadius = 75;
+        let joystickOffset = { x: 0, y: 0 };
 
-            btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                switch(dir) {
-                    case 'forward': moveForward = true; break;
-                    case 'backward': moveBackward = true; break;
-                    case 'left': moveLeft = true; break;
-                    case 'right': moveRight = true; break;
-                }
-            });
+        function initJoystick() {
+            const rect = joystick.getBoundingClientRect();
+            joystickCenter.x = rect.left + rect.width / 2;
+            joystickCenter.y = rect.top + rect.height / 2;
+        }
 
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                switch(dir) {
-                    case 'forward': moveForward = false; break;
-                    case 'backward': moveBackward = false; break;
-                    case 'left': moveLeft = false; break;
-                    case 'right': moveRight = false; break;
-                }
-            });
+        function updateJoystick(touch) {
+            const deltaX = touch.clientX - joystickCenter.x;
+            const deltaY = touch.clientY - joystickCenter.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            let normalizedX = deltaX;
+            let normalizedY = deltaY;
+            
+            if (distance > joystickRadius * 0.5) {
+                normalizedX = (deltaX / distance) * joystickRadius * 0.5;
+                normalizedY = (deltaY / distance) * joystickRadius * 0.5;
+            }
+            
+            joystickKnob.style.transform = `translate(calc(-50% + ${normalizedX}px), calc(-50% + ${normalizedY}px))`;
+            
+            joystickOffset.x = normalizedX / (joystickRadius * 0.5);
+            joystickOffset.y = normalizedY / (joystickRadius * 0.5);
+            
+            // تحديث حالة الحركة بناءً على الجويستيك
+            moveForward = joystickOffset.y < -0.3;
+            moveBackward = joystickOffset.y > 0.3;
+            moveLeft = joystickOffset.x < -0.3;
+            moveRight = joystickOffset.x > 0.3;
+        }
+
+        function resetJoystick() {
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+            joystickOffset.x = 0;
+            joystickOffset.y = 0;
+            moveForward = false;
+            moveBackward = false;
+            moveLeft = false;
+            moveRight = false;
+        }
+
+        joystick.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            joystickActive = true;
+            initJoystick();
+            updateJoystick(e.touches[0]);
+        });
+
+        joystick.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (joystickActive) {
+                updateJoystick(e.touches[0]);
+            }
+        });
+
+        joystick.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            joystickActive = false;
+            resetJoystick();
+        });
+
+        // دعم الماوس للكمبيوتر
+        joystick.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            joystickActive = true;
+            initJoystick();
+            updateJoystick(e);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (joystickActive) {
+                updateJoystick(e);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (joystickActive) {
+                joystickActive = false;
+                resetJoystick();
+            }
         });
 
         // زر القفز
         const jumpBtn = document.getElementById('jumpBtn');
         jumpBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if (canJump && !isJumping) {
+            jump();
+        });
+
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            jump();
+        });
+
+        function jump() {
+            if (canJump && !isJumping && player.position.y <= 2.1) {
                 playerVelocity.y = jumpPower;
                 isJumping = true;
                 canJump = false;
+                setTimeout(() => {
+                    canJump = true;
+                }, 300);
             }
-        });
+        }
 
         // زر التسريع
         const boostBtn = document.getElementById('boostBtn');
@@ -812,12 +981,28 @@
             e.preventDefault();
             isBoosting = true;
             maxSpeed = 1.5;
+            boostBtn.style.transform = 'scale(0.92)';
         });
 
         boostBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             isBoosting = false;
             maxSpeed = 0.8;
+            boostBtn.style.transform = 'scale(1)';
+        });
+
+        boostBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isBoosting = true;
+            maxSpeed = 1.5;
+            boostBtn.style.transform = 'scale(0.92)';
+        });
+
+        boostBtn.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            isBoosting = false;
+            maxSpeed = 0.8;
+            boostBtn.style.transform = 'scale(1)';
         });
 
         // التحكم بلوحة المفاتيح (للكمبيوتر)
@@ -890,13 +1075,50 @@
                 player.position.y = 2;
                 playerVelocity.y = 0;
                 isJumping = false;
-                canJump = true;
             }
+
+            // حفظ الموقع القديم للتحقق من الاصطدام
+            const oldX = player.position.x;
+            const oldZ = player.position.z;
 
             // تحديث الموقع
             player.position.x += playerVelocity.x;
             player.position.z += playerVelocity.z;
             player.position.y += playerVelocity.y;
+
+            // التحقق من الاصطدام مع العوائق
+            let collision = false;
+            obstacles.forEach(obstacle => {
+                const dx = player.position.x - obstacle.position.x;
+                const dz = player.position.z - obstacle.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < 2.5 && player.position.y < 4) {
+                    collision = true;
+                    // إرجاع اللاعب للموقع القديم
+                    player.position.x = oldX;
+                    player.position.z = oldZ;
+                    // عكس السرعة
+                    playerVelocity.x *= -0.5;
+                    playerVelocity.z *= -0.5;
+                }
+            });
+
+            // التحقق من الاصطدام مع المباني
+            buildings.forEach(building => {
+                const dx = Math.abs(player.position.x - building.position.x);
+                const dz = Math.abs(player.position.z - building.position.z);
+                const buildingWidth = building.geometry.parameters.width / 2;
+                const buildingDepth = building.geometry.parameters.depth / 2;
+
+                if (dx < buildingWidth + 1.5 && dz < buildingDepth + 1.5 && player.position.y < 4) {
+                    collision = true;
+                    player.position.x = oldX;
+                    player.position.z = oldZ;
+                    playerVelocity.x *= -0.5;
+                    playerVelocity.z *= -0.5;
+                }
+            });
 
             // دوران الكبسولة
             if (moveForward || moveBackward || moveLeft || moveRight) {
@@ -906,11 +1128,6 @@
             // تحديث عرض السرعة
             playerSpeed = currentSpeed * 100;
             document.getElementById('speedDisplay').textContent = Math.floor(playerSpeed);
-
-            // حدود المدينة
-            const boundary = 240;
-            player.position.x = Math.max(-boundary, Math.min(boundary, player.position.x));
-            player.position.z = Math.max(-boundary, Math.min(boundary, player.position.z));
         }
 
         // تحديث الشرطة
