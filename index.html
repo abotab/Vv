@@ -3,314 +3,1022 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PUBG Mobile - No Lag Edition</title>
+    <title>الهروب من الشرطة - Police Chase 3D</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
-        * { box-sizing: border-box; user-select: none; touch-action: none; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Cairo', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&family=Teko:wght@600&display=swap');
         
-        canvas { display: block; width: 100%; height: 100%; background: #222; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        /* HUD - واجهة المستخدم */
-        #ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        
-        /* ميني ماب */
-        #minimap { position: absolute; top: 10px; right: 10px; width: 110px; height: 110px; background: rgba(0,0,0,0.5); border: 2px solid #fff; border-radius: 8px; overflow: hidden; }
-        #player-marker { position: absolute; width: 6px; height: 6px; background: #0f0; border-radius: 50%; transform: translate(-50%, -50%); }
+        body {
+            font-family: 'Cairo', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87ceeb 0%, #4a90b5 50%, #2d5a7b 100%);
+        }
+
+        /* واجهة اللعبة */
+        #gameUI {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* شريط المعلومات العلوي */
+        #topBar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stat-box {
+            background: rgba(255, 68, 68, 0.95);
+            padding: 8px 15px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 900;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .stat-box.speed {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .stat-box.score {
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
 
         /* أزرار التحكم */
-        .btn { position: absolute; border-radius: 50%; display: flex; justify-content: center; align-items: center; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        #fire-btn { bottom: 30px; right: 30px; width: 90px; height: 90px; background: rgba(255, 0, 0, 0.6); border: 4px solid #fff; font-size: 40px; }
-        #jump-btn { bottom: 130px; right: 40px; width: 55px; height: 55px; background: rgba(255,255,255,0.2); border: 2px solid #fff; color: #fff; font-size: 14px; }
-        
-        /* الصحة والإحصائيات */
-        #health-wrap { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 12px; background: #333; border: 2px solid #fff; border-radius: 10px; overflow: hidden; }
-        #health-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #f00, #0f0); }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: auto;
+        }
 
-        #weapon-card { position: absolute; bottom: 20px; right: 130px; color: #ffcc00; text-shadow: 1px 1px 2px #000; text-align: right; }
-        #game-info { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 5px; font-size: 14px; }
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
 
-        /* شاشة التحميل السريعة */
-        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; color:orange; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:2000; }
-        #start-bt { padding: 15px 50px; background: orange; color: #000; border: none; border-radius: 30px; font-weight: bold; font-size: 20px; cursor: pointer; display: none; }
-        
-        /* فلاش عند الإصابة */
-        #damage-flash { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,0,0,0.3); pointer-events: none; display: none; }
+        /* زر الحركة (جويستيك) */
+        #joystick {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.1);
+            pointer-events: auto;
+        }
+
+        #joystickKnob {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff1744 0%, #d01030 100%);
+            border: 4px solid rgba(255,255,255,0.9);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 20px rgba(255, 23, 68, 0.6), inset 0 2px 10px rgba(255,255,255,0.3);
+            transition: all 0.1s ease;
+        }
+
+        /* أزرار الحركة الاتجاهية */
+        .direction-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            width: 140px;
+            height: 140px;
+        }
+
+        .dir-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s;
+        }
+
+        .dir-btn:active {
+            background: linear-gradient(135deg, rgba(0,255,136,0.4) 0%, rgba(0,204,102,0.3) 100%);
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0,255,136,0.4);
+        }
+
+        .dir-btn.empty {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* زر القفز */
+        #jumpBtn {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
+            border: 4px solid rgba(255,255,255,0.9);
+            border-radius: 50%;
+            color: #000;
+            font-size: 16px;
+            font-weight: 900;
+            box-shadow: 0 8px 25px rgba(255, 235, 59, 0.5), inset 0 2px 10px rgba(255,255,255,0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: all 0.15s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        #jumpBtn:active {
+            transform: scale(0.9) translateY(-5px);
+            box-shadow: 0 12px 30px rgba(255, 235, 59, 0.7);
+        }
+
+        /* زر التسريع */
+        #boostBtn {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%);
+            border: 4px solid rgba(255,255,255,0.9);
+            border-radius: 50%;
+            color: #000;
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5), inset 0 2px 10px rgba(255,255,255,0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: all 0.15s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        #boostBtn:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.8);
+            background: linear-gradient(135deg, #00ffff 0%, #00aaaa 100%);
+        }
+
+        /* شاشة البداية */
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+
+        #startScreen h1 {
+            font-family: 'Teko', sans-serif;
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,68,68,0.8), 0 0 40px rgba(255,68,68,0.5);
+            margin-bottom: 10px;
+            animation: glow 2s infinite;
+        }
+
+        #startScreen h2 {
+            font-size: 28px;
+            color: #ff4444;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255,68,68,0.8), 0 0 40px rgba(255,68,68,0.5); }
+            50% { text-shadow: 0 0 30px rgba(255,68,68,1), 0 0 60px rgba(255,68,68,0.8); }
+        }
+
+        #startBtn {
+            padding: 20px 60px;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff1744 0%, #d01030 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.5);
+            transition: all 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        #startBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 23, 68, 0.7);
+        }
+
+        #startBtn:active {
+            transform: scale(0.98);
+        }
+
+        .instructions {
+            margin-top: 40px;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            max-width: 90%;
+            line-height: 1.6;
+        }
+
+        /* شاشة انتهاء اللعبة */
+        #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+
+        #gameOverScreen h1 {
+            font-size: 42px;
+            color: #ff4444;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255,68,68,0.8);
+        }
+
+        #finalScore {
+            font-size: 32px;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        #restartBtn {
+            padding: 15px 50px;
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+            transition: all 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        #restartBtn:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
-
-<div id="loading">
-    <h1 style="margin-bottom:10px;">PUBG MOBILE</h1>
-    <p id="status">جاري الاتصال السريع...</p>
-    <button id="start-bt">ابدأ المعركة</button>
-</div>
-
-<canvas id="gameCanvas"></canvas>
-<div id="damage-flash"></div>
-
-<div id="ui-overlay">
-    <div id="game-info">👤 الأحياء: <span id="alive">16</span> | 💀 القتلى: <span id="kills">0</span></div>
+    <canvas id="gameCanvas"></canvas>
     
-    <div id="minimap">
-        <div id="zone-circle" style="position:absolute; border:1px solid #00f; border-radius:50%; transform:translate(-50%,-50%);"></div>
-        <div id="player-marker"></div>
+    <!-- واجهة اللعبة -->
+    <div id="gameUI">
+        <div id="topBar">
+            <div class="stat-box">
+                <span>شرطة: </span><span id="policeCount">3</span>
+            </div>
+            <div class="stat-box score">
+                <span>نقاط: </span><span id="score">0</span>
+            </div>
+            <div class="stat-box speed">
+                <span id="speedDisplay">0</span> كم/س
+            </div>
+        </div>
+
+        <div id="controls">
+            <!-- أزرار الحركة -->
+            <div class="control-group">
+                <div class="direction-pad">
+                    <div class="dir-btn empty"></div>
+                    <div class="dir-btn" data-dir="forward">↑</div>
+                    <div class="dir-btn empty"></div>
+                    <div class="dir-btn" data-dir="left">←</div>
+                    <div class="dir-btn empty"></div>
+                    <div class="dir-btn" data-dir="right">→</div>
+                    <div class="dir-btn empty"></div>
+                    <div class="dir-btn" data-dir="backward">↓</div>
+                    <div class="dir-btn empty"></div>
+                </div>
+            </div>
+
+            <!-- أزرار الإجراءات -->
+            <div class="control-group">
+                <button id="boostBtn">⚡<br>تسريع</button>
+                <button id="jumpBtn">🚀<br>قفز</button>
+            </div>
+        </div>
     </div>
 
-    <div id="health-wrap"><div id="health-fill"></div></div>
-
-    <div id="weapon-card">
-        <div style="font-size: 20px;">M416</div>
-        <div id="ammo">∞ / 30</div>
+    <!-- شاشة البداية -->
+    <div id="startScreen">
+        <h1>🚗 الهروب من الشرطة 🚨</h1>
+        <h2>Police Chase 3D</h2>
+        <button id="startBtn">ابدأ اللعبة</button>
+        <div class="instructions">
+            <p>استخدم الأسهم للتحرك • زر القفز للقفز فوق العوائق</p>
+            <p>زر التسريع للهروب السريع • اهرب من الشرطة واجمع النقاط!</p>
+        </div>
     </div>
 
-    <div id="fire-btn" class="btn">🔫</div>
-    <div id="jump-btn" class="btn">UP</div>
-</div>
+    <!-- شاشة انتهاء اللعبة -->
+    <div id="gameOverScreen">
+        <h1>تم القبض عليك! 🚨</h1>
+        <div id="finalScore"></div>
+        <button id="restartBtn">العب مرة أخرى</button>
+    </div>
 
-<script>
-/**
- * محرك لعبة PUBG Mobile - نسخة الأداء الفائق
- * تم بناؤه بدون مكتبات خارجية لحل مشكلة الشاشة السوداء والتعليق
- */
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // إعداد Three.js
+        const canvas = document.getElementById('gameCanvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x87ceeb, 50, 300);
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-let width, height;
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// حالة اللاعب
-const player = {
-    x: 0, z: 0, 
-    yaw: 0, pitch: 0,
-    hp: 100, kills: 0,
-    vY: 0, onGround: true,
-    moveF: 0, moveS: 0
-};
+        // إضاءة
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
 
-// العالم
-let bots = [];
-let walls = [];
-let zoneRadius = 500;
-const MAP_SIZE = 1000;
+        const sunLight = new THREE.DirectionalLight(0xffffee, 0.8);
+        sunLight.position.set(50, 100, 50);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.far = 200;
+        sunLight.shadow.camera.left = -100;
+        sunLight.shadow.camera.right = 100;
+        sunLight.shadow.camera.top = 100;
+        sunLight.shadow.camera.bottom = -100;
+        scene.add(sunLight);
 
-// الصوت (برمجي)
-const audio = new (window.AudioContext || window.webkitAudioContext)();
-function playSound(f, d, v, type="square") {
-    try {
-        const o = audio.createOscillator();
-        const g = audio.createGain();
-        o.type = type;
-        o.frequency.setValueAtTime(f, audio.currentTime);
-        g.gain.setValueAtTime(v, audio.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + d);
-        o.connect(g); g.connect(audio.destination);
-        o.start(); o.stop(audio.currentTime + d);
-    } catch(e) {}
-}
+        // متغيرات اللعبة
+        let gameStarted = false;
+        let gameOver = false;
+        let score = 0;
+        let player, ground;
+        let buildings = [];
+        let policeCars = [];
+        let obstacles = [];
+        let coins = [];
+        
+        let playerVelocity = { x: 0, y: 0, z: 0 };
+        let playerSpeed = 0;
+        let maxSpeed = 0.8;
+        let acceleration = 0.02;
+        let friction = 0.98;
+        let turnSpeed = 0.05;
+        let jumpPower = 0.4;
+        let isJumping = false;
+        let canJump = true;
+        let isBoosting = false;
 
-function init() {
-    resize();
-    // إنشاء عوائق (بيوت)
-    for(let i=0; i<40; i++) {
-        walls.push({
-            x: (Math.random()-0.5)*800,
-            z: (Math.random()-0.5)*800,
-            w: 15 + Math.random()*20,
-            h: 15 + Math.random()*20,
-            color: '#555'
-        });
-    }
-    // إنشاء بوتات
-    for(let i=0; i<15; i++) {
-        bots.push({
-            x: (Math.random()-0.5)*600,
-            z: (Math.random()-0.5)*600,
-            hp: 100,
-            lastShot: 0
-        });
-    }
+        // متغيرات التحكم
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
 
-    document.getElementById('status').innerText = "جاهز تماماً!";
-    document.getElementById('start-bt').style.display = "block";
-}
+        // إنشاء الكبسولة (اللاعب)
+        function createPlayer() {
+            const group = new THREE.Group();
+            
+            // جسم الكبسولة بألوان جميلة متدرجة
+            const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.8, 2, 16);
+            const bodyMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff1744,
+                shininess: 100,
+                emissive: 0x330000
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.castShadow = true;
+            group.add(body);
 
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
+            // رأس الكبسولة (نصف كرة علوي)
+            const topGeometry = new THREE.SphereGeometry(0.8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+            const topMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff4081,
+                shininess: 120,
+                emissive: 0x440011
+            });
+            const top = new THREE.Mesh(topGeometry, topMaterial);
+            top.position.y = 1;
+            top.castShadow = true;
+            group.add(top);
 
-window.addEventListener('resize', resize);
+            // قاع الكبسولة
+            const bottomGeometry = new THREE.SphereGeometry(0.8, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+            const bottomMaterial = new THREE.MeshPhongMaterial({
+                color: 0xc2185b,
+                shininess: 120
+            });
+            const bottom = new THREE.Mesh(bottomGeometry, bottomMaterial);
+            bottom.position.y = -1;
+            bottom.castShadow = true;
+            group.add(bottom);
 
-document.getElementById('start-bt').onclick = () => {
-    document.getElementById('loading').style.display = 'none';
-    if(audio.state === 'suspended') audio.resume();
-    requestAnimationFrame(update);
-};
+            // خطوط زينة
+            for (let i = 0; i < 3; i++) {
+                const ringGeometry = new THREE.TorusGeometry(0.85, 0.08, 8, 16);
+                const ringMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x00ffff,
+                    emissive: 0x00ffff,
+                    emissiveIntensity: 0.5
+                });
+                const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                ring.rotation.x = Math.PI / 2;
+                ring.position.y = -0.6 + i * 0.6;
+                group.add(ring);
+            }
 
-// التحكم باللمس
-let touchX, touchY;
-canvas.addEventListener('touchstart', e => {
-    const t = e.touches[0];
-    if(t.clientX < width/2) { touchX = t.clientX; touchY = t.clientY; }
-});
-canvas.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    if(t.clientX < width/2) {
-        player.moveF = (touchY - t.clientY) / 30;
-        player.moveS = (t.clientX - touchX) / 30;
-    } else {
-        if(player.lx) {
-            player.yaw -= (t.clientX - player.lx) * 0.005;
-            player.pitch -= (t.clientY - player.ly) * 0.005;
-            player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
+            group.position.y = 2;
+            group.castShadow = true;
+            return group;
         }
-        player.lx = t.clientX; player.ly = t.clientY;
-    }
-});
-window.addEventListener('touchend', () => { player.moveF = 0; player.moveS = 0; player.lx = null; });
 
-document.getElementById('fire-btn').onclick = () => {
-    playSound(150, 0.1, 0.2, "sawtooth");
-    player.pitch += 0.02; // ارتداد
-    // نظام إصابة بسيط
-    bots.forEach(b => {
-        const dx = b.x - player.x;
-        const dz = b.z - player.z;
-        const dist = Math.sqrt(dx*dx + dz*dz);
-        // التحقق من أن البوت في اتجاه النظر
-        const angleToBot = Math.atan2(dx, dz);
-        const diff = Math.abs(angleToBot - (player.yaw + Math.PI));
-        if(dist < 50 && (diff < 0.2 || diff > 6.1)) {
-            b.hp -= 35;
-            if(b.hp <= 0) {
-                b.dead = true;
-                player.kills++;
-                document.getElementById('kills').innerText = player.kills;
-                document.getElementById('alive').innerText = bots.filter(x=>!x.dead).length + 1;
+        // إنشاء الأرض والشوارع
+        function createGround() {
+            const groundGroup = new THREE.Group();
+            
+            // أرضية المدينة الكبيرة
+            const groundSize = 500;
+            const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
+            const groundMaterial = new THREE.MeshPhongMaterial({
+                color: 0x2d5a2d,
+                side: THREE.DoubleSide
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            groundGroup.add(ground);
+
+            // شوارع متقاطعة (شبكة كبيرة)
+            const streetMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
+            const streetWidth = 8;
+            
+            // شوارع أفقية ورأسية
+            for (let i = -10; i <= 10; i++) {
+                // شارع أفقي
+                const streetH = new THREE.Mesh(
+                    new THREE.PlaneGeometry(groundSize, streetWidth),
+                    streetMaterial
+                );
+                streetH.rotation.x = -Math.PI / 2;
+                streetH.position.z = i * 25;
+                streetH.position.y = 0.01;
+                streetH.receiveShadow = true;
+                groundGroup.add(streetH);
+
+                // شارع رأسي
+                const streetV = new THREE.Mesh(
+                    new THREE.PlaneGeometry(streetWidth, groundSize),
+                    streetMaterial
+                );
+                streetV.rotation.x = -Math.PI / 2;
+                streetV.position.x = i * 25;
+                streetV.position.y = 0.01;
+                streetV.receiveShadow = true;
+                groundGroup.add(streetV);
+
+                // خطوط الشارع
+                if (i % 2 === 0) {
+                    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                    for (let j = -10; j <= 10; j++) {
+                        const line = new THREE.Mesh(
+                            new THREE.PlaneGeometry(0.3, 3),
+                            lineMaterial
+                        );
+                        line.rotation.x = -Math.PI / 2;
+                        line.position.set(i * 25, 0.02, j * 10);
+                        groundGroup.add(line);
+                    }
+                }
+            }
+
+            return groundGroup;
+        }
+
+        // إنشاء المباني
+        function createBuildings() {
+            const buildingTypes = [
+                { color: 0x4a5568, height: [10, 20] },
+                { color: 0x2d3748, height: [15, 30] },
+                { color: 0x1a202c, height: [8, 25] },
+                { color: 0x5a6b7d, height: [12, 28] }
+            ];
+
+            for (let x = -12; x <= 12; x++) {
+                for (let z = -12; z <= 12; z++) {
+                    // تخطي الشوارع
+                    if (Math.abs(x % 2) < 0.5 || Math.abs(z % 2) < 0.5) continue;
+                    
+                    // تخطي منطقة البداية
+                    if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
+
+                    const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+                    const height = type.height[0] + Math.random() * (type.height[1] - type.height[0]);
+                    const width = 8 + Math.random() * 6;
+                    const depth = 8 + Math.random() * 6;
+
+                    const geometry = new THREE.BoxGeometry(width, height, depth);
+                    const material = new THREE.MeshPhongMaterial({
+                        color: type.color,
+                        flatShading: true
+                    });
+                    const building = new THREE.Mesh(geometry, material);
+                    building.position.set(x * 25, height / 2, z * 25);
+                    building.castShadow = true;
+                    building.receiveShadow = true;
+
+                    // نوافذ
+                    const windowMaterial = new THREE.MeshBasicMaterial({
+                        color: Math.random() > 0.3 ? 0xffff88 : 0x333333
+                    });
+                    const windowCount = Math.floor(height / 3);
+                    for (let i = 0; i < windowCount; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            const window = new THREE.Mesh(
+                                new THREE.PlaneGeometry(1, 1),
+                                windowMaterial
+                            );
+                            window.position.set(
+                                j * 2 - 2,
+                                i * 3 - height / 2 + 2,
+                                width / 2 + 0.01
+                            );
+                            building.add(window);
+                        }
+                    }
+
+                    buildings.push(building);
+                    scene.add(building);
+                }
             }
         }
-    });
-};
 
-document.getElementById('jump-btn').onclick = () => {
-    if(player.onGround) { player.vY = 8; player.onGround = false; playSound(200, 0.1, 0.1); }
-};
+        // إنشاء سيارات الشرطة
+        function createPoliceCar(x, z) {
+            const group = new THREE.Group();
 
-function update() {
-    // الحركة
-    const speed = 0.4;
-    player.x += (Math.sin(player.yaw) * player.moveF + Math.cos(player.yaw) * player.moveS) * speed;
-    player.z += (Math.cos(player.yaw) * player.moveF - Math.sin(player.yaw) * player.moveS) * speed;
-    
-    // جاذبية
-    player.vY -= 0.4;
-    const groundY = 0;
-    let currentY = (player.y || 2) + player.vY;
-    if(currentY < 2) { currentY = 2; player.vY = 0; player.onGround = true; }
-    player.y = currentY;
+            // جسم السيارة
+            const bodyGeometry = new THREE.BoxGeometry(3, 1.5, 5);
+            const bodyMaterial = new THREE.MeshPhongMaterial({
+                color: 0x0066ff,
+                shininess: 100
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 1;
+            body.castShadow = true;
+            group.add(body);
 
-    // الزون
-    zoneRadius -= 0.05;
-    const dist = Math.sqrt(player.x*player.x + player.z*player.z);
-    if(dist > zoneRadius) {
-        player.hp -= 0.1;
-        document.getElementById('health-fill').style.width = player.hp + "%";
-        document.getElementById('health-fill').style.background = "blue";
-    } else {
-        document.getElementById('health-fill').style.background = "linear-gradient(90deg, #f00, #0f0)";
-    }
+            // كابينة السيارة
+            const cabinGeometry = new THREE.BoxGeometry(2.5, 1.2, 2.5);
+            const cabinMaterial = new THREE.MeshPhongMaterial({
+                color: 0x003399,
+                transparent: true,
+                opacity: 0.8
+            });
+            const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
+            cabin.position.y = 2.1;
+            cabin.position.z = -0.5;
+            cabin.castShadow = true;
+            group.add(cabin);
 
-    // هجوم البوتات
-    bots.forEach(b => {
-        if(b.dead) return;
-        const d = Math.sqrt((b.x-player.x)**2 + (b.z-player.z)**2);
-        if(d < 60 && Date.now() - b.lastShot > 2000) {
-            b.lastShot = Date.now();
-            playSound(100, 0.1, 0.05, "sine");
-            player.hp -= 5;
-            document.getElementById('health-fill').style.width = player.hp + "%";
-            document.getElementById('damage-flash').style.display = 'block';
-            setTimeout(() => document.getElementById('damage-flash').style.display = 'none', 100);
+            // أضواء الشرطة (حمراء وزرقاء)
+            const light1 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.3, 0.5),
+                new THREE.MeshBasicMaterial({ color: 0xff0000, emissive: 0xff0000 })
+            );
+            light1.position.set(-0.8, 2.8, -0.5);
+            group.add(light1);
+
+            const light2 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.3, 0.5),
+                new THREE.MeshBasicMaterial({ color: 0x0000ff, emissive: 0x0000ff })
+            );
+            light2.position.set(0.8, 2.8, -0.5);
+            group.add(light2);
+
+            // العجلات
+            const wheelGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 16);
+            const wheelMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a });
+            const wheelPositions = [
+                [-1.3, 0.5, 1.8], [1.3, 0.5, 1.8],
+                [-1.3, 0.5, -1.8], [1.3, 0.5, -1.8]
+            ];
+            
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(...pos);
+                group.add(wheel);
+            });
+
+            group.position.set(x, 0, z);
+            group.userData = { speed: 0.15 + Math.random() * 0.1 };
+            return group;
         }
-    });
 
-    draw();
-    requestAnimationFrame(update);
-}
-
-function draw() {
-    // مسح الشاشة (السماء)
-    ctx.fillStyle = '#7ec0ff';
-    ctx.fillRect(0, 0, width, height);
-
-    // الأرضية (بمنظور بسيط)
-    ctx.fillStyle = '#3d5e2a';
-    ctx.fillRect(0, height/2, width, height/2);
-
-    // رندر العالم (Pseudo 3D)
-    // ملاحظة: هذا نظام رندر خفيف جداً لا يسبب سواد الشاشة
-    const viewDist = 200;
-    
-    // رسم الجدران
-    walls.forEach(w => {
-        const dx = w.x - player.x;
-        const dz = w.z - player.z;
-        // تحويل الإحداثيات بالنسبة للكاميرا
-        const rx = dx * Math.cos(player.yaw) - dz * Math.sin(player.yaw);
-        const rz = dx * Math.sin(player.yaw) + dz * Math.cos(player.yaw);
-
-        if(rz > 5) {
-            const screenX = (rx / rz) * width + width/2;
-            const size = (w.w / rz) * width;
-            const h = (w.h / rz) * height;
-            ctx.fillStyle = w.color;
-            ctx.fillRect(screenX - size/2, height/2 - h + (player.y*10/rz), size, h);
+        // إنشاء عوائق
+        function createObstacle(x, z) {
+            const types = [
+                { geometry: new THREE.BoxGeometry(2, 2, 2), color: 0xff6b6b },
+                { geometry: new THREE.CylinderGeometry(1, 1, 2, 8), color: 0xffd93d },
+                { geometry: new THREE.ConeGeometry(1, 2, 6), color: 0xff9234 }
+            ];
+            
+            const type = types[Math.floor(Math.random() * types.length)];
+            const material = new THREE.MeshPhongMaterial({
+                color: type.color,
+                emissive: type.color,
+                emissiveIntensity: 0.2
+            });
+            
+            const obstacle = new THREE.Mesh(type.geometry, material);
+            obstacle.position.set(x, 1, z);
+            obstacle.castShadow = true;
+            return obstacle;
         }
-    });
 
-    // رسم البوتات
-    bots.forEach(b => {
-        if(b.dead) return;
-        const dx = b.x - player.x;
-        const dz = b.z - player.z;
-        const rx = dx * Math.cos(player.yaw) - dz * Math.sin(player.yaw);
-        const rz = dx * Math.sin(player.yaw) + dz * Math.cos(player.yaw);
-
-        if(rz > 5) {
-            const screenX = (rx / rz) * width + width/2;
-            const h = (40 / rz) * height;
-            ctx.fillStyle = 'red';
-            ctx.fillRect(screenX - h/4, height/2 - h + (player.y*10/rz), h/2, h);
+        // إنشاء عملات
+        function createCoin(x, z) {
+            const geometry = new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffd700,
+                emissive: 0xffaa00,
+                emissiveIntensity: 0.5,
+                shininess: 100
+            });
+            const coin = new THREE.Mesh(geometry, material);
+            coin.position.set(x, 1.5, z);
+            coin.rotation.x = Math.PI / 2;
+            coin.userData = { rotationSpeed: 0.05 };
+            return coin;
         }
-    });
 
-    // رسم السلاح M416 (FPP)
-    ctx.save();
-    ctx.translate(width*0.7, height*0.8 + Math.sin(Date.now()/200)*5);
-    ctx.rotate(-0.2);
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, 150, 40); // جسم السلاح
-    ctx.fillRect(100, -20, 10, 40); // الناظور
-    ctx.restore();
+        // توليد عناصر اللعبة
+        function generateGameElements() {
+            // إنشاء سيارات الشرطة
+            for (let i = 0; i < 3; i++) {
+                const angle = (i / 3) * Math.PI * 2;
+                const distance = 30 + Math.random() * 20;
+                const x = Math.cos(angle) * distance;
+                const z = Math.sin(angle) * distance;
+                const policeCar = createPoliceCar(x, z);
+                policeCars.push(policeCar);
+                scene.add(policeCar);
+            }
 
-    // الكروس هير
-    ctx.strokeStyle = '#0f0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(width/2, height/2, 10, 0, Math.PI*2);
-    ctx.stroke();
+            // إنشاء عوائق
+            for (let i = 0; i < 30; i++) {
+                const x = (Math.random() - 0.5) * 200;
+                const z = (Math.random() - 0.5) * 200;
+                if (Math.abs(x) > 10 || Math.abs(z) > 10) {
+                    const obstacle = createObstacle(x, z);
+                    obstacles.push(obstacle);
+                    scene.add(obstacle);
+                }
+            }
 
-    // تحديث الميني ماب
-    document.getElementById('player-marker').style.left = (50 + player.x/10) + "%";
-    document.getElementById('player-marker').style.top = (50 + player.z/10) + "%";
-    const z = document.getElementById('zone-circle');
-    z.style.width = (zoneRadius/5) + "%";
-    z.style.height = (zoneRadius/5) + "%";
-    z.style.left = "50%"; z.style.top = "50%";
-}
+            // إنشاء عملات
+            for (let i = 0; i < 50; i++) {
+                const x = (Math.random() - 0.5) * 180;
+                const z = (Math.random() - 0.5) * 180;
+                const coin = createCoin(x, z);
+                coins.push(coin);
+                scene.add(coin);
+            }
+        }
 
-init();
+        // تهيئة اللعبة
+        function initGame() {
+            player = createPlayer();
+            scene.add(player);
 
-</script>
+            ground = createGround();
+            scene.add(ground);
+
+            createBuildings();
+            generateGameElements();
+
+            camera.position.set(0, 15, 20);
+            camera.lookAt(0, 0, 0);
+        }
+
+        // التحكم باللمس
+        const directionButtons = document.querySelectorAll('.dir-btn');
+        directionButtons.forEach(btn => {
+            const dir = btn.dataset.dir;
+            if (!dir) return;
+
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                switch(dir) {
+                    case 'forward': moveForward = true; break;
+                    case 'backward': moveBackward = true; break;
+                    case 'left': moveLeft = true; break;
+                    case 'right': moveRight = true; break;
+                }
+            });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                switch(dir) {
+                    case 'forward': moveForward = false; break;
+                    case 'backward': moveBackward = false; break;
+                    case 'left': moveLeft = false; break;
+                    case 'right': moveRight = false; break;
+                }
+            });
+        });
+
+        // زر القفز
+        const jumpBtn = document.getElementById('jumpBtn');
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (canJump && !isJumping) {
+                playerVelocity.y = jumpPower;
+                isJumping = true;
+                canJump = false;
+            }
+        });
+
+        // زر التسريع
+        const boostBtn = document.getElementById('boostBtn');
+        boostBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isBoosting = true;
+            maxSpeed = 1.5;
+        });
+
+        boostBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isBoosting = false;
+            maxSpeed = 0.8;
+        });
+
+        // التحكم بلوحة المفاتيح (للكمبيوتر)
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp': case 'w': moveForward = true; break;
+                case 'ArrowDown': case 's': moveBackward = true; break;
+                case 'ArrowLeft': case 'a': moveLeft = true; break;
+                case 'ArrowRight': case 'd': moveRight = true; break;
+                case ' ':
+                    if (canJump && !isJumping) {
+                        playerVelocity.y = jumpPower;
+                        isJumping = true;
+                        canJump = false;
+                    }
+                    break;
+                case 'Shift':
+                    isBoosting = true;
+                    maxSpeed = 1.5;
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch(e.key) {
+                case 'ArrowUp': case 'w': moveForward = false; break;
+                case 'ArrowDown': case 's': moveBackward = false; break;
+                case 'ArrowLeft': case 'a': moveLeft = false; break;
+                case 'ArrowRight': case 'd': moveRight = false; break;
+                case 'Shift':
+                    isBoosting = false;
+                    maxSpeed = 0.8;
+                    break;
+            }
+        });
+
+        // تحديث حركة اللاعب
+        function updatePlayer() {
+            if (!player || gameOver) return;
+
+            // التحكم في الحركة
+            if (moveForward) {
+                playerVelocity.z -= acceleration;
+            }
+            if (moveBackward) {
+                playerVelocity.z += acceleration;
+            }
+            if (moveLeft) {
+                playerVelocity.x -= acceleration;
+            }
+            if (moveRight) {
+                playerVelocity.x += acceleration;
+            }
+
+            // تطبيق الاحتكاك
+            playerVelocity.x *= friction;
+            playerVelocity.z *= friction;
+
+            // تحديد السرعة القصوى
+            const currentSpeed = Math.sqrt(playerVelocity.x ** 2 + playerVelocity.z ** 2);
+            if (currentSpeed > maxSpeed) {
+                playerVelocity.x = (playerVelocity.x / currentSpeed) * maxSpeed;
+                playerVelocity.z = (playerVelocity.z / currentSpeed) * maxSpeed;
+            }
+
+            // الجاذبية والقفز
+            if (player.position.y > 2) {
+                playerVelocity.y -= 0.02; // الجاذبية
+            } else {
+                player.position.y = 2;
+                playerVelocity.y = 0;
+                isJumping = false;
+                canJump = true;
+            }
+
+            // تحديث الموقع
+            player.position.x += playerVelocity.x;
+            player.position.z += playerVelocity.z;
+            player.position.y += playerVelocity.y;
+
+            // دوران الكبسولة
+            if (moveForward || moveBackward || moveLeft || moveRight) {
+                player.rotation.y += 0.1;
+            }
+
+            // تحديث عرض السرعة
+            playerSpeed = currentSpeed * 100;
+            document.getElementById('speedDisplay').textContent = Math.floor(playerSpeed);
+
+            // حدود المدينة
+            const boundary = 240;
+            player.position.x = Math.max(-boundary, Math.min(boundary, player.position.x));
+            player.position.z = Math.max(-boundary, Math.min(boundary, player.position.z));
+        }
+
+        // تحديث الشرطة
+        function updatePolice() {
+            policeCars.forEach(car => {
+                const dx = player.position.x - car.position.x;
+                const dz = player.position.z - car.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                // تحريك الشرطة نحو اللاعب
+                if (distance > 2) {
+                    car.position.x += (dx / distance) * car.userData.speed;
+                    car.position.z += (dz / distance) * car.userData.speed;
+
+                    // توجيه السيارة
+                    car.rotation.y = Math.atan2(dx, dz);
+
+                    // تحريك الأضواء
+                    const time = Date.now() * 0.005;
+                    car.children.forEach((child, i) => {
+                        if (i >= 2 && i <= 3) { // الأضواء
+                            child.material.emissiveIntensity = Math.sin(time + i) * 0.5 + 0.5;
+                        }
+                    });
+                } else {
+                    // القبض على اللاعب
+                    endGame();
+                }
+            });
+        }
+
+        // تحديث العملات
+        function updateCoins() {
+            coins.forEach((coin, index) => {
+                coin.rotation.y += coin.userData.rotationSpeed;
+
+                const dx = player.position.x - coin.position.x;
+                const dz = player.position.z - coin.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < 2) {
+                    scene.remove(coin);
+                    coins.splice(index, 1);
+                    score += 100;
+                    document.getElementById('score').textContent = score;
+                }
+            });
+        }
+
+        // تحديث الكاميرا
+        function updateCamera() {
+            if (!player) return;
+
+            const cameraOffset = new THREE.Vector3(0, 12, 15);
+            const targetPosition = new THREE.Vector3(
+                player.position.x + cameraOffset.x,
+                player.position.y + cameraOffset.y,
+                player.position.z + cameraOffset.z
+            );
+
+            camera.position.lerp(targetPosition, 0.1);
+            camera.lookAt(player.position);
+        }
+
+        // حلقة الرسوم المتحركة
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameStarted && !gameOver) {
+                updatePlayer();
+                updatePolice();
+                updateCoins();
+                updateCamera();
+                score += 1;
+                document.getElementById('score').textContent = score;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // بداية اللعبة
+        document.getElementById('startBtn').addEventListener('click', () => {
+            document.getElementById('startScreen').style.display = 'none';
+            gameStarted = true;
+        });
+
+        // إعادة اللعبة
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // انتهاء اللعبة
+        function endGame() {
+            gameOver = true;
+            document.getElementById('finalScore').textContent = `النقاط النهائية: ${score}`;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        // تغيير حجم النافذة
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // تهيئة وبدء اللعبة
+        initGame();
+        animate();
+    </script>
 </body>
 </html>
