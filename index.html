@@ -404,7 +404,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, player, policecars = [];
+        let scene, camera, renderer, player, policeCars = [];
         let buildings = [], obstacles = [];
         let moveForward = 0, moveRight = 0;
         let playerVelocity = { x: 0, y: 0, z: 0 };
@@ -414,12 +414,12 @@
         let cameraAngleX = 0, cameraAngleY = Math.PI / 6;
         let isDragging = false, previousMouseX = 0, previousMouseY = 0;
 
-        const GRAVITY = -0.5;
-        const JUMP_FORCE = 15;
-        const MOVE_SPEED = 0.8;
+        const GRAVITY = -0.8;
+        const JUMP_FORCE = 18;
+        const MOVE_SPEED = 1.5;
         const BOOST_MULTIPLIER = 2.5;
-        const CITY_SIZE = 5000;
-        const BUILDING_COUNT = 200;
+        const CITY_SIZE = 3000;
+        const BUILDING_COUNT = 120;
 
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
@@ -433,43 +433,46 @@
             // المشهد
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB);
-            scene.fog = new THREE.Fog(0x87CEEB, 100, 2000);
+            scene.fog = new THREE.Fog(0x87CEEB, 50, 1500);
 
             // الكاميرا
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
-            camera.position.set(0, 20, -30);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2500);
+            camera.position.set(0, 25, -35);
 
             // المُصيِّر
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
+            const canvas = document.getElementById('gameCanvas');
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
             // الإضاءة
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
 
-            const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            sunLight.position.set(100, 200, 100);
+            const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            sunLight.position.set(200, 300, 200);
             sunLight.castShadow = true;
-            sunLight.shadow.camera.left = -500;
-            sunLight.shadow.camera.right = 500;
-            sunLight.shadow.camera.top = 500;
-            sunLight.shadow.camera.bottom = -500;
+            sunLight.shadow.camera.left = -400;
+            sunLight.shadow.camera.right = 400;
+            sunLight.shadow.camera.top = 400;
+            sunLight.shadow.camera.bottom = -400;
             sunLight.shadow.camera.far = 1000;
-            sunLight.shadow.mapSize.width = 2048;
-            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.mapSize.width = 1024;
+            sunLight.shadow.mapSize.height = 1024;
             scene.add(sunLight);
 
             // الأرضية
-            const groundGeometry = new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE);
+            const groundGeometry = new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 10, 10);
             const groundMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x2d2d2d,
                 roughness: 0.8,
-                metalness: 0.2
+                metalness: 0.1
             });
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
+            ground.position.y = 0;
             ground.receiveShadow = true;
             scene.add(ground);
 
@@ -477,35 +480,53 @@
             createStreets();
 
             // اللاعب (كبسولة ملونة)
-            const capsuleGeometry = new THREE.CylinderGeometry(3, 3, 8, 16);
+            const capsuleBody = new THREE.CylinderGeometry(3, 3, 8, 16);
+            const capsuleTop = new THREE.SphereGeometry(3, 16, 16);
+            const capsuleBottom = new THREE.SphereGeometry(3, 16, 16);
+            
             const capsuleMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xff1493,
                 emissive: 0xff1493,
-                emissiveIntensity: 0.3,
-                roughness: 0.3,
-                metalness: 0.7
+                emissiveIntensity: 0.4,
+                roughness: 0.2,
+                metalness: 0.8
             });
-            player = new THREE.Mesh(capsuleGeometry, capsuleMaterial);
+            
+            player = new THREE.Group();
+            
+            const body = new THREE.Mesh(capsuleBody, capsuleMaterial);
+            const top = new THREE.Mesh(capsuleTop, capsuleMaterial);
+            const bottom = new THREE.Mesh(capsuleBottom, capsuleMaterial);
+            
+            top.position.y = 4;
+            bottom.position.y = -4;
+            
+            player.add(body);
+            player.add(top);
+            player.add(bottom);
+            
             player.position.set(0, 10, 0);
             player.castShadow = true;
             player.receiveShadow = true;
             scene.add(player);
 
             // إضافة خطوط للكبسولة
-            const edgesGeometry = new THREE.EdgesGeometry(capsuleGeometry);
+            const edgesGeometry = new THREE.EdgesGeometry(capsuleBody);
             const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2 });
             const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-            player.add(edges);
+            body.add(edges);
 
             // المدينة
             createCity();
 
             // سيارات الشرطة
-            createPoliceCars(5);
+            createPoliceCars(4);
 
             // أحداث التحكم
             setupControls();
             setupMouseControls();
+            
+            console.log('Game initialized successfully');
         }
 
         function createStreets() {
@@ -639,7 +660,7 @@
                 );
                 carBody.castShadow = true;
                 
-                policeCards.push({
+                policeCars.push({
                     mesh: carBody,
                     velocity: { x: 0, z: 0 }
                 });
@@ -804,15 +825,15 @@
 
             // فحص التصادم مع المباني
             let collision = false;
+            const playerRadius = 4;
+            
             for (let building of obstacles) {
                 const bBox = new THREE.Box3().setFromObject(building);
-                const pBox = new THREE.Box3().setFromObject(player);
-                pBox.min.x = newX - 3;
-                pBox.max.x = newX + 3;
-                pBox.min.z = newZ - 3;
-                pBox.max.z = newZ + 3;
-
-                if (bBox.intersectsBox(pBox)) {
+                
+                // تحقق بسيط من التصادم
+                if (newX + playerRadius > bBox.min.x && newX - playerRadius < bBox.max.x &&
+                    newZ + playerRadius > bBox.min.z && newZ - playerRadius < bBox.max.z &&
+                    player.position.y < bBox.max.y) {
                     collision = true;
                     break;
                 }
@@ -821,6 +842,10 @@
             if (!collision) {
                 player.position.x = newX;
                 player.position.z = newZ;
+            } else {
+                // إيقاف الحركة عند التصادم
+                playerVelocity.x *= -0.5;
+                playerVelocity.z *= -0.5;
             }
 
             // حساب السرعة والمسافة
@@ -832,14 +857,14 @@
         }
 
         function updatePolice() {
-            policeCards.forEach(car => {
+            policeCars.forEach(car => {
                 const dx = player.position.x - car.mesh.position.x;
                 const dz = player.position.z - car.mesh.position.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
 
                 if (distance > 5) {
-                    car.velocity.x = (dx / distance) * 0.6;
-                    car.velocity.z = (dz / distance) * 0.6;
+                    car.velocity.x = (dx / distance) * 0.7;
+                    car.velocity.z = (dz / distance) * 0.7;
 
                     car.mesh.position.x += car.velocity.x;
                     car.mesh.position.z += car.velocity.z;
@@ -850,18 +875,19 @@
         }
 
         function updateCamera() {
-            const distance = 35;
-            const height = 15;
+            const distance = 40;
+            const height = 20;
 
             const targetX = player.position.x - Math.sin(cameraAngleX) * distance * Math.cos(cameraAngleY);
             const targetY = player.position.y + height + Math.sin(cameraAngleY) * distance;
             const targetZ = player.position.z - Math.cos(cameraAngleX) * distance * Math.cos(cameraAngleY);
 
-            camera.position.x = targetX;
-            camera.position.y = targetY;
-            camera.position.z = targetZ;
+            // تنعيم حركة الكاميرا
+            camera.position.x += (targetX - camera.position.x) * 0.1;
+            camera.position.y += (targetY - camera.position.y) * 0.1;
+            camera.position.z += (targetZ - camera.position.z) * 0.1;
 
-            camera.lookAt(player.position);
+            camera.lookAt(player.position.x, player.position.y + 5, player.position.z);
         }
 
         function animate() {
