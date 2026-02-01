@@ -19,7 +19,7 @@
 
         body {
             font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+            background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             min-height: 100vh;
             overflow: hidden;
         }
@@ -38,9 +38,7 @@
             display: flex;
         }
 
-        /* Level Select Screen - ZigZag Path Design */
         .level-select-screen {
-            background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -48,84 +46,85 @@
         .game-header {
             text-align: center;
             padding: 20px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             position: sticky;
             top: 0;
             z-index: 10;
             backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(255,215,0,0.3);
         }
 
         .game-title {
             font-size: 36px;
             color: #FFD700;
-            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+            text-shadow: 0 0 20px rgba(255,215,0,0.6);
             margin-bottom: 10px;
             font-weight: 900;
         }
 
         .progress-container {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             border-radius: 20px;
             padding: 15px;
             margin: 0 auto;
             max-width: 300px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .progress-bar {
-            height: 10px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 5px;
+            height: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
             overflow: hidden;
             margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #FFD700, #FFA500);
-            border-radius: 5px;
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            border-radius: 6px;
             transition: width 0.5s ease;
-            box-shadow: 0 0 10px rgba(255,215,0,0.5);
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .progress-text {
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* ZigZag Path Container */
         .path-container {
             position: relative;
             padding: 40px 20px;
             min-height: 3000px;
         }
 
-        /* SVG Path Line */
         .path-line {
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 20px;
+            width: 25px;
             height: 100%;
             z-index: 1;
+            opacity: 0.8;
         }
 
-        .path-line path {
-            fill: none;
-            stroke: url(#pathGradient);
-            stroke-width: 20;
-            stroke-linecap: round;
-            filter: drop-shadow(0 0 10px rgba(100,200,255,0.5));
-        }
-
-        /* Level Nodes Container */
         .levels-wrapper {
             position: relative;
             z-index: 2;
             display: flex;
             flex-direction: column-reverse;
-            gap: 80px;
+            gap: 100px;
             padding-bottom: 100px;
         }
 
@@ -137,7 +136,6 @@
             height: 100px;
         }
 
-        /* Alternate sides for zigzag effect */
         .level-row:nth-child(even) {
             justify-content: flex-start;
             padding-left: 15%;
@@ -148,318 +146,461 @@
             padding-right: 15%;
         }
 
-        /* Level Button Styles */
         .level-btn {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.5);
+            border: 4px solid rgba(255,255,255,0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 10px rgba(255,255,255,0.3);
             font-weight: 900;
-            font-size: 24px;
+            font-size: 26px;
             color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .level-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
         }
 
-        /* Current Level - Green with glow */
         .level-btn.current {
             background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
             border-color: #90EE90;
-            box-shadow: 0 0 30px rgba(72,187,120,0.8), inset 0 0 20px rgba(255,255,255,0.3);
+            box-shadow: 0 0 40px rgba(72,187,120,0.9), inset 0 0 20px rgba(255,255,255,0.4);
             animation: pulse-glow 2s infinite;
-            transform: scale(1.1);
             z-index: 10;
+            transform: scale(1.15);
         }
 
         @keyframes pulse-glow {
-            0%, 100% { transform: scale(1.1); box-shadow: 0 0 30px rgba(72,187,120,0.8); }
-            50% { transform: scale(1.15); box-shadow: 0 0 50px rgba(72,187,120,1); }
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(72,187,120,1), 0 0 60px rgba(72,187,120,0.5); 
+                transform: scale(1.15);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(72,187,120,1), 0 0 80px rgba(72,187,120,0.7); 
+                transform: scale(1.2);
+            }
         }
 
-        /* Completed Level - Blue */
         .level-btn.completed {
             background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
             border-color: #63b3ed;
+            box-shadow: 0 5px 15px rgba(66,153,225,0.5);
         }
 
-        /* Locked Level - Gray */
         .level-btn.locked {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-            border-color: #718096;
-            color: #a0aec0;
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border-color: #4a5568;
+            color: #718096;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 0.6;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        /* Stars for completed levels */
         .stars {
             position: absolute;
-            top: -15px;
+            top: -20px;
             display: flex;
-            gap: 2px;
+            gap: 3px;
         }
 
         .star {
             color: #FFD700;
-            font-size: 14px;
-            text-shadow: 0 0 5px rgba(255,215,0,0.8);
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(255,215,0,1);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
         }
 
-        /* FREE Badge */
         .free-badge {
             position: absolute;
-            bottom: -10px;
+            bottom: -12px;
             background: linear-gradient(135deg, #FF6B6B 0%, #FC8181 100%);
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 900;
             border: 2px solid white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            animation: bounce-small 1.5s infinite;
         }
 
-        /* Mário Character on current level */
+        @keyframes bounce-small {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
         .mario-icon {
             position: absolute;
-            top: -25px;
-            width: 40px;
-            height: 40px;
+            top: -30px;
+            width: 45px;
+            height: 45px;
             background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
             border-radius: 50%;
             border: 3px solid white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-            animation: bounce 1s infinite;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            animation: mario-bounce 1s infinite;
+            z-index: 20;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+        @keyframes mario-bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
         }
 
-        /* Lock icon for locked levels */
         .lock-icon {
-            font-size: 20px;
-            opacity: 0.5;
+            font-size: 28px;
+            opacity: 0.7;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
-        /* Game Screen Styles */
+        /* Game Screen */
         .game-screen {
-            background: #1a202c;
+            background: #0f2027;
             align-items: center;
             justify-content: center;
             padding: 10px;
         }
 
         .game-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 15px;
-            border: 4px solid #FFD700;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,240,0.95) 100%);
+            border-radius: 25px;
+            padding: 20px;
+            border: 5px solid #FFD700;
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .game-ui-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding: 10px 20px;
+            margin-bottom: 15px;
+            padding: 15px 25px;
             background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-            border-radius: 15px;
+            border-radius: 20px;
             color: white;
+            box-shadow: 0 5px 20px rgba(255,107,107,0.4);
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
+            border: 2px solid rgba(255,255,255,0.3);
         }
 
         .stat {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             font-weight: 900;
+            font-size: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.2);
+            padding: 8px 15px;
+            border-radius: 15px;
+        }
+
+        .hearts-container {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 24px;
+            letter-spacing: 3px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .heart {
+            display: inline-block;
+            transition: all 0.3s;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .heart.broken {
+            opacity: 0.3;
+            transform: scale(0.8) rotate(20deg);
+            filter: grayscale(100%);
         }
 
         .level-tag {
             background: rgba(0,0,0,0.3);
-            padding: 5px 15px;
+            padding: 8px 20px;
             border-radius: 20px;
+            font-weight: 900;
+            font-size: 18px;
+            border: 2px solid rgba(255,215,0,0.5);
         }
 
         canvas {
-            border: 4px solid #4A5568;
-            border-radius: 10px;
+            border: 5px solid #2d3748;
+            border-radius: 15px;
             background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #90EE90 50%, #228B22 100%);
             width: 100%;
             height: auto;
             aspect-ratio: 2/1;
             display: block;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
         }
 
         .controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            padding: 10px;
+            margin-top: 20px;
+            padding: 10px 20px;
         }
 
         .joystick-area {
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
             background: rgba(0,0,0,0.1);
             border-radius: 50%;
             position: relative;
-            border: 3px solid rgba(0,0,0,0.2);
+            border: 4px solid rgba(0,0,0,0.2);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
         }
 
         .joystick-knob {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 3px solid white;
+            cursor: pointer;
         }
 
         .jump-btn {
-            width: 100px;
-            height: 60px;
+            width: 110px;
+            height: 70px;
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            border-radius: 30px;
-            border: 3px solid white;
+            border-radius: 35px;
+            border: 4px solid white;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 20px rgba(238,90,111,0.4);
+            box-shadow: 0 8px 25px rgba(238,90,111,0.5);
             font-family: 'Tajawal', sans-serif;
             cursor: pointer;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .jump-btn:active {
+            transform: scale(0.95);
         }
 
         .back-btn {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             color: white;
-            border: none;
-            padding: 8px 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            padding: 10px 20px;
             border-radius: 20px;
             cursor: pointer;
             font-family: 'Tajawal', sans-serif;
             font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
         }
 
-        /* Modal Styles */
-        .modal {
+        .back-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Modals */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.85);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
-        .modal.active {
+        .modal-overlay.active {
             display: flex;
         }
 
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            padding: 35px;
+            border-radius: 25px;
             text-align: center;
             max-width: 90%;
-            border: 4px solid #FFD700;
-            animation: popIn 0.3s ease;
+            width: 350px;
+            border: 5px solid #FFD700;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
+            from { transform: scale(0.5); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
 
-        .modal h2 {
-            font-size: 28px;
-            margin-bottom: 15px;
-            color: #2d3748;
+        .modal-content h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 900;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            margin-bottom: 25px;
+            color: #4a5568;
+            font-weight: 700;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
         }
 
         .btn {
             background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 16px;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 18px;
             font-weight: 900;
             cursor: pointer;
             font-family: 'Tajawal', sans-serif;
-            margin: 5px;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(72,187,120,0.4);
+            border: 2px solid rgba(255,255,255,0.3);
+            min-width: 120px;
         }
 
         .btn:hover {
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(72,187,120,0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            box-shadow: 0 4px 15px rgba(113,128,150,0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(113,128,150,0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            box-shadow: 0 4px 15px rgba(252,129,129,0.4);
         }
 
         .secret-capsule {
-            width: 120px;
-            height: 70px;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            border-radius: 35px;
-            margin: 20px auto;
+            width: 140px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 3s ease infinite, float 2s ease-in-out infinite;
+            border-radius: 40px;
+            margin: 25px auto;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
             color: #c53030;
-            font-size: 18px;
-            animation: float 2s infinite ease-in-out;
-            box-shadow: 0 0 30px rgba(255,215,0,0.6);
+            font-size: 20px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+            box-shadow: 0 10px 40px rgba(255,215,0,0.6);
             cursor: pointer;
+            border: 4px solid #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .secret-capsule::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .damage-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,0,0,0.3) 0%, transparent 70%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 999;
+        }
+
+        .damage-overlay.active {
+            opacity: 1;
         }
 
         @media (max-width: 480px) {
             .level-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 18px;
+                width: 70px;
+                height: 70px;
+                font-size: 22px;
             }
             .game-title {
                 font-size: 28px;
+            }
+            .mario-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
+
+    <div class="damage-overlay" id="damageOverlay"></div>
 
     <!-- Level Select Screen -->
     <div id="levelSelectScreen" class="screen active level-select-screen">
@@ -474,21 +615,19 @@
         </div>
 
         <div class="path-container">
-            <!-- SVG Path for the snake-like road -->
             <svg class="path-line" viewBox="0 0 100 3000" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#4a5568;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#2b6cb0;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#4a5568;stop-opacity:1" />
+                        <stop offset="0%" style="stop-color:#2b6cb0;stop-opacity:0.8" />
+                        <stop offset="50%" style="stop-color:#4299e1;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2b6cb0;stop-opacity:0.8" />
                     </linearGradient>
                 </defs>
-                <path d="M 50 0 Q 80 150, 20 300 Q 80 450, 20 600 Q 80 750, 20 900 Q 80 1050, 20 1200 Q 80 1350, 20 1500 Q 80 1650, 20 1800 Q 80 1950, 20 2100 Q 80 2250, 20 2400 Q 80 2550, 20 2700 Q 80 2850, 50 3000" />
+                <path d="M 50 0 Q 85 150, 15 300 Q 85 450, 15 600 Q 85 750, 15 900 Q 85 1050, 15 1200 Q 85 1350, 15 1500 Q 85 1650, 15 1800 Q 85 1950, 15 2100 Q 85 2250, 15 2400 Q 85 2550, 15 2700 Q 85 2850, 50 3000" 
+                      stroke="url(#pathGradient)" stroke-width="25" fill="none" stroke-linecap="round"/>
             </svg>
 
-            <div class="levels-wrapper" id="levelsContainer">
-                <!-- Levels will be generated here -->
-            </div>
+            <div class="levels-wrapper" id="levelsContainer"></div>
         </div>
     </div>
 
@@ -496,11 +635,9 @@
     <div id="gameScreen" class="screen game-screen">
         <div class="game-container">
             <div class="game-ui-header">
-                <div style="display: flex; gap: 15px;">
-                    <div class="stat">❤️ <span id="lives">3</span></div>
-                    <div class="stat">🪙 <span id="coins">0</span></div>
-                    <div class="stat">⭐ <span id="score">0</span></div>
-                </div>
+                <div class="hearts-container" id="heartsDisplay">❤️❤️❤️❤️❤️</div>
+                <div class="stat">🪙 <span id="coins">0</span></div>
+                <div class="stat">⭐ <span id="score">0</span></div>
                 <div class="level-tag" id="gameLevelTag">المستوى 1</div>
                 <button class="back-btn" onclick="backToMenu()">خروج</button>
             </div>
@@ -517,61 +654,126 @@
     </div>
 
     <!-- Modals -->
-    <div id="secretModal" class="modal">
+    <div id="gameOverModal" class="modal-overlay">
         <div class="modal-content">
-            <h2>🚇 المهمة السرية!</h2>
-            <p>جمع جميع العملات لفتح الطريق السري!</p>
-            <div class="progress-bar" style="margin: 15px 0;">
-                <div class="progress-fill" id="secretProgress" style="width: 0%"></div>
+            <h2 style="color: #e53e3e;">💔 انتهت اللعبة</h2>
+            <p>خسرت جميع القلوب!</p>
+            <p>النقاط: <span id="finalScore">0</span></p>
+            <div class="modal-buttons">
+                <button class="btn" onclick="retryLevel()">إعادة المحاولة</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">خروج</button>
             </div>
         </div>
     </div>
 
-    <div id="capsuleModal" class="modal">
-        <div class="modal-content">
-            <h2>🎉 وجدت الكبسولة!</h2>
-            <div class="secret-capsule">برمجني</div>
-            <p>اضغط للانتقال للمستوى التالي</p>
-            <button class="btn" onclick="nextLevel()">التالي</button>
-        </div>
-    </div>
-
-    <div id="gameOverModal" class="modal">
-        <div class="modal-content">
-            <h2 style="color: #e53e3e;">انتهت اللعبة</h2>
-            <p>النقاط: <span id="finalScore">0</span></p>
-            <button class="btn" onclick="retryLevel()">إعادة</button>
-            <button class="btn" onclick="backToMenu()">خروج</button>
-        </div>
-    </div>
-
-    <div id="levelCompleteModal" class="modal">
+    <div id="levelCompleteModal" class="modal-overlay">
         <div class="modal-content">
             <h2 style="color: #48bb78;">🎉 مبروك!</h2>
             <p>أكملت المستوى بنجاح!</p>
-            <button class="btn" onclick="startSecret()">المهمة السرية</button>
+            <p>العملات: <span id="levelCoins">0</span></p>
+            <button class="btn" onclick="startSecret()">دخول المهمة السرية 🚇</button>
+        </div>
+    </div>
+
+    <div id="secretCompleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: #FFD700;">✨ وجدت الكبسولة!</h2>
+            <div class="secret-capsule">برمجني</div>
+            <p>اضغط للانتقال للمستوى التالي</p>
+            <button class="btn" onclick="nextLevel()">التالي ➡️</button>
         </div>
     </div>
 
     <script>
-        // Game State
+        // Game State - 5 Lives starting
         let currentLevel = 1;
         let maxUnlocked = 1;
         let gameRunning = false;
         let inSecret = false;
         let coins = 0;
-        let lives = 3;
+        let lives = 5; // 5 hearts now
+        let maxLives = 5;
         let score = 0;
         let levelCoins = [];
         let enemies = [];
         let platforms = [];
         let particles = [];
+        
         let player = {
-            x: 50, y: 200, width: 30, height: 40,
-            vx: 0, vy: 0, speed: 5, jump: 12, gravity: 0.5,
-            grounded: false, facingRight: true, big: false
+            x: 100, y: 200, width: 30, height: 40,
+            vx: 0, vy: 0, speed: 5, jump: 12, gravity: 0.6,
+            grounded: false, facingRight: true, big: false,
+            invincible: false, invincibleTime: 0
         };
+        
         let cameraX = 0;
+        let joystickActive = false;
+        let joystickX = 0;
+        
+        // Audio Context
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        // Sound Functions
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'jump':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                    break;
+                    
+                case 'walk':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                    break;
+                    
+                case 'coin':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(1600, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                    
+                case 'hurt':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                    
+                case 'powerup':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+            }
+        }
 
         // Generate Level Select
         function initLevelSelect() {
@@ -586,32 +788,25 @@
                 btn.className = 'level-btn';
                 
                 if (i === currentLevel) {
-                    btn.className += ' current';
+                    btn.classList.add('current');
                     btn.innerHTML = `
                         <div class="mario-icon">🧑</div>
                         <span>${i}</span>
                     `;
-                    btn.onclick = () => startLevel(i);
+                    btn.onclick = () => startGame(i);
                 } else if (i < currentLevel) {
-                    btn.className += ' completed';
-                    // Random stars 1-3
+                    btn.classList.add('completed');
                     const stars = Math.floor(Math.random() * 3) + 1;
                     let starsHtml = '<div class="stars">';
                     for(let s=0; s<3; s++) {
                         starsHtml += `<span class="star" style="opacity: ${s<stars?1:0.3}">⭐</span>`;
                     }
                     starsHtml += '</div>';
-                    
                     btn.innerHTML = `${starsHtml}<span>${i}</span>`;
-                    
-                    // FREE badge on some levels
-                    if (i % 10 === 0) {
-                        btn.innerHTML += '<div class="free-badge">FREE</div>';
-                    }
-                    
-                    btn.onclick = () => startLevel(i);
+                    if (i % 10 === 0) btn.innerHTML += '<div class="free-badge">FREE</div>';
+                    btn.onclick = () => startGame(i);
                 } else {
-                    btn.className += ' locked';
+                    btn.classList.add('locked');
                     btn.innerHTML = '<span class="lock-icon">🔒</span>';
                 }
                 
@@ -619,89 +814,154 @@
                 container.appendChild(row);
             }
             
-            document.getElementById('totalProgress').style.width = (currentLevel/50*100) + '%';
+            document.getElementById('totalProgress').style.width = (maxUnlocked/50*100) + '%';
             document.getElementById('currentLevelNum').textContent = currentLevel;
         }
 
-        function startLevel(level) {
+        // Start Game
+        function startGame(level) {
             if (level > maxUnlocked) return;
+            
             currentLevel = level;
             inSecret = false;
             coins = 0;
-            lives = 3;
+            lives = 5; // Reset to 5 lives
             score = 0;
             player.big = false;
+            player.invincible = false;
             
-            generateLevelData(level);
+            generateLevel(level);
             
             document.getElementById('levelSelectScreen').classList.remove('active');
             document.getElementById('gameScreen').classList.add('active');
             document.getElementById('gameLevelTag').textContent = `المستوى ${level}`;
             
+            updateUI();
             gameRunning = true;
-            gameLoop();
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
         }
 
-        function generateLevelData(level) {
-            platforms = [{x: 0, y: 350, width: 2000 + (level*100), height: 50}];
+        // Generate Level Data
+        function generateLevel(level) {
+            platforms = [{x: 0, y: 350, width: 2000 + (level*150), height: 50, type: 'ground'}];
             levelCoins = [];
             enemies = [];
             
-            // Add platforms and coins
-            for (let i = 0; i < 5 + level; i++) {
-                const x = 200 + i * 150;
-                const y = 250 - (i % 3) * 50;
-                platforms.push({x, y, width: 80, height: 20});
+            const difficulty = 1 + (level * 0.1);
+            
+            for (let i = 0; i < 6 + Math.floor(level/2); i++) {
+                const x = 250 + i * (200 - Math.min(level*2, 50));
+                const y = 280 - ((i % 3) * 60) - (Math.random() * 40);
                 
-                // Coins
-                levelCoins.push(
-                    {x: x + 20, y: y - 40, collected: false},
-                    {x: x + 40, y: y - 40, collected: false},
-                    {x: x + 60, y: y - 40, collected: false}
-                );
+                platforms.push({
+                    x: x, y: y, width: 100, height: 20, type: 'brick'
+                });
                 
-                // Enemies
-                if (i % 2 === 0) {
+                // Add coins
+                for (let c = 0; c < 3; c++) {
+                    levelCoins.push({
+                        x: x + 20 + (c * 25),
+                        y: y - 40,
+                        collected: false
+                    });
+                }
+                
+                // Add enemies with increasing difficulty
+                if (i % 2 === 0 || level > 5) {
                     enemies.push({
-                        x: x + 40, y: 320, width: 30, height: 30,
-                        vx: 2 + (level * 0.2), start: x, end: x + 80, alive: true
+                        x: x + 35,
+                        y: 320,
+                        width: 30,
+                        height: 30,
+                        vx: (2 + (level * 0.15)) * (Math.random() > 0.5 ? 1 : -1),
+                        start: x,
+                        end: x + 70,
+                        alive: true
                     });
                 }
             }
+            
+            player.x = 50;
+            player.y = 200;
+            player.vx = 0;
+            player.vy = 0;
+            cameraX = 0;
+        }
+
+        // Update Hearts Display
+        function updateHearts() {
+            const heartsDiv = document.getElementById('heartsDisplay');
+            let heartsHtml = '';
+            for (let i = 0; i < maxLives; i++) {
+                if (i < lives) {
+                    heartsHtml += '<span class="heart">❤️</span>';
+                } else {
+                    heartsHtml += '<span class="heart broken">💔</span>';
+                }
+            }
+            heartsDiv.innerHTML = heartsHtml;
+        }
+
+        // Lose Life with visual effect
+        function loseLife() {
+            lives--;
+            updateHearts();
+            playSound('hurt');
+            
+            // Red flash effect
+            const overlay = document.getElementById('damageOverlay');
+            overlay.classList.add('active');
+            setTimeout(() => overlay.classList.remove('active'), 300);
+            
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                player.x = 50;
+                player.y = 200;
+                player.vx = 0;
+                player.vy = 0;
+                player.invincible = true;
+                player.invincibleTime = 120; // 2 seconds invincibility
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            setTimeout(() => {
+                document.getElementById('gameOverModal').classList.add('active');
+            }, 500);
         }
 
         // Controls
-        let joystickActive = false;
-        let joystickX = 0;
         const joystick = document.getElementById('joystick');
         const knob = document.getElementById('joystickKnob');
+        let walkSoundTimer = 0;
 
-        joystick.addEventListener('touchstart', handleTouchStart, {passive: false});
-        joystick.addEventListener('touchmove', handleTouchMove, {passive: false});
-        joystick.addEventListener('touchend', handleTouchEnd, {passive: false});
-
-        function handleTouchStart(e) {
+        joystick.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            audioCtx.resume();
             joystickActive = true;
             updateJoystick(e.touches[0]);
-        }
+        }, {passive: false});
 
-        function handleTouchMove(e) {
+        joystick.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (joystickActive) updateJoystick(e.touches[0]);
-        }
+        }, {passive: false});
 
-        function handleTouchEnd(e) {
+        joystick.addEventListener('touchend', (e) => {
             e.preventDefault();
             joystickActive = false;
             joystickX = 0;
             knob.style.transform = `translate(-50%, -50%)`;
-        }
+        }, {passive: false});
 
         function updateJoystick(touch) {
             const rect = joystick.getBoundingClientRect();
             const center = rect.left + rect.width / 2;
-            const max = 30;
+            const max = 35;
             let dx = touch.clientX - center;
             if (Math.abs(dx) > max) dx = max * Math.sign(dx);
             joystickX = dx / max;
@@ -710,13 +970,17 @@
 
         document.getElementById('jumpBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if (player.grounded) {
+            audioCtx.resume();
+            if (player.grounded && gameRunning) {
                 player.vy = -player.jump;
                 player.grounded = false;
+                playSound('jump');
             }
-        });
+        }, {passive: false});
 
         // Game Loop
+        let lastTime = 0;
+
         function update() {
             if (!gameRunning) return;
             
@@ -725,21 +989,28 @@
                 player.vx = joystickX * player.speed;
                 if (joystickX > 0) player.facingRight = true;
                 if (joystickX < 0) player.facingRight = false;
+                
+                // Walking sound
+                if (player.grounded && Math.abs(joystickX) > 0.3) {
+                    walkSoundTimer++;
+                    if (walkSoundTimer % 15 === 0) playSound('walk');
+                }
             } else {
                 player.vx *= 0.8;
             }
             
+            // Physics
             player.vy += player.gravity;
             player.x += player.vx;
             player.y += player.vy;
             
-            // Platform collision
+            // Platform collisions
             player.grounded = false;
             platforms.forEach(plat => {
                 if (player.x < plat.x + plat.width &&
                     player.x + player.width > plat.x &&
                     player.y + player.height > plat.y &&
-                    player.y + player.height < plat.y + plat.height + 20 &&
+                    player.y + player.height < plat.y + plat.height + player.vy + 5 &&
                     player.vy >= 0) {
                     player.grounded = true;
                     player.vy = 0;
@@ -747,38 +1018,40 @@
                 }
             });
             
-            // Fall
-            if (player.y > 400) {
-                lives--;
-                if (lives <= 0) {
-                    gameRunning = false;
-                    document.getElementById('finalScore').textContent = score;
-                    document.getElementById('gameOverModal').classList.add('active');
-                } else {
-                    player.x = 50;
-                    player.y = 200;
-                }
+            // Fall off map
+            if (player.y > 450) {
+                loseLife();
             }
             
-            // Camera
-            cameraX = player.x - 200;
+            // Camera follow
+            cameraX = player.x - 150;
             if (cameraX < 0) cameraX = 0;
+            
+            // Invincibility
+            if (player.invincible) {
+                player.invincibleTime--;
+                if (player.invincibleTime <= 0) player.invincible = false;
+            }
             
             // Coins
             levelCoins.forEach(coin => {
                 if (!coin.collected) {
-                    if (Math.abs(player.x + 15 - coin.x) < 20 &&
-                        Math.abs(player.y + 20 - coin.y) < 20) {
+                    const float = Math.sin(Date.now() / 300) * 5;
+                    if (Math.abs(player.x + 15 - coin.x) < 25 &&
+                        Math.abs(player.y + 20 - (coin.y + float)) < 25) {
                         coin.collected = true;
                         coins++;
                         score += 100;
+                        playSound('coin');
                         updateUI();
                         
+                        // Check if all coins collected
                         if (levelCoins.every(c => c.collected)) {
                             setTimeout(() => {
                                 gameRunning = false;
+                                document.getElementById('levelCoins').textContent = coins;
                                 document.getElementById('levelCompleteModal').classList.add('active');
-                            }, 500);
+                            }, 300);
                         }
                     }
                 }
@@ -790,21 +1063,21 @@
                     enemy.x += enemy.vx;
                     if (enemy.x <= enemy.start || enemy.x >= enemy.end) enemy.vx *= -1;
                     
-                    if (player.x < enemy.x + enemy.width &&
+                    if (!player.invincible &&
+                        player.x < enemy.x + enemy.width &&
                         player.x + player.width > enemy.x &&
                         player.y < enemy.y + enemy.height &&
                         player.y + player.height > enemy.y) {
+                        
+                        // Jump on enemy
                         if (player.vy > 0 && player.y + player.height - player.vy < enemy.y) {
                             enemy.alive = false;
-                            player.vy = -8;
+                            player.vy = -10;
                             score += 200;
+                            playSound('powerup');
                         } else {
-                            lives--;
-                            if (lives <= 0) {
-                                gameRunning = false;
-                                document.getElementById('finalScore').textContent = score;
-                                document.getElementById('gameOverModal').classList.add('active');
-                            }
+                            // Hit by enemy
+                            loseLife();
                         }
                     }
                 }
@@ -812,21 +1085,39 @@
         }
 
         function draw() {
-            const ctx = document.getElementById('gameCanvas').getContext('2d');
             const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
             
-            // Background
-            const grad = ctx.createLinearGradient(0, 0, 0, 400);
-            grad.addColorStop(0, '#87CEEB');
-            grad.addColorStop(0.5, '#E0F6FF');
-            grad.addColorStop(0.5, '#90EE90');
-            grad.addColorStop(1, '#228B22');
-            ctx.fillStyle = grad;
+            // Clear
+            ctx.fillStyle = inSecret ? '#1a1a2e' : '#87CEEB';
             ctx.fillRect(0, 0, 800, 400);
             
-            if (inSecret) {
-                ctx.fillStyle = 'rgba(26,26,46,0.8)';
+            // Background gradient for normal level
+            if (!inSecret) {
+                const grad = ctx.createLinearGradient(0, 0, 0, 400);
+                grad.addColorStop(0, '#87CEEB');
+                grad.addColorStop(0.5, '#E0F6FF');
+                grad.addColorStop(0.5, '#90EE90');
+                grad.addColorStop(1, '#228B22');
+                ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 800, 400);
+                
+                // Clouds
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                for(let i=0; i<5; i++) {
+                    const x = (i * 200 - cameraX * 0.2) % 1000;
+                    ctx.beginPath();
+                    ctx.arc(x, 50 + i*20, 30, 0, Math.PI*2);
+                    ctx.arc(x+25, 60 + i*20, 35, 0, Math.PI*2);
+                    ctx.arc(x+50, 50 + i*20, 30, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            } else {
+                // Secret level stars
+                ctx.fillStyle = 'white';
+                for(let i=0; i<50; i++) {
+                    ctx.fillRect((i*137 + Date.now()/50)%800, (i*53)%300, 2, 2);
+                }
             }
             
             ctx.save();
@@ -834,25 +1125,51 @@
             
             // Platforms
             platforms.forEach(p => {
-                ctx.fillStyle = inSecret ? '#4a4a4a' : '#8B4513';
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-                if (!inSecret && p.y < 300) {
-                    ctx.fillStyle = '#228B22';
-                    ctx.fillRect(p.x, p.y, p.width, 15);
+                if (inSecret) {
+                    ctx.fillStyle = '#2d3748';
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+                } else {
+                    ctx.fillStyle = p.type === 'ground' ? '#8B4513' : '#D2691E';
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+                    if (p.type === 'ground') {
+                        ctx.fillStyle = '#228B22';
+                        ctx.fillRect(p.x, p.y, p.width, 15);
+                        // Grass details
+                        for(let g=0; g<p.width; g+=30) {
+                            ctx.fillStyle = '#32CD32';
+                            ctx.beginPath();
+                            ctx.moveTo(p.x+g, p.y);
+                            ctx.lineTo(p.x+g+5, p.y-5);
+                            ctx.lineTo(p.x+g+10, p.y);
+                            ctx.fill();
+                        }
+                    } else {
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(p.x, p.y, p.width, p.height);
+                    }
                 }
             });
             
-            // Coins
-            const float = Math.sin(Date.now()/200) * 5;
+            // Coins with animation
+            const float = Math.sin(Date.now()/200) * 6;
             levelCoins.forEach(c => {
                 if (!c.collected) {
                     ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
-                    ctx.arc(c.x, c.y + float, 12, 0, Math.PI*2);
+                    ctx.ellipse(c.x, c.y + float, 12, 15, 0, 0, Math.PI*2);
                     ctx.fill();
                     ctx.strokeStyle = '#FF8C00';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.stroke();
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(c.x-4, c.y+float-4, 4, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#FF8C00';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('$', c.x, c.y+float+6);
                 }
             });
             
@@ -861,42 +1178,78 @@
                 if (e.alive) {
                     ctx.fillStyle = '#8B4513';
                     ctx.beginPath();
-                    ctx.arc(e.x + 15, e.y + 15, 15, 0, Math.PI*2);
+                    ctx.arc(e.x+15, e.y+15, 15, 0, Math.PI*2);
                     ctx.fill();
+                    // Eyes
                     ctx.fillStyle = 'white';
                     ctx.beginPath();
-                    ctx.arc(e.x + 10, e.y + 10, 4, 0, Math.PI*2);
-                    ctx.arc(e.x + 20, e.y + 10, 4, 0, Math.PI*2);
+                    ctx.arc(e.x+10, e.y+10, 5, 0, Math.PI*2);
+                    ctx.arc(e.x+20, e.y+10, 5, 0, Math.PI*2);
                     ctx.fill();
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(e.x+10, e.y+10, 2, 0, Math.PI*2);
+                    ctx.arc(e.x+20, e.y+10, 2, 0, Math.PI*2);
+                    ctx.fill();
+                    // Feet
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(e.x+5, e.y+25, 8, 5);
+                    ctx.fillRect(e.x+17, e.y+25, 8, 5);
                 }
             });
             
             // Player
-            ctx.fillStyle = player.big ? '#FF0000' : '#FF4444';
-            ctx.fillRect(player.x, player.y, player.big?35:30, player.big?40:30);
-            ctx.fillStyle = '#0000FF';
-            ctx.fillRect(player.x, player.y + (player.big?30:25), player.big?35:30, player.big?20:15);
+            if (!player.invincible || Math.floor(Date.now()/100)%2 === 0) {
+                if (player.big) {
+                    // Big Mario
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(player.x, player.y, 35, 35);
+                    ctx.fillStyle = '#0000FF';
+                    ctx.fillRect(player.x, player.y+35, 35, 25);
+                    // Hat
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(player.x-5, player.y-5, 45, 10);
+                } else {
+                    // Small Mario
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(player.x, player.y+10, 30, 25);
+                    ctx.fillStyle = '#0000FF';
+                    ctx.fillRect(player.x, player.y+35, 30, 15);
+                    // Hat
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(player.x-2, player.y+5, 34, 10);
+                }
+                // Face
+                ctx.fillStyle = '#FFCCAA';
+                ctx.fillRect(player.x+5, player.y, 20, 15);
+                // Eye
+                ctx.fillStyle = 'black';
+                if (player.facingRight) {
+                    ctx.fillRect(player.x+18, player.y+4, 3, 3);
+                } else {
+                    ctx.fillRect(player.x+9, player.y+4, 3, 3);
+                }
+            }
             
             ctx.restore();
         }
 
-        function gameLoop() {
-            if (gameRunning) {
-                update();
-                draw();
-                requestAnimationFrame(gameLoop);
-            }
+        function gameLoop(time) {
+            if (!gameRunning) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
         }
 
         function updateUI() {
-            document.getElementById('lives').textContent = lives;
             document.getElementById('coins').textContent = coins;
             document.getElementById('score').textContent = score;
+            updateHearts();
         }
 
         function backToMenu() {
             gameRunning = false;
-            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
             document.getElementById('gameScreen').classList.remove('active');
             document.getElementById('levelSelectScreen').classList.add('active');
             initLevelSelect();
@@ -904,44 +1257,68 @@
 
         function retryLevel() {
             document.getElementById('gameOverModal').classList.remove('active');
-            startLevel(currentLevel);
+            startGame(currentLevel);
         }
 
         function startSecret() {
             document.getElementById('levelCompleteModal').classList.remove('active');
             inSecret = true;
-            platforms = [{x: 0, y: 350, width: 1500, height: 50}];
+            
+            // Generate underground level
+            platforms = [{x: 0, y: 350, width: 1500, height: 50, type: 'ground'}];
+            levelCoins = [];
+            enemies = [];
+            
             for (let i = 0; i < 8; i++) {
-                platforms.push({
-                    x: 150 + i * 170,
-                    y: 250 - (i % 4) * 40,
-                    width: 100, height: 20
+                const x = 180 + i * 160;
+                platforms.push({x: x, y: 250 - (i%4)*50, width: 90, height: 20, type: 'brick'});
+                
+                for (let c = 0; c < 3; c++) {
+                    levelCoins.push({x: x + 15 + c*25, y: 210 - (i%4)*50, collected: false});
+                }
+                
+                enemies.push({
+                    x: x + 30, y: 320, width: 30, height: 30,
+                    vx: 3, start: x, end: x + 60, alive: true
                 });
             }
+            
             player.x = 50;
             player.y = 200;
+            player.vx = 0;
+            player.vy = 0;
+            
             gameRunning = true;
-            gameLoop();
+            requestAnimationFrame(gameLoop);
             
             // Check for capsule
-            setInterval(() => {
-                if (player.x > 1300 && inSecret) {
-                    gameRunning = false;
-                    document.getElementById('capsuleModal').classList.add('active');
+            const checkInterval = setInterval(() => {
+                if (!gameRunning || !inSecret) {
+                    clearInterval(checkInterval);
+                    return;
                 }
-            }, 1000);
+                if (player.x > 1300) {
+                    gameRunning = false;
+                    clearInterval(checkInterval);
+                    document.getElementById('secretCompleteModal').classList.add('active');
+                }
+            }, 100);
         }
 
         function nextLevel() {
-            document.getElementById('capsuleModal').classList.remove('active');
+            document.getElementById('secretCompleteModal').classList.remove('active');
             if (currentLevel < 50) {
                 maxUnlocked = Math.max(maxUnlocked, currentLevel + 1);
                 currentLevel++;
+                initLevelSelect();
+                backToMenu();
+            } else {
+                alert('🎉 تهانينا! أكملت جميع المستويات!');
                 backToMenu();
             }
         }
 
-        // Init
+        // Initialize
         initLevelSelect();
     </script>
 </body>
