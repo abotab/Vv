@@ -350,6 +350,117 @@
                 font-size: 16px;
             }
         }
+
+        /* شاشة نهاية اللعبة */
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 12, 41, 0.95), rgba(48, 43, 99, 0.95));
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-over-content {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 30px;
+            border: 3px solid rgba(255, 107, 107, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-over-title {
+            font-size: 56px;
+            font-weight: 900;
+            color: #ff6b6b;
+            margin-bottom: 30px;
+            text-shadow: 0 4px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .game-over-stats {
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            font-size: 28px;
+            color: white;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #4facfe;
+            font-size: 36px;
+            font-weight: 900;
+        }
+
+        .restart-button {
+            padding: 18px 50px;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .restart-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        /* تحسين عمارة برمجني بألوان علم العراق */
+        .iraq-building {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, 
+                #ce1126 0%, #ce1126 33%,
+                #ffffff 33%, #ffffff 66%,
+                #000000 66%, #000000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .iraq-star {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #007a3d;
+            font-size: 80px;
+            text-shadow: 0 0 20px rgba(0, 122, 61, 0.8);
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .building-logo {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
+                        0 0 30px rgba(255, 215, 0, 0.6);
+            letter-spacing: 3px;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -360,16 +471,9 @@
         <div class="logo-building">
             <div class="building-3d">
                 <div class="building-face building-front">
-                    <div class="building-text">برمجني</div>
-                    <div class="windows">
-                        <div class="window" style="--i: 1"></div>
-                        <div class="window" style="--i: 2"></div>
-                        <div class="window" style="--i: 3"></div>
-                        <div class="window" style="--i: 4"></div>
-                        <div class="window" style="--i: 5"></div>
-                        <div class="window" style="--i: 6"></div>
-                        <div class="window" style="--i: 7"></div>
-                        <div class="window" style="--i: 8"></div>
+                    <div class="iraq-building">
+                        <div class="iraq-star">★ ★ ★</div>
+                        <div class="building-logo">برمجني</div>
                     </div>
                 </div>
                 <div class="building-face building-side"></div>
@@ -377,6 +481,25 @@
         </div>
         <h1 class="game-title">الهروب من الشرطة</h1>
         <button class="start-button" onclick="startGame()">ابدأ اللعبة</button>
+    </div>
+
+    <!-- شاشة نهاية اللعبة -->
+    <div id="gameOverScreen">
+        <div class="game-over-content">
+            <div class="game-over-title">تم القبض عليك!</div>
+            <div class="game-over-stats">
+                <div class="stat-item">
+                    نقاطك: <span class="stat-value" id="finalScore">0</span>
+                </div>
+                <div class="stat-item">
+                    المسافة: <span class="stat-value" id="finalDistance">0</span> م
+                </div>
+                <div class="stat-item">
+                    الوقت: <span class="stat-value" id="finalTime">0</span> ثانية
+                </div>
+            </div>
+            <button class="restart-button" onclick="restartGame()">ابدأ لعبة جديدة</button>
+        </div>
     </div>
 
     <!-- معلومات اللعبة -->
@@ -413,6 +536,8 @@
         let joystickActive = false;
         let cameraAngleX = 0, cameraAngleY = Math.PI / 6;
         let isDragging = false, previousMouseX = 0, previousMouseY = 0;
+        let gameStartTime = 0;
+        let isGameOver = false;
 
         const GRAVITY = -0.8;
         const JUMP_FORCE = 18;
@@ -421,12 +546,68 @@
         const CITY_SIZE = 3000;
         const BUILDING_COUNT = 120;
 
+        // الموسيقى
+        const backgroundMusic = new Audio();
+        backgroundMusic.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwPj4+Pj4+TExMTExZWVlZWVlnZ2dnZ3V1dXV1dYODg4ODkZGRkZGRn5+fn5+frKysrKy6urq6urrIyMjIyNbW1tbW1uTk5OTk8vLy8vLy//////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAHjOZTf9/AAAAAAAAAAAAAAAAAAAAAP/7kGQAD/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameInfo').style.display = 'flex';
             document.getElementById('controls').style.display = 'flex';
+            
+            // تشغيل الموسيقى
+            backgroundMusic.play().catch(e => console.log('Music autoplay prevented'));
+            
+            // بدء اللعبة
+            gameStartTime = Date.now();
+            isGameOver = false;
+            distance = 0;
+            
             init();
             animate();
+        }
+
+        function restartGame() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('gameInfo').style.display = 'flex';
+            document.getElementById('controls').style.display = 'flex';
+            
+            // إعادة تعيين المتغيرات
+            gameStartTime = Date.now();
+            isGameOver = false;
+            distance = 0;
+            speed = 0;
+            
+            // إعادة موضع اللاعب
+            player.position.set(0, 10, 0);
+            playerVelocity = { x: 0, y: 0, z: 0 };
+            
+            // إعادة موضع الشرطة
+            policeCars.forEach(car => {
+                car.mesh.position.set(
+                    (Math.random() - 0.5) * 200,
+                    2,
+                    (Math.random() - 0.5) * 200 - 100
+                );
+            });
+        }
+
+        function gameOver() {
+            if (isGameOver) return;
+            isGameOver = true;
+            
+            const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            const finalScore = Math.floor(distance * 10);
+            
+            document.getElementById('finalScore').textContent = finalScore;
+            document.getElementById('finalDistance').textContent = Math.floor(distance);
+            document.getElementById('finalTime').textContent = playTime;
+            
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            document.getElementById('gameInfo').style.display = 'none';
+            document.getElementById('controls').style.display = 'none';
         }
 
         function init() {
@@ -857,10 +1038,18 @@
         }
 
         function updatePolice() {
+            if (isGameOver) return;
+            
             policeCars.forEach(car => {
                 const dx = player.position.x - car.mesh.position.x;
                 const dz = player.position.z - car.mesh.position.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
+
+                // فحص التصادم مع اللاعب
+                if (distance < 8) {
+                    gameOver();
+                    return;
+                }
 
                 if (distance > 5) {
                     car.velocity.x = (dx / distance) * 0.7;
@@ -893,9 +1082,11 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            updatePlayer();
-            updatePolice();
-            updateCamera();
+            if (!isGameOver) {
+                updatePlayer();
+                updatePolice();
+                updateCamera();
+            }
 
             renderer.render(scene, camera);
         }
