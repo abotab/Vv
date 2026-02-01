@@ -260,6 +260,29 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
+        #exitBtn {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(220,20,20,0.8);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            font-family: 'Cairo', sans-serif;
+            pointer-events: all;
+            z-index: 101;
+        }
+
+        #exitBtn:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
         .stat-item {
             margin: 3px 0;
             display: flex;
@@ -496,6 +519,8 @@
 
     <!-- واجهة اللعبة -->
     <div id="hud">
+        <button id="exitBtn" onclick="exitGame()">❌ خروج</button>
+        
         <div id="healthBar">
             <div id="healthFill"></div>
             <div id="healthText">100</div>
@@ -592,7 +617,11 @@
             moveRight: false,
             joystickActive: false,
             joystickX: 0,
-            joystickY: 0
+            joystickY: 0,
+            cameraRotation: 0,
+            touchStartX: 0,
+            touchStartY: 0,
+            isDragging: false
         };
 
         // الأصوات
@@ -607,43 +636,99 @@
             
             switch(type) {
                 case 'shoot':
-                    oscillator.frequency.value = 150;
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    // صوت طلقة قوي
+                    oscillator.frequency.value = 120;
+                    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
                     oscillator.type = 'sawtooth';
-                    oscillator.stop(audioContext.currentTime + 0.1);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    
+                    // صوت إضافي للطلقة
+                    const osc2 = audioContext.createOscillator();
+                    const gain2 = audioContext.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContext.destination);
+                    osc2.frequency.value = 80;
+                    gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    osc2.type = 'square';
+                    osc2.start(audioContext.currentTime);
+                    osc2.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'empty':
+                    // صوت سلاح فارغ
+                    oscillator.frequency.value = 300;
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                    oscillator.type = 'square';
+                    oscillator.stop(audioContext.currentTime + 0.05);
                     break;
                 case 'hit':
                     oscillator.frequency.value = 100;
-                    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
                     oscillator.type = 'square';
-                    oscillator.stop(audioContext.currentTime + 0.15);
+                    oscillator.stop(audioContext.currentTime + 0.2);
                     break;
                 case 'heal':
                     oscillator.frequency.value = 600;
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.4);
+                    oscillator.type = 'sine';
+                    oscillator.stop(audioContext.currentTime + 0.4);
+                    break;
+                case 'pickup':
+                    oscillator.frequency.value = 500;
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                     gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
                     oscillator.type = 'sine';
                     oscillator.stop(audioContext.currentTime + 0.3);
                     break;
-                case 'pickup':
-                    oscillator.frequency.value = 400;
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
-                    oscillator.type = 'sine';
-                    oscillator.stop(audioContext.currentTime + 0.2);
-                    break;
                 case 'reload':
-                    oscillator.frequency.value = 200;
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+                    oscillator.frequency.value = 250;
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
                     oscillator.type = 'square';
-                    oscillator.stop(audioContext.currentTime + 0.2);
+                    oscillator.stop(audioContext.currentTime + 0.3);
                     break;
             }
             
             oscillator.start(audioContext.currentTime);
+        }
+        
+        // موسيقى الخلفية
+        let backgroundMusic = null;
+        
+        function playBackgroundMusic() {
+            if (backgroundMusic) return;
+            
+            const notes = [523, 587, 659, 698, 784, 880, 988];
+            let noteIndex = 0;
+            
+            function playNote() {
+                if (!gameState.isPlaying) return;
+                
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.value = notes[noteIndex % notes.length];
+                gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                
+                osc.type = 'sine';
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.5);
+                
+                noteIndex++;
+                
+                setTimeout(playNote, 600);
+            }
+            
+            backgroundMusic = true;
+            playNote();
         }
 
         // بدء اللعبة
@@ -656,6 +741,7 @@
             
             setTimeout(() => {
                 initGame();
+                playBackgroundMusic();
                 requestAnimationFrame(animate);
             }, 100);
         }
@@ -1051,6 +1137,8 @@
                     case 'r': reload(); break;
                     case 'e': heal(); break;
                     case 'f': pickup(); break;
+                    case 'q': controls.cameraRotation -= 0.05; break;
+                    case 'e': controls.cameraRotation += 0.05; break;
                 }
             });
             
@@ -1062,6 +1150,42 @@
                     case 'd': controls.moveRight = false; break;
                 }
             });
+            
+            // تدوير الكاميرا باللمس على الشاشة
+            const canvas = document.getElementById('gameCanvas');
+            
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const canvasRect = canvas.getBoundingClientRect();
+                    const touchX = touch.clientX - canvasRect.left;
+                    
+                    // إذا كان اللمس على النصف الأيمن من الشاشة
+                    if (touchX > canvasRect.width / 2) {
+                        controls.isDragging = true;
+                        controls.touchStartX = touch.clientX;
+                        controls.touchStartY = touch.clientY;
+                    }
+                }
+            }, false);
+            
+            canvas.addEventListener('touchmove', (e) => {
+                if (controls.isDragging && e.touches.length === 1) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - controls.touchStartX;
+                    const deltaY = touch.clientY - controls.touchStartY;
+                    
+                    controls.cameraRotation += deltaX * 0.005;
+                    
+                    controls.touchStartX = touch.clientX;
+                    controls.touchStartY = touch.clientY;
+                }
+            }, false);
+            
+            canvas.addEventListener('touchend', () => {
+                controls.isDragging = false;
+            }, false);
             
             const joystick = document.getElementById('joystick');
             joystick.addEventListener('touchstart', handleJoystickStart, false);
@@ -1084,6 +1208,13 @@
                 e.preventDefault();
                 pickup();
             });
+        }
+        
+        // دالة الخروج
+        function exitGame() {
+            if (confirm('هل تريد الخروج من اللعبة؟')) {
+                location.reload();
+            }
         }
 
         function handleJoystickStart(e) {
@@ -1140,6 +1271,7 @@
         function shoot() {
             if (gameState.ammo <= 0) {
                 showNotification('نفذت الذخيرة!');
+                playSound('empty');
                 return;
             }
             
@@ -1147,20 +1279,25 @@
             updateAmmoDisplay();
             playSound('shoot');
             
-            const bulletGeometry = new THREE.SphereGeometry(0.15, 8, 8);
-            const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const bulletMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xffff00,
+                emissive: 0xffff00,
+                emissiveIntensity: 1
+            });
             const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
             
             bullet.position.copy(player.position);
             bullet.position.y += 1.5;
             
-            const direction = new THREE.Vector3(0, 0, -1);
-            direction.applyQuaternion(camera.quaternion);
+            // اتجاه الرصاصة - مباشرة أمام اللاعب
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
             
             bullet.userData = {
-                velocity: direction.multiplyScalar(3),
-                damage: 25,
-                lifetime: 100,
+                velocity: direction.multiplyScalar(4),
+                damage: 35,
+                lifetime: 150,
                 fromPlayer: true
             };
             
@@ -1171,7 +1308,7 @@
         // إعادة التحميل
         function reload() {
             if (gameState.ammo === 30) {
-                showNotification('الذخيرة ممتلئة');
+                showNotification('السلاح ممتلئ');
                 return;
             }
             
@@ -1181,7 +1318,9 @@
             }
             
             playSound('reload');
+            showNotification('إعادة التحميل...');
             
+            // ملء السلاح بالكامل
             const needed = 30 - gameState.ammo;
             const toReload = Math.min(needed, gameState.totalAmmo);
             
@@ -1189,7 +1328,10 @@
             gameState.totalAmmo -= toReload;
             
             updateAmmoDisplay();
-            showNotification('تم إعادة التحميل');
+            
+            setTimeout(() => {
+                showNotification('✅ تم إعادة التحميل!');
+            }, 500);
         }
 
         // التقاط العناصر
@@ -1259,12 +1401,19 @@
             // الجويستك - الآن للأمام يتحرك للأمام بشكل صحيح
             if (controls.joystickActive) {
                 moveX += controls.joystickX * speed * 1.5;
-                moveZ += controls.joystickY * speed * 1.5; // عكس الاتجاه ليكون طبيعياً
+                moveZ += controls.joystickY * speed * 1.5;
             }
             
             if (moveX !== 0 || moveZ !== 0) {
-                player.position.x += moveX;
-                player.position.z += moveZ;
+                // تطبيق الحركة مع الأخذ بعين الاعتبار دوران الكاميرا
+                const cos = Math.cos(controls.cameraRotation);
+                const sin = Math.sin(controls.cameraRotation);
+                
+                const rotatedX = moveX * cos - moveZ * sin;
+                const rotatedZ = moveX * sin + moveZ * cos;
+                
+                player.position.x += rotatedX;
+                player.position.z += rotatedZ;
                 
                 const halfMap = gameConfig.mapSize / 2;
                 player.position.x = Math.max(-halfMap, Math.min(halfMap, player.position.x));
@@ -1273,10 +1422,14 @@
                 checkCollision();
             }
             
-            // الكاميرا
-            camera.position.x = player.position.x;
-            camera.position.y = player.position.y + 12;
-            camera.position.z = player.position.z + 20;
+            // الكاميرا تدور 360 درجة
+            const cameraDistance = 20;
+            const cameraHeight = 12;
+            
+            camera.position.x = player.position.x + Math.sin(controls.cameraRotation) * cameraDistance;
+            camera.position.y = player.position.y + cameraHeight;
+            camera.position.z = player.position.z + Math.cos(controls.cameraRotation) * cameraDistance;
+            
             camera.lookAt(new THREE.Vector3(player.position.x, player.position.y + 2, player.position.z));
         }
 
@@ -1312,25 +1465,31 @@
                     .subVectors(player.position, bot.position)
                     .normalize();
                 
-                bot.position.add(direction.multiplyScalar(bot.userData.speed * 0.08));
+                // حركة البوت نحو اللاعب
+                bot.position.add(direction.multiplyScalar(bot.userData.speed * 0.1));
                 bot.lookAt(player.position);
                 
                 const distance = bot.position.distanceTo(player.position);
                 
+                // البوت يطلق النار
                 bot.userData.shootCooldown--;
-                if (bot.userData.shootCooldown <= 0 && distance < 60) {
-                    if (Math.random() < bot.userData.accuracy * 0.08) {
+                if (bot.userData.shootCooldown <= 0 && distance < 80) {
+                    if (Math.random() < bot.userData.accuracy * 0.15) {
                         botShoot(bot);
                     }
-                    bot.userData.shootCooldown = 40;
+                    bot.userData.shootCooldown = 25 + Math.random() * 20;
                 }
             });
         }
 
         // إطلاق نار البوت
         function botShoot(bot) {
-            const bulletGeometry = new THREE.SphereGeometry(0.15, 8, 8);
-            const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const bulletMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 1
+            });
             const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
             
             bullet.position.copy(bot.position);
@@ -1340,14 +1499,16 @@
                 .subVectors(player.position, bot.position)
                 .normalize();
             
-            direction.x += (Math.random() - 0.5) * (1 - bot.userData.accuracy);
-            direction.z += (Math.random() - 0.5) * (1 - bot.userData.accuracy);
+            // دقة أقل للبوتات
+            direction.x += (Math.random() - 0.5) * (1.2 - bot.userData.accuracy);
+            direction.y += (Math.random() - 0.5) * 0.3;
+            direction.z += (Math.random() - 0.5) * (1.2 - bot.userData.accuracy);
             direction.normalize();
             
             bullet.userData = {
-                velocity: direction.multiplyScalar(3),
-                damage: 20,
-                lifetime: 100,
+                velocity: direction.multiplyScalar(3.5),
+                damage: 18,
+                lifetime: 150,
                 fromBot: true
             };
             
@@ -1368,12 +1529,14 @@
                 }
                 
                 if (bullet.userData.fromBot) {
+                    // رصاص البوت يصيب اللاعب
                     const distance = bullet.position.distanceTo(player.position);
-                    if (distance < 1) {
+                    if (distance < 2) {
                         gameState.health -= bullet.userData.damage;
                         updateHealthDisplay();
                         playSound('hit');
                         scene.remove(bullet);
+                        showNotification('أصبت! -' + bullet.userData.damage);
                         
                         if (gameState.health <= 0) {
                             endGame(false);
@@ -1381,14 +1544,17 @@
                         return false;
                     }
                 } else if (bullet.userData.fromPlayer) {
+                    // رصاص اللاعب يصيب البوتات
                     for (let i = 0; i < bots.length; i++) {
                         const bot = bots[i];
                         if (!bot.userData.isAlive) continue;
                         
                         const distance = bullet.position.distanceTo(bot.position);
-                        if (distance < 1.5) {
+                        if (distance < 2.5) {
                             bot.userData.health -= bullet.userData.damage;
                             playSound('hit');
+                            
+                            showNotification('إصابة! -' + bullet.userData.damage);
                             
                             if (bot.userData.health <= 0) {
                                 bot.userData.isAlive = false;
@@ -1396,10 +1562,10 @@
                                 gameState.kills++;
                                 gameState.alive--;
                                 updateStats();
-                                showNotification('قتل! 💀', true);
+                                showNotification('🎯 قتل عدو! 💀', true);
                                 
                                 if (gameState.alive === 1) {
-                                    endGame(true);
+                                    setTimeout(() => endGame(true), 500);
                                 }
                             }
                             
