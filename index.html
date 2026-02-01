@@ -432,33 +432,37 @@
             overflow: hidden;
         }
 
-        .iraq-star {
+        .iraq-star-top {
             position: absolute;
-            top: 50%;
+            top: 16%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: #007a3d;
-            font-size: 80px;
+            font-size: 60px;
             text-shadow: 0 0 20px rgba(0, 122, 61, 0.8);
-            animation: starPulse 2s ease-in-out infinite;
         }
 
-        @keyframes starPulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
+        .iraq-star-bottom {
+            position: absolute;
+            bottom: 16%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            color: #007a3d;
+            font-size: 60px;
+            text-shadow: 0 0 20px rgba(0, 122, 61, 0.8);
         }
 
         .building-logo {
             position: absolute;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 42px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
             font-weight: 900;
-            color: white;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8),
-                        0 0 30px rgba(255, 215, 0, 0.6);
-            letter-spacing: 3px;
+            color: #000000;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3),
+                        0 0 20px rgba(0, 122, 61, 0.4);
+            letter-spacing: 2px;
             z-index: 10;
         }
     </style>
@@ -472,8 +476,9 @@
             <div class="building-3d">
                 <div class="building-face building-front">
                     <div class="iraq-building">
-                        <div class="iraq-star">★ ★ ★</div>
+                        <div class="iraq-star-top">★ ★ ★</div>
                         <div class="building-logo">برمجني</div>
+                        <div class="iraq-star-bottom">★ ★ ★</div>
                     </div>
                 </div>
                 <div class="building-face building-side"></div>
@@ -546,11 +551,52 @@
         const CITY_SIZE = 3000;
         const BUILDING_COUNT = 120;
 
-        // الموسيقى
-        const backgroundMusic = new Audio();
-        backgroundMusic.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwPj4+Pj4+TExMTExZWVlZWVlnZ2dnZ3V1dXV1dYODg4ODkZGRkZGRn5+fn5+frKysrKy6urq6urrIyMjIyNbW1tbW1uTk5OTk8vLy8vLy//////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAHjOZTf9/AAAAAAAAAAAAAAAAAAAAAP/7kGQAD/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0.3;
+        // الموسيقى - موسيقى خلفية بسيطة
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let musicPlaying = false;
+
+        function playBackgroundMusic() {
+            if (musicPlaying) return;
+            musicPlaying = true;
+            
+            const notes = [
+                { freq: 261.63, duration: 0.5 }, // C
+                { freq: 293.66, duration: 0.5 }, // D
+                { freq: 329.63, duration: 0.5 }, // E
+                { freq: 349.23, duration: 0.5 }, // F
+                { freq: 392.00, duration: 1.0 }, // G
+                { freq: 349.23, duration: 0.5 }, // F
+                { freq: 329.63, duration: 0.5 }, // E
+                { freq: 293.66, duration: 1.0 }, // D
+            ];
+
+            let currentTime = audioContext.currentTime;
+
+            function playMusicLoop() {
+                notes.forEach(note => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.value = note.freq;
+                    oscillator.type = 'sine';
+
+                    gainNode.gain.setValueAtTime(0.1, currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + note.duration);
+
+                    oscillator.start(currentTime);
+                    oscillator.stop(currentTime + note.duration);
+
+                    currentTime += note.duration;
+                });
+
+                setTimeout(playMusicLoop, notes.reduce((sum, n) => sum + n.duration, 0) * 1000);
+            }
+
+            playMusicLoop();
+        }
 
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
@@ -558,7 +604,10 @@
             document.getElementById('controls').style.display = 'flex';
             
             // تشغيل الموسيقى
-            backgroundMusic.play().catch(e => console.log('Music autoplay prevented'));
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            playBackgroundMusic();
             
             // بدء اللعبة
             gameStartTime = Date.now();
@@ -699,6 +748,9 @@
 
             // المدينة
             createCity();
+            
+            // عمارة برمجني الكبيرة
+            createBarmajniBuilding();
 
             // سيارات الشرطة
             createPoliceCars(4);
@@ -775,7 +827,7 @@
                 do {
                     x = (Math.random() - 0.5) * CITY_SIZE * 0.8;
                     z = (Math.random() - 0.5) * CITY_SIZE * 0.8;
-                } while (Math.abs(x) < 50 && Math.abs(z) < 50);
+                } while ((Math.abs(x) < 50 && Math.abs(z) < 50) || (Math.abs(x) < 80 && Math.abs(z - 150) < 80));
 
                 building.position.set(x, height / 2, z);
                 building.castShadow = true;
@@ -806,6 +858,90 @@
                     }
                 }
             }
+        }
+
+        function createBarmajniBuilding() {
+            const width = 60;
+            const height = 250;
+            const depth = 60;
+
+            const buildingGroup = new THREE.Group();
+            
+            // الجزء الأحمر (أعلى)
+            const redPart = new THREE.Mesh(
+                new THREE.BoxGeometry(width, height / 3, depth),
+                new THREE.MeshStandardMaterial({ color: 0xce1126 })
+            );
+            redPart.position.y = height / 3;
+            buildingGroup.add(redPart);
+
+            // الجزء الأبيض (وسط)
+            const whitePart = new THREE.Mesh(
+                new THREE.BoxGeometry(width, height / 3, depth),
+                new THREE.MeshStandardMaterial({ color: 0xffffff })
+            );
+            whitePart.position.y = 0;
+            buildingGroup.add(whitePart);
+
+            // الجزء الأسود (أسفل)
+            const blackPart = new THREE.Mesh(
+                new THREE.BoxGeometry(width, height / 3, depth),
+                new THREE.MeshStandardMaterial({ color: 0x000000 })
+            );
+            blackPart.position.y = -height / 3;
+            buildingGroup.add(blackPart);
+
+            // النجوم الخضراء
+            const starGeometry = new THREE.SphereGeometry(3, 8, 8);
+            const starMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x007a3d,
+                emissive: 0x007a3d,
+                emissiveIntensity: 0.8
+            });
+
+            // نجوم الجزء الأحمر
+            for (let i = -1; i <= 1; i++) {
+                const star = new THREE.Mesh(starGeometry, starMaterial);
+                star.position.set(i * 15, height / 3, depth / 2 + 1);
+                buildingGroup.add(star);
+            }
+
+            // نجوم الجزء الأسود
+            for (let i = -1; i <= 1; i++) {
+                const star = new THREE.Mesh(starGeometry, starMaterial);
+                star.position.set(i * 15, -height / 3, depth / 2 + 1);
+                buildingGroup.add(star);
+            }
+
+            // نص "برمجني"
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 80px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('برمجني', 256, 128);
+
+            const textTexture = new THREE.CanvasTexture(canvas);
+            const textMaterial = new THREE.MeshBasicMaterial({ 
+                map: textTexture, 
+                transparent: true 
+            });
+            const textPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(40, 20),
+                textMaterial
+            );
+            textPlane.position.set(0, 0, depth / 2 + 0.5);
+            buildingGroup.add(textPlane);
+
+            buildingGroup.position.set(0, height / 2, 150);
+            buildingGroup.castShadow = true;
+            buildingGroup.receiveShadow = true;
+
+            obstacles.push(buildingGroup);
+            scene.add(buildingGroup);
         }
 
         function createPoliceCars(count) {
@@ -1052,8 +1188,8 @@
                 }
 
                 if (distance > 5) {
-                    car.velocity.x = (dx / distance) * 0.7;
-                    car.velocity.z = (dz / distance) * 0.7;
+                    car.velocity.x = (dx / distance) * 1.2;
+                    car.velocity.z = (dz / distance) * 1.2;
 
                     car.mesh.position.x += car.velocity.x;
                     car.mesh.position.z += car.velocity.z;
