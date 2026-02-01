@@ -56,7 +56,7 @@
         }
 
         .game-title {
-            font-size: 38px;
+            font-size: 42px;
             color: #FFD700;
             text-shadow: 0 0 30px rgba(255,215,0,0.8);
             margin-bottom: 10px;
@@ -69,11 +69,50 @@
             to { text-shadow: 0 0 40px rgba(255,215,0,1); }
         }
 
-        .level-select-title {
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            padding: 10px 25px;
+            border-radius: 25px;
             color: white;
+            font-weight: 900;
+            border: 2px solid rgba(255,215,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 18px;
-            margin-top: 10px;
-            opacity: 0.9;
+        }
+
+        .shop-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            padding: 12px 30px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 900;
+            border: 3px solid rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 5px 20px rgba(238,90,111,0.5);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shop-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(238,90,111,0.7);
+        }
+
+        .shop-btn:active {
+            transform: scale(0.95);
         }
 
         .progress-container {
@@ -81,7 +120,7 @@
             border-radius: 25px;
             padding: 15px;
             margin: 15px auto;
-            max-width: 350px;
+            max-width: 400px;
             border: 2px solid rgba(255,215,0,0.3);
         }
 
@@ -111,7 +150,7 @@
 
         .progress-text {
             color: #FFD700;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 900;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
@@ -130,7 +169,6 @@
             width: 40px;
             height: 100%;
             z-index: 1;
-            filter: drop-shadow(0 0 10px rgba(100,200,255,0.5));
         }
 
         .levels-wrapper {
@@ -186,7 +224,6 @@
         .level-btn.current {
             background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
             border-color: #90EE90;
-            box-shadow: 0 0 40px rgba(72,187,120,1), inset 0 0 20px rgba(255,255,255,0.3);
             animation: current-pulse 1.5s infinite;
             transform: scale(1.15);
             z-index: 10;
@@ -210,19 +247,6 @@
             opacity: 0.6;
         }
 
-        .stars {
-            position: absolute;
-            top: -18px;
-            display: flex;
-            gap: 2px;
-        }
-
-        .star {
-            color: #FFD700;
-            font-size: 14px;
-            filter: drop-shadow(0 0 5px rgba(255,215,0,0.8));
-        }
-
         .mario-icon {
             position: absolute;
             top: -35px;
@@ -235,6 +259,206 @@
         @keyframes bounce-icon {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
+        }
+
+        /* Shop Modal - Beautiful Design */
+        .shop-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .shop-modal.active {
+            display: flex;
+        }
+
+        .shop-container {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 30px;
+            border: 5px solid #FFD700;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.3);
+            overflow: hidden;
+            animation: shop-enter 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes shop-enter {
+            from { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .shop-header {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .shop-title {
+            color: #1a202c;
+            font-size: 28px;
+            font-weight: 900;
+            text-shadow: 0 2px 4px rgba(255,255,255,0.3);
+        }
+
+        .shop-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.3);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #1a202c;
+            transition: all 0.3s;
+        }
+
+        .shop-close:hover {
+            background: rgba(255,255,255,0.5);
+            transform: rotate(90deg);
+        }
+
+        .shop-body {
+            padding: 30px;
+        }
+
+        .inventory-display {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+
+        .inventory-label {
+            color: #a0aec0;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .inventory-count {
+            color: #FFD700;
+            font-size: 42px;
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .code-section {
+            margin-bottom: 25px;
+        }
+
+        .code-label {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .code-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .code-input {
+            width: 100%;
+            padding: 18px;
+            font-size: 24px;
+            text-align: center;
+            border: 3px solid #4a5568;
+            border-radius: 15px;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 900;
+            letter-spacing: 6px;
+            background: rgba(255,255,255,0.95);
+            color: #2d3748;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .redeem-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: 900;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            box-shadow: 0 5px 20px rgba(72,187,120,0.4);
+            transition: all 0.3s;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .redeem-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(72,187,120,0.6);
+        }
+
+        .redeem-btn:disabled {
+            background: #4a5568;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .message-box {
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 700;
+            display: none;
+            margin-top: 15px;
+            animation: message-pop 0.3s;
+        }
+
+        @keyframes message-pop {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .message-box.success {
+            background: linear-gradient(135deg, rgba(72,187,120,0.3) 0%, rgba(56,161,105,0.3) 100%);
+            color: #90EE90;
+            border: 2px solid #48BB78;
+            display: block;
+        }
+
+        .message-box.error {
+            background: linear-gradient(135deg, rgba(245,101,101,0.3) 0%, rgba(229,62,62,0.3) 100%);
+            color: #FC8181;
+            border: 2px solid #F56565;
+            display: block;
+        }
+
+        .hint-text {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
         }
 
         /* Game Screen */
@@ -252,7 +476,6 @@
             border: 5px solid #FFD700;
             width: 100%;
             max-width: 900px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
         }
 
         .game-ui-header {
@@ -286,7 +509,6 @@
             background: rgba(0,0,0,0.2);
             padding: 8px 15px;
             border-radius: 15px;
-            border: 2px solid rgba(255,255,255,0.2);
         }
 
         .hearts-container {
@@ -305,19 +527,13 @@
             filter: grayscale(100%);
         }
 
-        .mushroom-count {
+        .mushroom-display {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            padding: 5px 12px;
+            padding: 8px 15px;
             border-radius: 20px;
-            font-size: 16px;
             border: 2px solid white;
-            cursor: pointer;
-            transition: transform 0.2s;
+            font-weight: 900;
             box-shadow: 0 3px 10px rgba(238,90,111,0.4);
-        }
-
-        .mushroom-count:active {
-            transform: scale(0.95);
         }
 
         .level-tag {
@@ -328,7 +544,6 @@
             font-weight: 900;
             font-size: 18px;
             color: #FFD700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         canvas {
@@ -338,8 +553,6 @@
             width: 100%;
             height: auto;
             aspect-ratio: 2/1;
-            display: block;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
         }
 
         .controls {
@@ -389,138 +602,28 @@
             cursor: pointer;
         }
 
-        /* Shop Modal */
-        .shop-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
+        .use-mushroom-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
+            border-radius: 50%;
+            border: 4px solid white;
+            color: white;
+            font-size: 30px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
-        }
-
-        .shop-modal.active {
-            display: flex;
-        }
-
-        .shop-content {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-            padding: 30px;
-            border-radius: 30px;
-            width: 90%;
-            max-width: 400px;
-            border: 5px solid #FFD700;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-            animation: shop-appear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes shop-appear {
-            from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
-            to { transform: scale(1) rotate(0); opacity: 1; }
-        }
-
-        .shop-title {
-            color: #FFD700;
-            font-size: 32px;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255,215,0,0.5);
-        }
-
-        .current-mushrooms {
-            text-align: center;
-            color: white;
-            font-size: 20px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-        }
-
-        .code-input {
-            width: 100%;
-            padding: 15px;
-            font-size: 24px;
-            text-align: center;
-            border: 3px solid #FFD700;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            font-family: 'Tajawal', sans-serif;
-            font-weight: 900;
-            letter-spacing: 5px;
-            background: rgba(255,255,255,0.95);
-            color: #2d3748;
-        }
-
-        .code-input:focus {
-            outline: none;
-            box-shadow: 0 0 20px rgba(255,215,0,0.5);
-        }
-
-        .buy-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 20px;
-            font-weight: 900;
             cursor: pointer;
-            margin-bottom: 10px;
-            transition: all 0.3s;
-            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 8px 25px rgba(255,0,0,0.5);
+            animation: mushroom-pulse 2s infinite;
         }
 
-        .buy-btn:disabled {
-            background: #4a5568;
-            cursor: not-allowed;
-            opacity: 0.6;
+        @keyframes mushroom-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(255,0,0,0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 12px 35px rgba(255,0,0,0.7); }
         }
 
-        .buy-btn:not(:disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(72,187,120,0.4);
-        }
-
-        .close-shop {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .message {
-            text-align: center;
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-weight: 700;
-            display: none;
-        }
-
-        .message.success {
-            background: rgba(72,187,120,0.3);
-            color: #90EE90;
-            display: block;
-        }
-
-        .message.error {
-            background: rgba(245,101,101,0.3);
-            color: #FC8181;
-            display: block;
-        }
-
-        /* Other Modals */
+        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -554,11 +657,6 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        .modal-content h2 {
-            font-size: 28px;
-            margin-bottom: 15px;
-        }
-
         .btn {
             background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
             color: white;
@@ -570,7 +668,6 @@
             cursor: pointer;
             margin: 5px;
             font-family: 'Tajawal', sans-serif;
-            box-shadow: 0 4px 15px rgba(72,187,120,0.4);
         }
 
         .damage-overlay {
@@ -591,14 +688,9 @@
         }
 
         @media (max-width: 480px) {
-            .level-btn {
-                width: 70px;
-                height: 70px;
-                font-size: 22px;
-            }
-            .game-title {
-                font-size: 30px;
-            }
+            .game-title { font-size: 32px; }
+            .level-btn { width: 70px; height: 70px; font-size: 22px; }
+            .shop-btn { font-size: 16px; padding: 10px 20px; }
         }
     </style>
 </head>
@@ -606,16 +698,26 @@
 
     <div class="damage-overlay" id="damageOverlay"></div>
 
-    <!-- Level Select -->
+    <!-- Level Select Screen -->
     <div id="levelSelectScreen" class="screen active level-select-screen">
         <div class="game-header">
             <h1 class="game-title">🍄 سوبر ماريو 🍄</h1>
-            <div class="level-select-title">اختر المستوى للعب</div>
+            
+            <div class="header-stats">
+                <div class="stat-pill">
+                    🏆 <span id="maxLevelDisplay">1</span>/50
+                </div>
+                <button class="shop-btn" onclick="openShop()">
+                    🛒 متجر الفطر
+                    <span style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 10px;" id="headerMushroomCount">0</span>
+                </button>
+            </div>
+
             <div class="progress-container">
                 <div class="progress-bar">
                     <div class="progress-fill" id="totalProgress" style="width: 2%"></div>
                 </div>
-                <div class="progress-text">🎮 وصلت للمستوى <span id="maxLevelDisplay">1</span> من 50</div>
+                <div class="progress-text">المستوى الحالي: <span id="currentDisplay">1</span></div>
             </div>
         </div>
 
@@ -623,9 +725,9 @@
             <svg class="path-svg" viewBox="0 0 100 3200" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="roadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#2b6cb0;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#4299e1;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#2b6cb0;stop-opacity:1" />
+                        <stop offset="0%" style="stop-color:#2b6cb0" />
+                        <stop offset="50%" style="stop-color:#4299e1" />
+                        <stop offset="100%" style="stop-color:#2b6cb0" />
                     </linearGradient>
                 </defs>
                 <path d="M 50 0 Q 90 160, 10 320 Q 90 480, 10 640 Q 90 800, 10 960 Q 90 1120, 10 1280 Q 90 1440, 10 1600 Q 90 1760, 10 1920 Q 90 2080, 10 2240 Q 90 2400, 10 2560 Q 90 2720, 10 2880 Q 90 3040, 50 3200" 
@@ -633,6 +735,40 @@
             </svg>
 
             <div class="levels-wrapper" id="levelsContainer"></div>
+        </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shopModal" class="shop-modal">
+        <div class="shop-container">
+            <div class="shop-header">
+                <h2 class="shop-title">🛒 متجر الفطر السحري</h2>
+                <button class="shop-close" onclick="closeShop()">✕</button>
+            </div>
+            
+            <div class="shop-body">
+                <div class="inventory-display">
+                    <div class="inventory-label">📦 مخزونك الحالي</div>
+                    <div class="inventory-count">🍄 <span id="shopMushroomCount">0</span></div>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-label">🔑 أدخل كود الشراء</div>
+                    <div class="code-input-wrapper">
+                        <input type="text" class="code-input" id="codeInput" placeholder="XXXXXX" maxlength="10">
+                    </div>
+                    <button class="redeem-btn" onclick="redeemCode()">
+                        ✨ استبدال الكود
+                    </button>
+                </div>
+
+                <div class="message-box" id="shopMessage"></div>
+
+                <div class="hint-text">
+                    💡 جمع أكبر عدد من العملات لاكتشاف الأكواد السرية!<br>
+                    كل كود يستخدم مرة واحدة فقط
+                </div>
+            </div>
         </div>
     </div>
 
@@ -645,7 +781,11 @@
                     <div class="stat">🪙 <span id="coins">0</span></div>
                     <div class="stat">⭐ <span id="score">0</span></div>
                 </div>
-                <div class="mushroom-count" onclick="openShop()">🍄 <span id="mushroomStock">0</span></div>
+                
+                <div class="mushroom-display">
+                    🍄 <span id="gameMushroomCount">0</span>
+                </div>
+                
                 <div class="level-tag" id="gameLevelTag">المستوى 1</div>
             </div>
             
@@ -655,91 +795,110 @@
                 <div class="joystick-area" id="joystick">
                     <div class="joystick-knob" id="joystickKnob"></div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="jump-btn" onclick="useMushroom()" id="useMushroomBtn" style="display:none; font-size: 20px;">🍄</button>
+                
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button class="use-mushroom-btn" id="useMushroomBtn" onclick="useMushroom()" style="display: none;">
+                        🍄
+                    </button>
                     <div class="jump-btn" id="jumpBtn">قفز</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Shop Modal -->
-    <div id="shopModal" class="shop-modal">
-        <div class="shop-content">
-            <h2 class="shop-title">🏪 متجر الفطر</h2>
-            <div class="current-mushrooms">لديك 🍄 <span id="shopMushroomCount">0</span> فطر</div>
-            
-            <input type="text" class="code-input" id="codeInput" placeholder="أدخل الكود هنا" maxlength="10">
-            
-            <button class="buy-btn" onclick="redeemCode()">🔓 فتح الكود</button>
-            
-            <div class="message" id="shopMessage"></div>
-            
-            <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; color: #a0aec0; font-size: 14px;">
-                💡 تلميح: جمع العملات للحصول على أكواد سرية!
-            </div>
-            
-            <button class="close-shop" onclick="closeShop()">إغلاق</button>
-        </div>
-    </div>
-
-    <!-- Game Over Modal -->
+    <!-- Modals -->
     <div id="gameOverModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 style="color: #e53e3e;">💔 انتهت اللعبة</h2>
-            <p>خسرت جميع القلوب!</p>
-            <p>النقاط: <span id="finalScore">0</span></p>
-            <button class="btn" onclick="retryLevel()">🔄 إعادة</button>
+            <h2 style="color: #e53e3e; font-size: 32px;">💔 game over</h2>
+            <p style="font-size: 18px; margin: 15px 0;">لقد خسرت جميع القلوب!</p>
+            <p style="font-size: 20px; font-weight: 900; color: #FFD700; margin-bottom: 20px;">النقاط: <span id="finalScore">0</span></p>
+            <button class="btn" onclick="retryLevel()">🔄 إعادة المحاولة</button>
             <button class="btn" onclick="backToMenu()" style="background: #718096;">📋 القائمة</button>
         </div>
     </div>
 
-    <!-- Level Complete Modal -->
     <div id="levelCompleteModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 style="color: #48bb78;">🎉 مبروك!</h2>
-            <p>أكملت المستوى <span id="completedLevelNum">1</span></p>
-            <p>🪙 <span id="levelCoins">0</span> ⭐ <span id="levelScore">0</span></p>
-            <button class="btn" onclick="startSecret()">🚇 المهمة السرية</button>
+            <h2 style="color: #48bb78; font-size: 32px;">🎉 مبروك!</h2>
+            <p style="font-size: 20px; margin: 15px 0;">أكملت المستوى <span id="completedLevelNum">1</span></p>
+            <div style="background: rgba(255,215,0,0.2); padding: 15px; border-radius: 15px; margin: 20px 0;">
+                <p style="font-size: 18px;">🪙 <span id="levelCoins">0</span> | ⭐ <span id="levelScore">0</span></p>
+            </div>
+            <button class="btn" onclick="startSecret()" style="font-size: 20px;">🚇 دخول المهمة السرية</button>
         </div>
     </div>
 
-    <!-- Secret Complete Modal -->
     <div id="secretCompleteModal" class="modal-overlay">
-        <div class="modal-content" style="background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; border-color: #FFD700;">
-            <h2 style="color: #FFD700;">✨ وجدت الكبسولة!</h2>
-            <div style="width: 120px; height: 70px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border-radius: 35px; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #c53030; font-size: 18px; animation: float 2s infinite;">
+        <div class="modal-content" style="background: linear-gradient(135deg, #1a202c, #2d3748); color: white;">
+            <h2 style="color: #FFD700; font-size: 28px;">✨وجدت الكبسولة الذهبية!</h2>
+            <div style="width: 140px; height: 80px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 40px; margin: 25px auto; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #1a202c; font-size: 20px; box-shadow: 0 10px 40px rgba(255,215,0,0.6); animation: float 2s infinite;">
                 برمجني
             </div>
-            <button class="btn" onclick="nextLevel()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #2d3748;">➡️ التالي</button>
+            <p style="margin-bottom: 20px;">اضغط للانتقال للمستوى التالي</p>
+            <button class="btn" onclick="nextLevel()" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #1a202c; font-size: 20px;">➡️ التالي</button>
         </div>
     </div>
 
     <script>
-        // Game State
-        let currentLevel = 1;
-        let maxUnlockedLevel = 1;
-        let gameRunning = false;
-        let inSecret = false;
-        let coins = 0;
-        let score = 0;
-        let lives = 5;
-        let maxLives = 5;
-        let mushroomStock = 0; // Mushrooms in inventory
-        let isBig = false; // Current power-up state
-        
-        // Strict One-Time Use Codes
-        const usedCodes = new Set();
-        const validCodes = {
-            'MARIO15': { amount: 15, used: false },
-            'SUPER150': { amount: 150, used: false },
-            'POWER2024': { amount: 50, used: false },
-            'KING999': { amount: 999, used: false }
+        // ==================== SAVE SYSTEM ====================
+        // Load saved data or initialize
+        let gameData = {
+            currentLevel: 1,
+            maxUnlockedLevel: 1,
+            mushroomStock: 0,
+            usedCodes: []
         };
 
-        // Audio Context
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Load from localStorage
+        function loadGameData() {
+            const saved = localStorage.getItem('marioGameData');
+            if (saved) {
+                gameData = JSON.parse(saved);
+            }
+            updateAllUI();
+        }
 
+        // Save to localStorage
+        function saveGameData() {
+            localStorage.setItem('marioGameData', JSON.stringify(gameData));
+        }
+
+        // ==================== 150 STRICT CODES ====================
+        // Generate 150 unique codes
+        const codeDatabase = {};
+        
+        function generateCodes() {
+            const prefixes = ['MR', 'SU', 'PW', 'GD', 'SP', 'LV', 'GM', 'GD', 'ST', 'PR'];
+            const amounts = [5, 10, 15, 20, 25, 30, 50, 75, 100, 150];
+            
+            for (let i = 0; i < 150; i++) {
+                const prefix = prefixes[i % 10];
+                const num = String(i + 1).padStart(3, '0');
+                const code = `${prefix}${num}`;
+                const amount = amounts[i % 10] + (i > 100 ? 50 : 0);
+                codeDatabase[code] = { amount: amount, used: false };
+            }
+        }
+        
+        generateCodes();
+
+        // ==================== GAME STATE ====================
+        let gameState = {
+            running: false,
+            inSecret: false,
+            coins: 0,
+            score: 0,
+            lives: 5,
+            isBig: false
+        };
+
+        let player = { x: 50, y: 200, width: 30, height: 40, vx: 0, vy: 0, speed: 5, jump: 12, gravity: 0.6, grounded: false, facingRight: true, invincible: false };
+        let cameraX = 0;
+        let platforms = [], levelCoins = [], enemies = [], levelMushrooms = [], particles = [];
+
+        // ==================== AUDIO ====================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
@@ -747,52 +906,56 @@
             osc.connect(gain);
             gain.connect(audioCtx.destination);
 
+            const now = audioCtx.currentTime;
+            
             switch(type) {
                 case 'jump':
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
                     break;
                 case 'coin':
                     osc.type = 'square';
-                    osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(1600, audioCtx.currentTime + 0.1);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(1200, now);
+                    osc.frequency.setValueAtTime(1600, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2);
                     break;
                 case 'powerup':
                     osc.type = 'square';
-                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.3);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
                     break;
                 case 'hurt':
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
-                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
                     break;
                 case 'small':
-                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.2);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.2);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2);
                     break;
             }
         }
 
-        // Initialize Level Select
+        // ==================== LEVEL SELECT ====================
         function initLevelSelect() {
             const container = document.getElementById('levelsContainer');
             container.innerHTML = '';
+            
+            gameData.currentLevel = gameData.maxUnlockedLevel; // Always show current at max unlocked
             
             for (let i = 50; i >= 1; i--) {
                 const row = document.createElement('div');
@@ -801,14 +964,14 @@
                 const btn = document.createElement('div');
                 btn.className = 'level-btn';
                 
-                if (i === currentLevel) {
+                if (i === gameData.maxUnlockedLevel) {
                     btn.classList.add('current');
                     btn.innerHTML = `<div class="mario-icon">🧑</div><span>${i}</span>`;
-                    btn.onclick = () => enterLevel(i);
-                } else if (i <= maxUnlockedLevel) {
+                    btn.onclick = () => startGame(i);
+                } else if (i < gameData.maxUnlockedLevel) {
                     btn.classList.add('completed');
                     btn.innerHTML = `<span>${i}</span>`;
-                    btn.onclick = () => enterLevel(i);
+                    btn.onclick = () => startGame(i);
                 } else {
                     btn.classList.add('locked');
                     btn.innerHTML = '🔒';
@@ -818,89 +981,67 @@
                 row.appendChild(btn);
             }
             
-            document.getElementById('totalProgress').style.width = (maxUnlockedLevel/50*100) + '%';
-            document.getElementById('maxLevelDisplay').textContent = maxUnlockedLevel;
+            document.getElementById('totalProgress').style.width = (gameData.maxUnlockedLevel/50*100) + '%';
+            document.getElementById('maxLevelDisplay').textContent = gameData.maxUnlockedLevel;
+            document.getElementById('currentDisplay').textContent = gameData.maxUnlockedLevel;
+            document.getElementById('headerMushroomCount').textContent = gameData.mushroomStock;
         }
 
-        function enterLevel(level) {
-            currentLevel = level;
-            startGame();
-        }
-
-        function startGame() {
-            inSecret = false;
-            coins = 0;
-            score = 0;
-            lives = 5;
-            isBig = false;
+        function startGame(level) {
+            gameState = {
+                running: true,
+                inSecret: false,
+                coins: 0,
+                score: 0,
+                lives: 5,
+                isBig: false
+            };
             
-            generateLevelDifficulty(currentLevel);
+            generateLevel(level);
             
             document.getElementById('levelSelectScreen').classList.remove('active');
             document.getElementById('gameScreen').classList.add('active');
-            document.getElementById('gameLevelTag').textContent = `المستوى ${currentLevel}`;
+            document.getElementById('gameLevelTag').textContent = `المستوى ${level}`;
             
-            updateUI();
-            gameRunning = true;
-            gameLoop();
+            updateGameUI();
+            requestAnimationFrame(gameLoop);
         }
 
-        // Progressive Difficulty System
-        function generateLevelDifficulty(level) {
-            platforms = [];
+        // ==================== LEVEL GENERATION WITH PROGRESSIVE DIFFICULTY ====================
+        function generateLevel(level) {
+            platforms = [{x: 0, y: 350, width: 2000 + (level * 100), height: 50, type: 'ground'}];
             levelCoins = [];
             enemies = [];
-            mushroomsInLevel = [];
+            levelMushrooms = [];
             
-            const difficulty = Math.min(level / 5, 10); // Max difficulty at level 50
-            const length = 1500 + (level * 100);
+            // Progressive difficulty calculation
+            const difficultyMultiplier = level / 50; // 0.02 to 1.0
             
-            // Ground with gaps in higher levels
-            let currentX = 0;
-            while (currentX < length) {
-                const platformWidth = 300 - (difficulty * 15); // Gets narrower
-                platforms.push({
-                    x: currentX,
-                    y: 350,
-                    width: Math.max(platformWidth, 150),
-                    height: 50,
-                    type: 'ground'
-                });
-                
-                // Gaps start appearing after level 3
-                const gap = level > 3 ? Math.min((level - 3) * 10, 80) : 0;
-                currentX += Math.max(platformWidth, 150) + gap;
-            }
+            // Number of platforms increases with level
+            const platformCount = 5 + Math.floor(level / 3);
             
-            // Platforms
-            const platformCount = 5 + Math.floor(difficulty);
             for (let i = 0; i < platformCount; i++) {
-                const x = 200 + i * (250 - difficulty * 10);
-                const y = 280 - ((i % 3) * 60) - (Math.random() * (difficulty * 3));
-                const width = 120 - (difficulty * 3);
+                // Platforms get smaller and higher as level increases
+                const x = 250 + i * (280 - (level * 2));
+                const y = 280 - ((i % 4) * 50) - (Math.random() * level);
+                const width = Math.max(100 - level, 60); // Minimum 60px width
                 
-                platforms.push({
-                    x: x,
-                    y: y,
-                    width: Math.max(width, 60),
-                    height: 20,
-                    type: 'brick'
-                });
+                platforms.push({x, y, width, height: 20, type: 'brick'});
                 
-                // Coins
-                if (Math.random() > 0.2) {
+                // Coins on platform
+                if (Math.random() > 0.2 || level < 5) { // More coins in early levels
                     for (let c = 0; c < 3; c++) {
                         levelCoins.push({
-                            x: x + 20 + (c * 25),
+                            x: x + 20 + (c * (width/3)),
                             y: y - 40,
                             collected: false
                         });
                     }
                 }
                 
-                // Mushrooms occasionally
-                if (Math.random() < 0.15 + (level * 0.01)) {
-                    mushroomsInLevel.push({
+                // Mushrooms appear more in higher levels
+                if (Math.random() < (0.1 + (level * 0.005))) {
+                    levelMushrooms.push({
                         x: x + width/2,
                         y: y - 35,
                         collected: false
@@ -908,48 +1049,43 @@
                 }
             }
             
-            // Enemies with increasing speed and intelligence
-            const enemyCount = 3 + Math.floor(difficulty);
+            // Enemies get faster and more numerous
+            const enemyCount = Math.min(3 + Math.floor(level / 2), 15);
             for (let i = 0; i < enemyCount; i++) {
-                const speed = 2 + (difficulty * 0.4);
-                const patrolRange = 150 - (difficulty * 5);
+                const baseSpeed = 2 + (level * 0.15);
+                const speedVariation = Math.random() * 1.5;
                 
                 enemies.push({
                     x: 300 + (i * 200),
                     y: 320,
                     width: 30,
                     height: 30,
-                    vx: speed * (Math.random() > 0.5 ? 1 : -1),
-                    start: 300 + (i * 200) - patrolRange/2,
-                    end: 300 + (i * 200) + patrolRange/2,
+                    vx: (baseSpeed + speedVariation) * (Math.random() > 0.5 ? 1 : -1),
+                    start: 200 + (i * 200),
+                    end: 400 + (i * 200),
                     alive: true
                 });
             }
             
+            // Reset player
             player.x = 50;
             player.y = 200;
             player.vx = 0;
             player.vy = 0;
+            player.height = 40;
             cameraX = 0;
         }
 
-        let platforms = [];
-        let levelCoins = [];
-        let enemies = [];
-        let mushroomsInLevel = [];
-        let player = { x: 50, y: 200, width: 30, height: 40, vx: 0, vy: 0, speed: 5, jump: 12, gravity: 0.6, grounded: false, facingRight: true };
-        let cameraX = 0;
-
-        // Controls
+        // ==================== CONTROLS ====================
         const joystick = document.getElementById('joystick');
         const knob = document.getElementById('joystickKnob');
-        let joystickActive = false;
-        let joystickX = 0;
+        let joystickActive = false, joystickX = 0;
 
         joystick.addEventListener('touchstart', (e) => {
             e.preventDefault();
             joystickActive = true;
             updateJoystick(e.touches[0]);
+            audioCtx.resume();
         }, {passive: false});
 
         joystick.addEventListener('touchmove', (e) => {
@@ -976,15 +1112,16 @@
 
         document.getElementById('jumpBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if (player.grounded && gameRunning) {
+            if (player.grounded && gameState.running) {
                 player.vy = -player.jump;
                 player.grounded = false;
                 playSound('jump');
             }
         }, {passive: false});
 
+        // ==================== GAME LOOP ====================
         function update() {
-            if (!gameRunning) return;
+            if (!gameState.running) return;
             
             // Movement
             if (joystickActive) {
@@ -1000,10 +1137,9 @@
             player.x += player.vx;
             player.y += player.vy;
             
-            // Size based on big state
-            player.height = isBig ? 60 : 40;
+            player.height = gameState.isBig ? 60 : 40;
             
-            // Platform collision
+            // Platform collisions
             player.grounded = false;
             for (let plat of platforms) {
                 if (player.x < plat.x + plat.width &&
@@ -1026,28 +1162,27 @@
             cameraX = player.x - 150;
             if (cameraX < 0) cameraX = 0;
             
-            // Collectibles
-            // Coins
+            // Collect coins
             for (let coin of levelCoins) {
                 if (!coin.collected) {
                     const float = Math.sin(Date.now() / 200) * 5;
                     if (Math.abs(player.x + 15 - coin.x) < 25 &&
                         Math.abs(player.y + player.height/2 - (coin.y + float)) < 25) {
                         coin.collected = true;
-                        coins++;
-                        score += 100;
+                        gameState.coins++;
+                        gameState.score += 100;
                         playSound('coin');
-                        updateUI();
+                        updateGameUI();
                         
                         if (levelCoins.every(c => c.collected)) {
-                            levelComplete();
+                            setTimeout(levelComplete, 300);
                         }
                     }
                 }
             }
             
-            // Mushrooms in level
-            for (let mush of mushroomsInLevel) {
+            // Collect level mushrooms
+            for (let mush of levelMushrooms) {
                 if (!mush.collected &&
                     Math.abs(player.x + 15 - mush.x) < 30 &&
                     Math.abs(player.y + player.height/2 - mush.y) < 30) {
@@ -1072,11 +1207,11 @@
                     if (player.vy > 0 && player.y + player.height - player.vy < enemy.y) {
                         enemy.alive = false;
                         player.vy = -10;
-                        score += 200;
+                        gameState.score += 200;
                         playSound('powerup');
                     } else {
-                        // Hit by enemy
-                        if (isBig) {
+                        // Hit
+                        if (gameState.isBig) {
                             becomeSmall();
                         } else {
                             loseLife();
@@ -1084,59 +1219,26 @@
                     }
                 }
             }
-        }
-
-        function becomeBig() {
-            isBig = true;
-            playSound('powerup');
-            score += 500;
-            updateUI();
-        }
-
-        function becomeSmall() {
-            isBig = false;
-            playSound('small');
-            // Invincibility frames
-            player.invincible = true;
-            setTimeout(() => player.invincible = false, 1000);
-        }
-
-        function loseLife() {
-            lives--;
-            playSound('hurt');
             
-            // Visual effect
-            const overlay = document.getElementById('damageOverlay');
-            overlay.classList.add('active');
-            setTimeout(() => overlay.classList.remove('active'), 300);
-            
-            if (lives <= 0) {
-                gameRunning = false;
-                document.getElementById('finalScore').textContent = score;
-                setTimeout(() => {
-                    document.getElementById('gameOverModal').classList.add('active');
-                }, 500);
-            } else {
-                player.x = 50;
-                player.y = 200;
-                player.vx = 0;
-                player.vy = 0;
-                updateHearts();
+            // Invincibility
+            if (player.invincible) {
+                player.invincibleTime--;
+                if (player.invincibleTime <= 0) player.invincible = false;
             }
         }
 
         function draw() {
             const ctx = document.getElementById('gameCanvas').getContext('2d');
             
-            // Background
-            if (inSecret) {
-                ctx.fillStyle = '#1a1a2e';
+            if (gameState.inSecret) {
+                ctx.fillStyle = '#0a0a1a';
                 ctx.fillRect(0, 0, 800, 400);
                 ctx.fillStyle = 'white';
-                for (let i = 0; i < 50; i++) {
-                    ctx.fillRect((i * 73 - cameraX * 0.5) % 800, (i * 37) % 300, 2, 2);
+                for (let i = 0; i < 60; i++) {
+                    ctx.fillRect((i * 73 - cameraX * 0.5) % 800, (i * 53) % 300, 2, 2);
                 }
             } else {
+                // Sky gradient
                 const grad = ctx.createLinearGradient(0, 0, 0, 400);
                 grad.addColorStop(0, '#87CEEB');
                 grad.addColorStop(0.5, '#E0F6FF');
@@ -1144,6 +1246,27 @@
                 grad.addColorStop(1, '#228B22');
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 800, 400);
+                
+                // Sun
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(700 - cameraX * 0.1, 80, 40, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(700 - cameraX * 0.1, 80, 60, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Clouds
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                for(let i=0; i<5; i++) {
+                    const x = (i * 250 - cameraX * 0.2 + Date.now() * 0.02) % 1000;
+                    ctx.beginPath();
+                    ctx.arc(x, 60 + i*30, 25, 0, Math.PI*2);
+                    ctx.arc(x+30, 70 + i*30, 35, 0, Math.PI*2);
+                    ctx.arc(x+60, 60 + i*30, 25, 0, Math.PI*2);
+                    ctx.fill();
+                }
             }
             
             ctx.save();
@@ -1151,30 +1274,67 @@
             
             // Platforms
             for (let p of platforms) {
-                ctx.fillStyle = inSecret ? '#2d3748' : (p.type === 'ground' ? '#8B4513' : '#D2691E');
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-                if (!inSecret && p.type === 'ground') {
-                    ctx.fillStyle = '#228B22';
-                    ctx.fillRect(p.x, p.y, p.width, 15);
+                if (gameState.inSecret) {
+                    ctx.fillStyle = '#2d3748';
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+                    ctx.strokeStyle = '#4a5568';
+                    ctx.strokeRect(p.x, p.y, p.width, p.height);
+                } else {
+                    if (p.type === 'ground') {
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(p.x, p.y, p.width, p.height);
+                        ctx.fillStyle = '#228B22';
+                        ctx.fillRect(p.x, p.y, p.width, 15);
+                        // Grass details
+                        for(let g=0; g<p.width; g+=20) {
+                            ctx.fillStyle = '#32CD32';
+                            ctx.beginPath();
+                            ctx.moveTo(p.x+g, p.y);
+                            ctx.lineTo(p.x+g+5, p.y-5);
+                            ctx.lineTo(p.x+g+10, p.y);
+                            ctx.fill();
+                        }
+                    } else {
+                        ctx.fillStyle = '#D2691E';
+                        ctx.fillRect(p.x, p.y, p.width, p.height);
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(p.x, p.y, p.width, p.height);
+                        // Brick pattern
+                        ctx.beginPath();
+                        for(let j=0; j<p.width; j+=20) {
+                            ctx.moveTo(p.x+j, p.y);
+                            ctx.lineTo(p.x+j, p.y+p.height);
+                        }
+                        ctx.stroke();
+                    }
                 }
             }
             
             // Coins
-            const float = Math.sin(Date.now() / 200) * 5;
+            const float = Math.sin(Date.now() / 200) * 6;
             for (let c of levelCoins) {
                 if (!c.collected) {
                     ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
-                    ctx.arc(c.x, c.y + float, 12, 0, Math.PI*2);
+                    ctx.ellipse(c.x, c.y + float, 12, 15, 0, 0, Math.PI*2);
                     ctx.fill();
                     ctx.strokeStyle = '#B8860B';
                     ctx.lineWidth = 2;
                     ctx.stroke();
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(c.x-4, c.y+float-4, 3, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#B8860B';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('$', c.x, c.y+float+5);
                 }
             }
             
-            // Mushrooms in level
-            for (let m of mushroomsInLevel) {
+            // Level Mushrooms
+            for (let m of levelMushrooms) {
                 if (!m.collected) {
                     const bounce = Math.sin(Date.now() / 300) * 3;
                     ctx.fillStyle = '#FF0000';
@@ -1183,10 +1343,10 @@
                     ctx.fill();
                     ctx.fillStyle = '#FFF';
                     ctx.beginPath();
-                    ctx.arc(m.x - 5, m.y + bounce - 8, 3, 0, Math.PI*2);
+                    ctx.arc(m.x-5, m.y+bounce-8, 3, 0, Math.PI*2);
                     ctx.fill();
                     ctx.fillStyle = '#FFE4C4';
-                    ctx.fillRect(m.x - 6, m.y + bounce - 5, 12, 10);
+                    ctx.fillRect(m.x-6, m.y+bounce-5, 12, 10);
                 }
             }
             
@@ -1207,86 +1367,119 @@
                 ctx.arc(e.x + 10, e.y + 12, 2, 0, Math.PI*2);
                 ctx.arc(e.x + 20, e.y + 12, 2, 0, Math.PI*2);
                 ctx.fill();
+                // Frown
+                ctx.beginPath();
+                ctx.arc(e.x + 15, e.y + 22, 5, 0, Math.PI);
+                ctx.stroke();
             }
             
             // Player
             if (!player.invincible || Math.floor(Date.now() / 100) % 2 === 0) {
-                if (isBig) {
-                    // Big Mario
+                if (gameState.isBig) {
                     ctx.fillStyle = '#FF0000';
                     ctx.fillRect(player.x, player.y, 40, 40);
                     ctx.fillStyle = '#0000FF';
                     ctx.fillRect(player.x, player.y + 40, 40, 20);
+                    ctx.fillStyle = '#FFCCAA';
+                    ctx.fillRect(player.x + 5, player.y, 30, 20);
                     ctx.fillStyle = '#FF0000';
-                    ctx.fillRect(player.x - 5, player.y, 50, 10);
+                    ctx.fillRect(player.x - 5, player.y - 5, 50, 10);
                 } else {
-                    // Small Mario
                     ctx.fillStyle = '#FF0000';
                     ctx.fillRect(player.x + 5, player.y + 10, 30, 25);
                     ctx.fillStyle = '#0000FF';
                     ctx.fillRect(player.x + 5, player.y + 35, 30, 15);
+                    ctx.fillStyle = '#FFCCAA';
+                    ctx.fillRect(player.x + 7, player.y, 26, 15);
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(player.x, player.y + 5, 40, 8);
                 }
-                // Face
-                ctx.fillStyle = '#FFCCAA';
-                ctx.fillRect(player.x + (isBig ? 5 : 7), player.y, isBig ? 30 : 16, isBig ? 20 : 15);
                 ctx.fillStyle = 'black';
-                if (player.facingRight) {
-                    ctx.fillRect(player.x + (isBig ? 25 : 18), player.y + (isBig ? 8 : 5), 4, 4);
-                } else {
-                    ctx.fillRect(player.x + (isBig ? 8 : 10), player.y + (isBig ? 8 : 5), 4, 4);
-                }
+                const eyeX = player.facingRight ? (gameState.isBig ? 28 : 22) : (gameState.isBig ? 8 : 12);
+                ctx.fillRect(player.x + eyeX, player.y + (gameState.isBig ? 8 : 6), 4, 4);
             }
             
             ctx.restore();
         }
 
         function gameLoop() {
-            if (!gameRunning) return;
+            if (!gameState.running) return;
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        function updateUI() {
-            document.getElementById('coins').textContent = coins;
-            document.getElementById('score').textContent = score;
-            document.getElementById('mushroomStock').textContent = mushroomStock;
-            updateHearts();
+        // ==================== GAME ACTIONS ====================
+        function becomeBig() {
+            gameState.isBig = true;
+            playSound('powerup');
+            gameState.score += 500;
+            updateGameUI();
+        }
+
+        function becomeSmall() {
+            gameState.isBig = false;
+            playSound('small');
+            player.invincible = true;
+            player.invincibleTime = 120;
+        }
+
+        function loseLife() {
+            gameState.lives--;
+            playSound('hurt');
             
-            // Show mushroom use button if available and not big
-            const useBtn = document.getElementById('useMushroomBtn');
-            if (mushroomStock > 0 && !isBig && gameRunning) {
-                useBtn.style.display = 'flex';
+            document.getElementById('damageOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('damageOverlay').classList.remove('active'), 300);
+            
+            if (gameState.lives <= 0) {
+                gameState.running = false;
+                document.getElementById('finalScore').textContent = gameState.score;
+                setTimeout(() => {
+                    document.getElementById('gameOverModal').classList.add('active');
+                }, 500);
             } else {
-                useBtn.style.display = 'none';
+                player.x = 50;
+                player.y = 200;
+                player.vx = 0;
+                player.vy = 0;
+                updateGameUI();
             }
         }
 
-        function updateHearts() {
-            const container = document.getElementById('heartsDisplay');
-            let html = '';
-            for (let i = 0; i < maxLives; i++) {
-                if (i < lives) {
-                    html += '<span class="heart">❤️</span>';
-                } else {
-                    html += '<span class="heart lost">💔</span>';
-                }
+        function levelComplete() {
+            gameState.running = false;
+            
+            // Save progress - unlock next level
+            if (gameData.currentLevel === gameData.maxUnlockedLevel && gameData.maxUnlockedLevel < 50) {
+                gameData.maxUnlockedLevel++;
             }
-            container.innerHTML = html;
+            saveGameData();
+            
+            document.getElementById('completedLevelNum').textContent = gameData.currentLevel;
+            document.getElementById('levelCoins').textContent = gameState.coins;
+            document.getElementById('levelScore').textContent = gameState.score;
+            document.getElementById('levelCompleteModal').classList.add('active');
         }
 
-        // Shop System
+        function useMushroom() {
+            if (gameData.mushroomStock > 0 && !gameState.isBig && gameState.running) {
+                gameData.mushroomStock--;
+                saveGameData();
+                becomeBig();
+            }
+        }
+
+        // ==================== SHOP SYSTEM ====================
         function openShop() {
             document.getElementById('shopModal').classList.add('active');
-            document.getElementById('shopMushroomCount').textContent = mushroomStock;
+            document.getElementById('shopMushroomCount').textContent = gameData.mushroomStock;
             document.getElementById('codeInput').value = '';
-            document.getElementById('shopMessage').className = 'message';
             document.getElementById('shopMessage').style.display = 'none';
         }
 
         function closeShop() {
             document.getElementById('shopModal').classList.remove('active');
-            updateUI();
+            updateAllUI();
         }
 
         function redeemCode() {
@@ -1294,72 +1487,52 @@
             const msg = document.getElementById('shopMessage');
             
             if (!input) {
-                msg.textContent = '⚠️ أدخل الكود أولاً';
-                msg.className = 'message error';
+                showShopMessage('⚠️ أدخل الكود أولاً', false);
                 return;
             }
             
-            if (usedCodes.has(input)) {
-                msg.textContent = '❌ هذا الكود مستخدم مسبقاً!';
-                msg.className = 'message error';
+            if (gameData.usedCodes.includes(input)) {
+                showShopMessage('❌ هذا الكود مستخدم مسبقاً!', false);
                 return;
             }
             
-            if (validCodes[input] && !validCodes[input].used) {
-                // Success
-                const amount = validCodes[input].amount;
-                mushroomStock += amount;
-                usedCodes.add(input);
-                validCodes[input].used = true;
+            if (codeDatabase[input]) {
+                const amount = codeDatabase[input].amount;
+                gameData.mushroomStock += amount;
+                gameData.usedCodes.push(input);
+                saveGameData();
                 
-                msg.innerHTML = `✅ تم إضافة ${amount} فطر!<br>🍄 رصيدك الآن: ${mushroomStock}`;
-                msg.className = 'message success';
-                document.getElementById('shopMushroomCount').textContent = mushroomStock;
+                showShopMessage(`✅ تم إضافة ${amount} فطر!<br>🍄 رصيدك: ${gameData.mushroomStock}`, true);
+                document.getElementById('shopMushroomCount').textContent = gameData.mushroomStock;
                 playSound('powerup');
             } else {
-                msg.textContent = '❌ كود غير صالح أو منتهي الصلاحية';
-                msg.className = 'message error';
+                showShopMessage('❌ كود غير صالح!', false);
             }
         }
 
-        function useMushroom() {
-            if (mushroomStock > 0 && !isBig && gameRunning) {
-                mushroomStock--;
-                becomeBig();
-                updateUI();
-            }
+        function showShopMessage(text, isSuccess) {
+            const msg = document.getElementById('shopMessage');
+            msg.innerHTML = text;
+            msg.className = isSuccess ? 'message-box success' : 'message-box error';
         }
 
-        function levelComplete() {
-            gameRunning = false;
-            
-            // IMPORTANT: Update max unlocked level and keep it
-            if (currentLevel === maxUnlockedLevel && currentLevel < 50) {
-                maxUnlockedLevel++;
-            }
-            
-            document.getElementById('completedLevelNum').textContent = currentLevel;
-            document.getElementById('levelCoins').textContent = coins;
-            document.getElementById('levelScore').textContent = score;
-            document.getElementById('levelCompleteModal').classList.add('active');
-        }
-
+        // ==================== NAVIGATION ====================
         function startSecret() {
             document.getElementById('levelCompleteModal').classList.remove('active');
-            inSecret = true;
-            isBig = false;
+            gameState.inSecret = true;
+            gameState.isBig = false;
             
-            // Generate harder underground
+            // Generate underground level
             platforms = [{x: 0, y: 350, width: 1500, height: 50, type: 'ground'}];
             levelCoins = [];
             enemies = [];
             
             for (let i = 0; i < 10; i++) {
                 const x = 150 + i * 130;
-                platforms.push({x: x, y: 250 - (i%5)*40, width: 80, height: 20});
+                platforms.push({x: x, y: 250 - (i%5)*40, width: 80, height: 20, type: 'brick'});
                 levelCoins.push(
                     {x: x + 20, y: 210 - (i%5)*40, collected: false},
-                    {x: x + 40, y: 210 - (i%5)*40, collected: false}
+                    {x: x + 60, y: 210 - (i%5)*40, collected: false}
                 );
                 enemies.push({
                     x: x + 25, y: 320, width: 30, height: 30,
@@ -1369,18 +1542,28 @@
             
             player.x = 50;
             player.y = 200;
-            player.vx = 0;
-            player.vy = 0;
-            
-            gameRunning = true;
+            gameState.running = true;
             gameLoop();
+            
+            // Check for capsule
+            const checkInterval = setInterval(() => {
+                if (!gameState.running || !gameState.inSecret) {
+                    clearInterval(checkInterval);
+                    return;
+                }
+                if (player.x > 1300) {
+                    gameState.running = false;
+                    clearInterval(checkInterval);
+                    document.getElementById('secretCompleteModal').classList.add('active');
+                }
+            }, 100);
         }
 
         function nextLevel() {
             document.getElementById('secretCompleteModal').classList.remove('active');
-            if (currentLevel < 50) {
-                currentLevel++;
-                initLevelSelect();
+            if (gameData.currentLevel < 50) {
+                gameData.currentLevel++;
+                saveGameData();
                 backToMenu();
             } else {
                 alert('🎉 تهانينا! أكملت اللعبة!');
@@ -1390,20 +1573,40 @@
 
         function retryLevel() {
             document.getElementById('gameOverModal').classList.remove('active');
-            startGame();
+            startGame(gameData.currentLevel);
         }
 
         function backToMenu() {
-            gameRunning = false;
+            gameState.running = false;
             document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
             document.getElementById('shopModal').classList.remove('active');
             document.getElementById('gameScreen').classList.remove('active');
             document.getElementById('levelSelectScreen').classList.add('active');
             initLevelSelect();
+            updateAllUI();
         }
 
-        // Initialize
+        function updateGameUI() {
+            document.getElementById('heartsDisplay').innerHTML = Array(5).fill(0).map((_, i) => 
+                i < gameState.lives ? '<span class="heart">❤️</span>' : '<span class="heart lost">💔</span>'
+            ).join('');
+            document.getElementById('coins').textContent = gameState.coins;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('gameMushroomCount').textContent = gameData.mushroomStock;
+            
+            const useBtn = document.getElementById('useMushroomBtn');
+            useBtn.style.display = (gameData.mushroomStock > 0 && !gameState.isBig) ? 'flex' : 'none';
+        }
+
+        function updateAllUI() {
+            document.getElementById('headerMushroomCount').textContent = gameData.mushroomStock;
+            document.getElementById('maxLevelDisplay').textContent = gameData.maxUnlockedLevel;
+        }
+
+        // ==================== INITIALIZE ====================
+        loadGameData();
         initLevelSelect();
+        updateAllUI();
     </script>
 </body>
 </html>
