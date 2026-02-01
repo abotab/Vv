@@ -546,10 +546,10 @@
 
         const GRAVITY = -0.8;
         const JUMP_FORCE = 18;
-        const MOVE_SPEED = 1.5;
-        const BOOST_MULTIPLIER = 2.5;
-        const CITY_SIZE = 3000;
-        const BUILDING_COUNT = 120;
+        const MOVE_SPEED = 1.2;
+        const BOOST_MULTIPLIER = 2.8;
+        const CITY_SIZE = 4000;
+        const BUILDING_COUNT = 150;
 
         // الموسيقى - موسيقى خلفية بسيطة
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -603,6 +603,29 @@
             document.getElementById('gameInfo').style.display = 'flex';
             document.getElementById('controls').style.display = 'flex';
             
+            // طلب صلاحيات الدوران التلقائي للجوال
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        }
+                    })
+                    .catch(console.error);
+            }
+            
+            // طلب تشغيل كامل الشاشة (fullscreen)
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen().catch(() => {});
+            }
+            
+            // قفل الشاشة في وضع أفقي على الجوال
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {});
+            }
+            
             // تشغيل الموسيقى
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
@@ -616,6 +639,13 @@
             
             init();
             animate();
+        }
+
+        function handleOrientation(event) {
+            // يمكن استخدام بيانات الدوران للتحكم بالكاميرا
+            // const alpha = event.alpha; // Z-axis rotation
+            // const beta = event.beta;   // X-axis rotation
+            // const gamma = event.gamma; // Y-axis rotation
         }
 
         function restartGame() {
@@ -808,25 +838,40 @@
         }
 
         function createCity() {
+            // ألوان جميلة ومتناسقة
+            const beautifulColors = [
+                { h: 0.95, s: 0.7, l: 0.6 },  // وردي
+                { h: 0.55, s: 0.6, l: 0.5 },  // أزرق سماوي
+                { h: 0.15, s: 0.7, l: 0.6 },  // برتقالي
+                { h: 0.75, s: 0.6, l: 0.55 }, // بنفسجي
+                { h: 0.35, s: 0.6, l: 0.5 },  // أخضر
+                { h: 0.85, s: 0.7, l: 0.6 },  // وردي فاتح
+                { h: 0.50, s: 0.7, l: 0.55 }, // تركواز
+            ];
+
             for (let i = 0; i < BUILDING_COUNT; i++) {
-                const width = Math.random() * 30 + 20;
-                const height = Math.random() * 150 + 50;
-                const depth = Math.random() * 30 + 20;
+                const width = Math.random() * 35 + 25;
+                const height = Math.random() * 180 + 60;
+                const depth = Math.random() * 35 + 25;
 
                 const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
-                const hue = Math.random();
+                
+                // اختيار لون جميل عشوائي
+                const colorChoice = beautifulColors[Math.floor(Math.random() * beautifulColors.length)];
                 const buildingMaterial = new THREE.MeshStandardMaterial({ 
-                    color: new THREE.Color().setHSL(hue, 0.4, 0.5),
-                    roughness: 0.7,
-                    metalness: 0.3
+                    color: new THREE.Color().setHSL(colorChoice.h, colorChoice.s, colorChoice.l),
+                    roughness: 0.6,
+                    metalness: 0.4,
+                    emissive: new THREE.Color().setHSL(colorChoice.h, colorChoice.s * 0.3, 0.1),
+                    emissiveIntensity: 0.2
                 });
 
                 const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
                 
                 let x, z;
                 do {
-                    x = (Math.random() - 0.5) * CITY_SIZE * 0.8;
-                    z = (Math.random() - 0.5) * CITY_SIZE * 0.8;
+                    x = (Math.random() - 0.5) * CITY_SIZE * 0.85;
+                    z = (Math.random() - 0.5) * CITY_SIZE * 0.85;
                 } while ((Math.abs(x) < 50 && Math.abs(z) < 50) || (Math.abs(x) < 80 && Math.abs(z - 150) < 80));
 
                 building.position.set(x, height / 2, z);
@@ -837,24 +882,26 @@
                 obstacles.push(building);
                 scene.add(building);
 
-                // نوافذ
-                const windowMaterial = new THREE.MeshBasicMaterial({ 
-                    color: Math.random() > 0.3 ? 0xffff00 : 0x333333 
-                });
+                // نوافذ مضيئة بألوان دافئة
+                const windowColors = [0xffff00, 0xffaa00, 0xffffff, 0x333333];
+                const windowColor = windowColors[Math.floor(Math.random() * windowColors.length)];
+                const windowMaterial = new THREE.MeshBasicMaterial({ color: windowColor });
                 
-                const windowsPerFloor = Math.floor(width / 5);
-                const floors = Math.floor(height / 8);
+                const windowsPerFloor = Math.floor(width / 6);
+                const floors = Math.floor(height / 10);
 
                 for (let f = 0; f < floors; f++) {
                     for (let w = 0; w < windowsPerFloor; w++) {
-                        const windowGeometry = new THREE.BoxGeometry(2, 3, 0.5);
-                        const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
-                        windowMesh.position.set(
-                            -width/2 + (w + 0.5) * (width / windowsPerFloor),
-                            -height/2 + (f + 0.5) * (height / floors),
-                            depth/2 + 0.3
-                        );
-                        building.add(windowMesh);
+                        if (Math.random() > 0.2) { // 80% نوافذ مضيئة
+                            const windowGeometry = new THREE.BoxGeometry(2.5, 4, 0.5);
+                            const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+                            windowMesh.position.set(
+                                -width/2 + (w + 0.5) * (width / windowsPerFloor),
+                                -height/2 + (f + 0.5) * (height / floors),
+                                depth/2 + 0.3
+                            );
+                            building.add(windowMesh);
+                        }
                     }
                 }
             }
