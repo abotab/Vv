@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>صراع البقاء</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            touch-action: none;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* شاشة التحميل */
+        #loading {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #001122 0%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        #logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        #progress-container {
+            width: 80%;
+            max-width: 400px;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px #00ffff;
+        }
+        
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            transition: width 0.3s;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+        
+        #progress-text {
+            color: #fff;
+            margin-top: 15px;
+            font-size: 20px;
+        }
+        
+        /* اللوبي */
+        #lobby {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+        
+        #lobby-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* زر الرقصات */
+        #dance-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+        
+        /* قائمة الرقصات */
+        #dance-menu {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 100;
+        }
+        
+        .dance-option {
+            padding: 15px 20px;
+            margin: 5px 0;
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            width: 150px;
+        }
+        
+        /* فيديو الرقص */
+        #dance-video {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div id="logo">صراع البقاء</div>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="progress-text">0%</div>
+    </div>
+    
+    <!-- اللوبي -->
+    <div id="lobby">
+        <video id="lobby-video" loop playsinline muted>
+            <source src="videos/lobby.mp4" type="video/mp4">
+        </video>
+    </div>
+    
+    <!-- زر الرقصات -->
+    <button id="dance-btn" onclick="toggleMenu()">💃</button>
+    
+    <!-- قائمة الرقصات -->
+    <div id="dance-menu">
+        <button class="dance-option" onclick="playDance(0)">رقصة البربي</button>
+        <button class="dance-option" onclick="playDance(1)">رقصة الجوبي</button>
+        <button class="dance-option" onclick="playDance(2)">رقصة الدب</button>
+    </div>
+    
+    <!-- فيديو الرقص -->
+    <video id="dance-video" playsinline>
+        <source src="" type="video/mp4">
+    </video>
+
+    <script>
+        // تدوير الجهاز تلقائياً
+        screen.orientation.lock('landscape').catch(() => {});
+        
+        // عناصر
+        const loading = document.getElementById('loading');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const lobby = document.getElementById('lobby');
+        const lobbyVideo = document.getElementById('lobby-video');
+        const danceBtn = document.getElementById('dance-btn');
+        const danceMenu = document.getElementById('dance-menu');
+        const danceVideo = document.getElementById('dance-video');
+        
+        // روابط الرقصات
+        const dances = [
+            'videos/booby.mp4',
+            'videos/gooby.mp4',
+            'videos/bear.mp4'
+        ];
+        
+        let danceTimeout;
+        
+        // تحميل 1-100% على 45 ثانية
+        let progress = 0;
+        const loadingInterval = setInterval(() => {
+            progress++;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = progress + '%';
+            
+            if (progress >= 100) {
+                clearInterval(loadingInterval);
+                setTimeout(startLobby, 500);
+            }
+        }, 450); // 450ms × 100 = 45 ثانية
+        
+        // بدء اللوبي
+        function startLobby() {
+            loading.style.display = 'none';
+            lobby.style.display = 'block';
+            lobbyVideo.play();
+            danceBtn.style.display = 'block';
+        }
+        
+        // قائمة الرقصات
+        function toggleMenu() {
+            danceMenu.style.display = danceMenu.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // تشغيل رقصة
+        function playDance(id) {
+            danceMenu.style.display = 'none';
+            clearTimeout(danceTimeout);
+            
+            // إيقاف لوبي
+            lobbyVideo.pause();
+            lobby.style.display = 'none';
+            
+            // تشغيل الرقصة
+            danceVideo.src = dances[id];
+            danceVideo.style.display = 'block';
+            danceVideo.play();
+            
+            // العودة للوبي بعد 15 ثانية
+            danceVideo.onended = returnToLobby;
+            danceTimeout = setTimeout(returnToLobby, 15000);
+        }
+        
+        // العودة للوبي
+        function returnToLobby() {
+            danceVideo.pause();
+            danceVideo.style.display = 'none';
+            lobby.style.display = 'block';
+            lobbyVideo.play();
+        }
+        
+        // ملء الشاشة
+        document.documentElement.requestFullscreen().catch(() => {});
+    </script>
+</body>
+</html>
