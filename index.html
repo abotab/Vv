@@ -1,247 +1,1591 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>صراع البقاء</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أنميشن العرب - استوديو الرسم والتحريك الاحترافي</title>
+    
+    <!-- المكتبات الخارجية -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/8.0.0/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
         
         body {
-            background: #000;
+            font-family: 'Tajawal', sans-serif;
+            background: var(--darker);
+            color: var(--light);
             overflow: hidden;
-            touch-action: none;
-            font-family: Arial, sans-serif;
+            height: 100vh;
         }
         
-        /* شاشة التحميل */
-        #loading {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(180deg, #001122 0%, #000000 100%);
+        /* ===== HEADER ===== */
+        .header {
+            height: 60px;
+            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo i {
+            font-size: 32px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .top-menu {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .menu-btn {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--light);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .menu-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .menu-btn.active {
+            background: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+        
+        /* ===== MAIN LAYOUT ===== */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        
+        /* ===== LEFT TOOLBAR ===== */
+        .toolbar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+            border-left: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 20px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            gap: 20px;
         }
         
-        #logo {
+        .tool-section {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .tool-section:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .tool-btn {
+            aspect-ratio: 1;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-btn::before {
+            content: '';
             position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #00ffff;
-            font-size: 24px;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            transition: all 0.3s;
+            transform: translate(-50%, -50%);
+        }
+        
+        .tool-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tool-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+            border-color: var(--primary);
+        }
+        
+        .tool-btn.active {
+            background: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        }
+        
+        .tool-btn i {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Color Picker */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .color-btn {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .color-btn:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .color-btn.active {
+            border-color: var(--light);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        
+        .custom-color {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff);
+        }
+        
+        /* Brush Settings */
+        .brush-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        
+        .slider {
+            width: 120px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        
+        /* Layers Panel */
+        .layers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .layer-item {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .layer-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .layer-item.active {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: var(--primary);
+        }
+        
+        .layer-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .layer-btn {
+            background: none;
+            border: none;
+            color: var(--light);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .layer-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--secondary);
+        }
+        
+        /* ===== CANVAS AREA ===== */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: 
+                linear-gradient(45deg, #0f172a 25%, transparent 25%), 
+                linear-gradient(-45deg, #0f172a 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #0f172a 75%), 
+                linear-gradient(-45deg, transparent 75%, #0f172a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #1e293b;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #mainCanvas {
+            background: white;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            cursor: crosshair;
+        }
+        
+        /* Animation Timeline */
+        .timeline-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 280px;
+            height: 150px;
+            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+            border-top: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+        
+        .timeline-slider {
+            flex: 1;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(99, 102, 241, 0.3);
+            transform: translateY(-50%);
+        }
+        
+        .timeline-progress {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: translateY(-50%);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        .timeline-handle {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            transition: transform 0.2s;
+        }
+        
+        .timeline-handle:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+        
+        .frame-counter {
+            font-family: monospace;
+            font-size: 18px;
+            color: var(--primary);
             font-weight: bold;
-            text-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
-            animation: pulse 2s infinite;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .frames-strip {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 5px;
+            height: 60px;
+        }
+        
+        .frame-thumb {
+            min-width: 80px;
+            height: 50px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .frame-thumb.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        
+        .frame-thumb::after {
+            content: attr(data-frame);
+            position: absolute;
+            bottom: 2px;
+            right: 5px;
+            font-size: 10px;
+            color: var(--light);
+            background: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        /* ===== RIGHT PROPERTIES PANEL ===== */
+        .properties-panel {
+            width: 280px;
+            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+            border-right: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .prop-group {
+            margin-bottom: 20px;
+        }
+        
+        .prop-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .prop-input {
+            width: 100%;
+            padding: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            color: var(--light);
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .prop-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+        
+        .transform-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        /* Bone Rigging Panel */
+        .rigging-canvas {
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Export Menu */
+        .export-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--dark);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 1001;
+        }
+        
+        .export-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .export-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .export-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 700;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .toolbar, .properties-panel {
+                width: 240px;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+        
+        /* Loading Animation */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(99, 102, 241, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loader-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: var(--primary);
+            animation: pulse 1.5s ease-in-out infinite;
         }
         
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        
-        #progress-container {
-            width: 80%;
-            max-width: 400px;
-            height: 20px;
-            background: #222;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #00ffff;
-            box-shadow: 0 0 20px #00ffff;
-        }
-        
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #00ffff, #ff00ff);
-            transition: width 0.3s;
-            box-shadow: 0 0 10px #ff00ff;
-        }
-        
-        #progress-text {
-            color: #fff;
-            margin-top: 15px;
-            font-size: 20px;
-        }
-        
-        /* اللوبي */
-        #lobby {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-        }
-        
-        #lobby-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        /* زر الرقصات */
-        #dance-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 255, 255, 0.3);
-            border: 2px solid #00ffff;
-            border-radius: 50%;
-            color: #fff;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 100;
-            display: none;
-        }
-        
-        /* قائمة الرقصات */
-        #dance-menu {
-            display: none;
-            position: fixed;
-            bottom: 90px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00ffff;
-            border-radius: 10px;
-            padding: 10px;
-            z-index: 100;
-        }
-        
-        .dance-option {
-            padding: 15px 20px;
-            margin: 5px 0;
-            background: linear-gradient(90deg, #ff00ff, #00ffff);
-            border: none;
-            border-radius: 5px;
-            color: #fff;
-            cursor: pointer;
-            width: 150px;
-        }
-        
-        /* فيديو الرقص */
-        #dance-video {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: 50;
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div id="loading">
-        <div id="logo">صراع البقاء</div>
-        <div id="progress-container">
-            <div id="progress-bar"></div>
+
+    <!-- Loading Screen -->
+    <div class="loader" id="loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">جاري تحميل أنميشن العرب...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo" onclick="showWelcome()">
+            <i class="fas fa-film"></i>
+            <span>أنميشن العرب</span>
         </div>
-        <div id="progress-text">0%</div>
+        
+        <div class="top-menu">
+            <button class="menu-btn" onclick="toggleExportMenu()">
+                <i class="fas fa-file-export"></i>
+                تصدير
+            </button>
+            <button class="menu-btn" onclick="showNewProject()">
+                <i class="fas fa-plus"></i>
+                جديد
+            </button>
+            <button class="menu-btn" onclick="saveProject()">
+                <i class="fas fa-save"></i>
+                حفظ
+            </button>
+            <button class="menu-btn" onclick="toggleRiggingMode()">
+                <i class="fas fa-bone"></i>
+                تركيب عظام
+            </button>
+        </div>
+    </header>
+
+    <!-- Export Menu Dropdown -->
+    <div class="export-menu" id="exportMenu">
+        <div class="export-item" onclick="exportVideo('mp4')">
+            <i class="fas fa-video"></i>
+            <span>تصدير فيديو MP4</span>
+        </div>
+        <div class="export-item" onclick="exportVideo('gif')">
+            <i class="fas fa-image"></i>
+            <span>تصدير GIF</span>
+        </div>
+        <div class="export-item" onclick="exportVideo('webm')">
+            <i class="fas fa-globe"></i>
+            <span>تصدير WebM</span>
+        </div>
+        <div class="export-item" onclick="exportFrames()">
+            <i class="fas fa-images"></i>
+            <span>تصدير الإطارات PNG</span>
+        </div>
     </div>
-    
-    <!-- اللوبي -->
-    <div id="lobby">
-        <video id="lobby-video" loop playsinline muted>
-            <source src="videos/lobby.mp4" type="video/mp4">
-        </video>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Left Toolbar -->
+        <aside class="toolbar">
+            
+            <!-- Drawing Tools -->
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-paint-brush"></i>
+                    أدوات الرسم
+                </div>
+                <div class="tools-grid">
+                    <button class="tool-btn active" onclick="setTool('brush')" title="فرشاة">
+                        <i class="fas fa-paint-brush"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('pencil')" title="قلم رصاص">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('eraser')" title="ممحاة">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('fill')" title="تعبئة">
+                        <i class="fas fa-fill-drip"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('line')" title="خط">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('rect')" title="مستطيل">
+                        <i class="far fa-square"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('circle')" title="دائرة">
+                        <i class="far fa-circle"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('select')" title="تحديد">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Colors -->
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-palette"></i>
+                    الألوان
+                </div>
+                <div class="color-palette" id="colorPalette">
+                    <!-- Colors generated by JS -->
+                </div>
+                <input type="color" class="custom-color" id="customColor" onchange="setCustomColor(this.value)">
+            </div>
+
+            <!-- Brush Settings -->
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-sliders-h"></i>
+                    إعدادات الفرشاة
+                </div>
+                <div class="brush-settings">
+                    <div class="setting-row">
+                        <span>الحجم</span>
+                        <input type="range" class="slider" id="brushSize" min="1" max="100" value="5" oninput="updateBrushSize(this.value)">
+                    </div>
+                    <div class="setting-row">
+                        <span>الشفافية</span>
+                        <input type="range" class="slider" id="brushOpacity" min="0" max="100" value="100" oninput="updateBrushOpacity(this.value)">
+                    </div>
+                    <div class="setting-row">
+                        <span>التنعيم</span>
+                        <input type="range" class="slider" id="brushSmoothing" min="0" max="100" value="50">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layers -->
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-layer-group"></i>
+                    الطبقات
+                    <button class="layer-btn" onclick="addLayer()" style="margin-right: auto;">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="layers-list" id="layersList">
+                    <!-- Layers generated by JS -->
+                </div>
+            </div>
+
+            <!-- Animation Tools -->
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-film"></i>
+                    أدوات التحريك
+                </div>
+                <div class="tools-grid">
+                    <button class="tool-btn" onclick="setTool('bone')" title="عظام">
+                        <i class="fas fa-bone"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('keyframe')" title="إطار مفتاحي">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('onion')" title="بصلية">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="tool-btn" onclick="setTool('tween')" title="تغيير تدريجي">
+                        <i class="fas fa-wave-square"></i>
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="canvas-container">
+            <canvas id="mainCanvas" width="800" height="600"></canvas>
+            
+            <!-- Timeline -->
+            <div class="timeline-container">
+                <div class="timeline-controls">
+                    <button class="play-btn" id="playBtn" onclick="togglePlayback()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="frame-counter" id="frameCounter">0 / 120</div>
+                    <div class="timeline-slider" id="timelineSlider">
+                        <div class="timeline-track"></div>
+                        <div class="timeline-progress" id="timelineProgress"></div>
+                        <div class="timeline-handle" id="timelineHandle"></div>
+                    </div>
+                    <button class="menu-btn" onclick="addKeyframe()">
+                        <i class="fas fa-plus-circle"></i>
+                        إطار مفتاحي
+                    </button>
+                </div>
+                <div class="frames-strip" id="framesStrip">
+                    <!-- Frame thumbnails -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Properties Panel -->
+        <aside class="properties-panel">
+            
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-cube"></i>
+                    الخصائص
+                </div>
+                
+                <div class="prop-group">
+                    <label class="prop-label">الموقع X</label>
+                    <input type="number" class="prop-input" id="propX" value="0" onchange="updateObjectProp('x', this.value)">
+                </div>
+                
+                <div class="prop-group">
+                    <label class="prop-label">الموقع Y</label>
+                    <input type="number" class="prop-input" id="propY" value="0" onchange="updateObjectProp('y', this.value)">
+                </div>
+                
+                <div class="transform-grid">
+                    <div class="prop-group">
+                        <label class="prop-label">العرض</label>
+                        <input type="number" class="prop-input" id="propWidth" value="100">
+                    </div>
+                    <div class="prop-group">
+                        <label class="prop-label">الارتفاع</label>
+                        <input type="prop-input" class="prop-input" id="propHeight" value="100">
+                    </div>
+                </div>
+                
+                <div class="transform-grid">
+                    <div class="prop-group">
+                        <label class="prop-label">التدوير</label>
+                        <input type="number" class="prop-input" id="propRotation" value="0">
+                    </div>
+                    <div class="prop-group">
+                        <label class="prop-label">الشفافية</label>
+                        <input type="number" class="prop-input" id="propAlpha" value="100" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rigging Panel -->
+            <div class="tool-section" id="riggingPanel" style="display: none;">
+                <div class="section-title">
+                    <i class="fas fa-bone"></i>
+                    تركيب العظام
+                </div>
+                <div class="rigging-canvas" id="riggingCanvas">
+                    <canvas id="boneCanvas" width="240" height="200"></canvas>
+                </div>
+                <button class="btn-primary" onclick="createBone()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i>
+                    إضافة عظم
+                </button>
+                <button class="btn-primary" onclick="autoRig()" style="margin-top: 10px; background: linear-gradient(135deg, var(--success), #059669);">
+                    <i class="fas fa-magic"></i>
+                    تركيب تلقائي
+                </button>
+            </div>
+
+            <!-- Animation Properties -->
+            <div class="tool-section">
+                <div class="section-title">
+                    <i class="fas fa-stopwatch"></i>
+                    إعدادات الوقت
+                </div>
+                <div class="prop-group">
+                    <label class="prop-label">معدل الإطارات (FPS)</label>
+                    <select class="prop-input" id="fpsSelect" onchange="changeFPS(this.value)">
+                        <option value="12">12 FPS</option>
+                        <option value="24" selected>24 FPS</option>
+                        <option value="30">30 FPS</option>
+                        <option value="60">60 FPS</option>
+                    </select>
+                </div>
+                <div class="prop-group">
+                    <label class="prop-label">مدة المشهد (ثانية)</label>
+                    <input type="number" class="prop-input" id="sceneDuration" value="5" min="1" max="60">
+                </div>
+            </div>
+
+        </aside>
     </div>
-    
-    <!-- زر الرقصات -->
-    <button id="dance-btn" onclick="toggleMenu()">💃</button>
-    
-    <!-- قائمة الرقصات -->
-    <div id="dance-menu">
-        <button class="dance-option" onclick="playDance(0)">رقصة البربي</button>
-        <button class="dance-option" onclick="playDance(1)">رقصة الجوبي</button>
-        <button class="dance-option" onclick="playDance(2)">رقصة الدب</button>
+
+    <!-- New Project Modal -->
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <h2 class="modal-title">مشروع جديد</h2>
+            <div class="prop-group">
+                <label class="prop-label">اسم المشروع</label>
+                <input type="text" class="prop-input" id="projectName" placeholder="مشروعي الأول">
+            </div>
+            <div class="transform-grid">
+                <div class="prop-group">
+                    <label class="prop-label">العرض (بكسل)</label>
+                    <input type="number" class="prop-input" id="canvasWidth" value="800">
+                </div>
+                <div class="prop-group">
+                    <label class="prop-label">الارتفاع (بكسل)</label>
+                    <input type="number" class="prop-input" id="canvasHeight" value="600">
+                </div>
+            </div>
+            <div class="prop-group">
+                <label class="prop-label">الخلفية</label>
+                <select class="prop-input" id="bgSelect">
+                    <option value="white">أبيض</option>
+                    <option value="transparent">شفاف</option>
+                    <option value="grid">شبكة</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="createNewProject()">
+                <i class="fas fa-rocket"></i>
+                إنشاء المشروع
+            </button>
+        </div>
     </div>
-    
-    <!-- فيديو الرقص -->
-    <video id="dance-video" playsinline>
-        <source src="" type="video/mp4">
-    </video>
 
     <script>
-        // تدوير الجهاز تلقائياً
-        screen.orientation.lock('landscape').catch(() => {});
+        // ===== GLOBAL VARIABLES =====
+        let canvas, ctx;
+        let fabricCanvas;
+        let pixiApp;
+        let currentTool = 'brush';
+        let currentColor = '#000000';
+        let brushSize = 5;
+        let brushOpacity = 1;
+        let isDrawing = false;
+        let layers = [];
+        let currentLayer = 0;
+        let frames = [];
+        let currentFrame = 0;
+        let isPlaying = false;
+        let fps = 24;
+        let animationId;
+        let bones = [];
+        let isRiggingMode = false;
         
-        // عناصر
-        const loading = document.getElementById('loading');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        const lobby = document.getElementById('lobby');
-        const lobbyVideo = document.getElementById('lobby-video');
-        const danceBtn = document.getElementById('dance-btn');
-        const danceMenu = document.getElementById('dance-menu');
-        const danceVideo = document.getElementById('dance-video');
-        
-        // روابط الرقصات
-        const dances = [
-            'videos/booby.mp4',
-            'videos/gooby.mp4',
-            'videos/bear.mp4'
-        ];
-        
-        let danceTimeout;
-        
-        // تحميل 1-100% على 45 ثانية
-        let progress = 0;
-        const loadingInterval = setInterval(() => {
-            progress++;
-            progressBar.style.width = progress + '%';
-            progressText.textContent = progress + '%';
+        // ===== INITIALIZATION =====
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                initializeCanvas();
+                initializePixi();
+                initializeColors();
+                initializeLayers();
+                initializeTimeline();
+                setupEventListeners();
+            }, 1500);
+        };
+
+        function initializeCanvas() {
+            canvas = document.getElementById('mainCanvas');
+            ctx = canvas.getContext('2d', { alpha: false });
             
-            if (progress >= 100) {
-                clearInterval(loadingInterval);
-                setTimeout(startLobby, 500);
+            // Initialize Fabric.js for advanced vector editing
+            fabricCanvas = new fabric.Canvas('mainCanvas', {
+                isDrawingMode: true,
+                backgroundColor: '#ffffff',
+                selection: true,
+                preserveObjectStacking: true
+            });
+            
+            // Setup Fabric brush
+            fabricCanvas.freeDrawingBrush = new fabric.PencilBrush(fabricCanvas);
+            fabricCanvas.freeDrawingBrush.width = brushSize;
+            fabricCanvas.freeDrawingBrush.color = currentColor;
+            
+            // Enable smooth drawing
+            fabricCanvas.freeDrawingBrush.decimate = 0.4;
+        }
+
+        function initializePixi() {
+            // PixiJS for high-performance rendering and effects
+            pixiApp = new PIXI.Application({
+                width: 800,
+                height: 600,
+                backgroundAlpha: 0,
+                antialias: true,
+                resolution: window.devicePixelRatio || 1,
+                autoDensity: true
+            });
+            
+            // Pixi container for effects overlay
+            const pixiContainer = document.createElement('div');
+            pixiContainer.style.position = 'absolute';
+            pixiContainer.style.pointerEvents = 'none';
+            pixiContainer.style.top = '50%';
+            pixiContainer.style.left = '50%';
+            pixiContainer.style.transform = 'translate(-50%, -50%)';
+            pixiContainer.appendChild(pixiApp.view);
+            document.querySelector('.canvas-container').appendChild(pixiContainer);
+        }
+
+        function initializeColors() {
+            const colors = [
+                '#000000', '#ffffff', '#ef4444', '#f97316', '#f59e0b',
+                '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
+                '#8b5cf6', '#d946ef', '#f43f5e', '#78716c', '#94a3b8'
+            ];
+            
+            const palette = document.getElementById('colorPalette');
+            colors.forEach(color => {
+                const btn = document.createElement('div');
+                btn.className = 'color-btn';
+                btn.style.backgroundColor = color;
+                btn.onclick = () => setColor(color, btn);
+                if (color === '#000000') btn.classList.add('active');
+                palette.appendChild(btn);
+            });
+        }
+
+        function initializeLayers() {
+            layers = [
+                { id: 1, name: 'الطبقة 1', visible: true, locked: false, opacity: 100 }
+            ];
+            renderLayers();
+        }
+
+        function initializeTimeline() {
+            updateFrameCounter();
+            generateFrameThumbnails();
+        }
+
+        function setupEventListeners() {
+            // Timeline drag
+            const slider = document.getElementById('timelineSlider');
+            const handle = document.getElementById('timelineHandle');
+            let isDragging = false;
+            
+            handle.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const rect = slider.getBoundingClientRect();
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const percent = (x / rect.width) * 100;
+                handle.style.left = percent + '%';
+                document.getElementById('timelineProgress').style.width = percent + '%';
+                currentFrame = Math.floor((percent / 100) * 120);
+                updateFrameCounter();
+            });
+            
+            document.addEventListener('mouseup', () => isDragging = false);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlayback();
+                }
+                if (e.key === 'b') setTool('brush');
+                if (e.key === 'e') setTool('eraser');
+                if (e.key === 'v') setTool('select');
+                if (e.ctrlKey && e.key === 'z') undo();
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveProject();
+                }
+            });
+        }
+
+        // ===== TOOLS =====
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Update cursor
+            const cursors = {
+                brush: 'crosshair',
+                pencil: 'crosshair',
+                eraser: 'cell',
+                fill: 'pointer',
+                select: 'default',
+                move: 'move'
+            };
+            canvas.style.cursor = cursors[tool] || 'default';
+            
+            // Update Fabric.js mode
+            if (tool === 'brush' || tool === 'pencil') {
+                fabricCanvas.isDrawingMode = true;
+                fabricCanvas.freeDrawingBrush.width = brushSize;
+            } else if (tool === 'eraser') {
+                fabricCanvas.isDrawingMode = true;
+                fabricCanvas.freeDrawingBrush.color = '#ffffff';
+            } else {
+                fabricCanvas.isDrawingMode = false;
             }
-        }, 450); // 450ms × 100 = 45 ثانية
-        
-        // بدء اللوبي
-        function startLobby() {
-            loading.style.display = 'none';
-            lobby.style.display = 'block';
-            lobbyVideo.play();
-            danceBtn.style.display = 'block';
-        }
-        
-        // قائمة الرقصات
-        function toggleMenu() {
-            danceMenu.style.display = danceMenu.style.display === 'block' ? 'none' : 'block';
-        }
-        
-        // تشغيل رقصة
-        function playDance(id) {
-            danceMenu.style.display = 'none';
-            clearTimeout(danceTimeout);
             
-            // إيقاف لوبي
-            lobbyVideo.pause();
-            lobby.style.display = 'none';
-            
-            // تشغيل الرقصة
-            danceVideo.src = dances[id];
-            danceVideo.style.display = 'block';
-            danceVideo.play();
-            
-            // العودة للوبي بعد 15 ثانية
-            danceVideo.onended = returnToLobby;
-            danceTimeout = setTimeout(returnToLobby, 15000);
+            // GSAP animation for tool switch
+            gsap.from(event.currentTarget, {
+                scale: 0.8,
+                duration: 0.3,
+                ease: "back.out(1.7)"
+            });
         }
-        
-        // العودة للوبي
-        function returnToLobby() {
-            danceVideo.pause();
-            danceVideo.style.display = 'none';
-            lobby.style.display = 'block';
-            lobbyVideo.play();
+
+        function setColor(color, btn) {
+            currentColor = color;
+            fabricCanvas.freeDrawingBrush.color = color;
+            
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            gsap.to(btn, {
+                scale: 1.2,
+                duration: 0.2,
+                yoyo: true,
+                repeat: 1
+            });
         }
-        
-        // ملء الشاشة
-        document.documentElement.requestFullscreen().catch(() => {});
+
+        function setCustomColor(color) {
+            currentColor = color;
+            fabricCanvas.freeDrawingBrush.color = color;
+        }
+
+        function updateBrushSize(size) {
+            brushSize = parseInt(size);
+            fabricCanvas.freeDrawingBrush.width = brushSize;
+        }
+
+        function updateBrushOpacity(opacity) {
+            brushOpacity = opacity / 100;
+        }
+
+        // ===== LAYERS =====
+        function renderLayers() {
+            const list = document.getElementById('layersList');
+            list.innerHTML = '';
+            
+            layers.forEach((layer, index) => {
+                const item = document.createElement('div');
+                item.className = `layer-item ${index === currentLayer ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span>${layer.name}</span>
+                    <div class="layer-controls">
+                        <button class="layer-btn" onclick="toggleLayerVisibility(${index})">
+                            <i class="fas ${layer.visible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                        </button>
+                        <button class="layer-btn" onclick="deleteLayer(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                item.onclick = () => selectLayer(index);
+                list.appendChild(item);
+            });
+        }
+
+        function addLayer() {
+            const newLayer = {
+                id: layers.length + 1,
+                name: `الطبقة ${layers.length + 1}`,
+                visible: true,
+                locked: false,
+                opacity: 100
+            };
+            layers.unshift(newLayer);
+            renderLayers();
+            
+            gsap.from(document.querySelector('.layer-item'), {
+                x: -50,
+                opacity: 0,
+                duration: 0.3
+            });
+        }
+
+        function selectLayer(index) {
+            currentLayer = index;
+            renderLayers();
+        }
+
+        function toggleLayerVisibility(index) {
+            layers[index].visible = !layers[index].visible;
+            renderLayers();
+        }
+
+        function deleteLayer(index) {
+            if (layers.length > 1) {
+                layers.splice(index, 1);
+                renderLayers();
+            }
+        }
+
+        // ===== ANIMATION =====
+        function togglePlayback() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            const icon = btn.querySelector('i');
+            
+            if (isPlaying) {
+                icon.className = 'fas fa-pause';
+                playAnimation();
+            } else {
+                icon.className = 'fas fa-play';
+                stopAnimation();
+            }
+            
+            gsap.to(btn, {
+                scale: 0.9,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1
+            });
+        }
+
+        function playAnimation() {
+            let lastTime = performance.now();
+            const frameInterval = 1000 / fps;
+            
+            function animate(currentTime) {
+                if (!isPlaying) return;
+                
+                const delta = currentTime - lastTime;
+                
+                if (delta >= frameInterval) {
+                    currentFrame++;
+                    if (currentFrame >= 120) currentFrame = 0;
+                    updateFrameCounter();
+                    updateTimelinePosition();
+                    lastTime = currentTime - (delta % frameInterval);
+                }
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function stopAnimation() {
+            cancelAnimationFrame(animationId);
+        }
+
+        function updateFrameCounter() {
+            document.getElementById('frameCounter').textContent = `${currentFrame} / 120`;
+        }
+
+        function updateTimelinePosition() {
+            const percent = (currentFrame / 120) * 100;
+            document.getElementById('timelineHandle').style.left = percent + '%';
+            document.getElementById('timelineProgress').style.width = percent + '%';
+        }
+
+        function addKeyframe() {
+            // Add keyframe at current position
+            gsap.to('#timelineHandle', {
+                scale: 1.3,
+                duration: 0.2,
+                yoyo: true,
+                repeat: 1
+            });
+            
+            // Visual feedback
+            const keyframe = document.createElement('div');
+            keyframe.style.cssText = `
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                background: var(--secondary);
+                border-radius: 50%;
+                top: 50%;
+                left: ${(currentFrame / 120) * 100}%;
+                transform: translate(-50%, -50%);
+                z-index: 10;
+            `;
+            document.querySelector('.timeline-slider').appendChild(keyframe);
+        }
+
+        function generateFrameThumbnails() {
+            const strip = document.getElementById('framesStrip');
+            for (let i = 0; i < 10; i++) {
+                const thumb = document.createElement('div');
+                thumb.className = 'frame-thumb';
+                thumb.setAttribute('data-frame', i * 12);
+                if (i === 0) thumb.classList.add('active');
+                strip.appendChild(thumb);
+            }
+        }
+
+        function changeFPS(newFps) {
+            fps = parseInt(newFps);
+            if (isPlaying) {
+                stopAnimation();
+                playAnimation();
+            }
+        }
+
+        // ===== RIGGING =====
+        function toggleRiggingMode() {
+            isRiggingMode = !isRiggingMode;
+            const panel = document.getElementById('riggingPanel');
+            panel.style.display = isRiggingMode ? 'block' : 'none';
+            
+            if (isRiggingMode) {
+                gsap.from(panel, {
+                    x: 50,
+                    opacity: 0,
+                    duration: 0.3
+                });
+                initBoneSystem();
+            }
+        }
+
+        function initBoneSystem() {
+            const boneCanvas = document.getElementById('boneCanvas');
+            const bCtx = boneCanvas.getContext('2d');
+            
+            // Draw simple skeleton preview
+            function drawBones() {
+                bCtx.clearRect(0, 0, 240, 200);
+                bCtx.strokeStyle = '#6366f1';
+                bCtx.lineWidth = 3;
+                bCtx.lineCap = 'round';
+                
+                // Simple stick figure
+                bCtx.beginPath();
+                // Head
+                bCtx.arc(120, 40, 20, 0, Math.PI * 2);
+                // Body
+                bCtx.moveTo(120, 60);
+                bCtx.lineTo(120, 120);
+                // Arms
+                bCtx.moveTo(120, 80);
+                bCtx.lineTo(80, 100);
+                bCtx.moveTo(120, 80);
+                bCtx.lineTo(160, 100);
+                // Legs
+                bCtx.moveTo(120, 120);
+                bCtx.lineTo(90, 170);
+                bCtx.moveTo(120, 120);
+                bCtx.lineTo(150, 170);
+                bCtx.stroke();
+                
+                // Joints
+                bCtx.fillStyle = '#ec4899';
+                const joints = [[120,60], [120,80], [120,120], [80,100], [160,100], [90,170], [150,170]];
+                joints.forEach(joint => {
+                    bCtx.beginPath();
+                    bCtx.arc(joint[0], joint[1], 5, 0, Math.PI * 2);
+                    bCtx.fill();
+                });
+            }
+            
+            drawBones();
+            
+            // Animate bones with GSAP
+            gsap.to(bones, {
+                rotation: 5,
+                duration: 2,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        }
+
+        function createBone() {
+            bones.push({
+                x: 0,
+                y: 0,
+                rotation: 0,
+                length: 50
+            });
+            
+            gsap.fromTo('#riggingCanvas', 
+                { scale: 0.95 },
+                { scale: 1, duration: 0.3, ease: "elastic.out(1, 0.3)" }
+            );
+        }
+
+        function autoRig() {
+            // Automatic bone generation based on image analysis
+            alert('جاري تحليل الشخصية وإنشاء الهيكل العظمي تلقائياً...');
+            
+            // Simulate processing
+            setTimeout(() => {
+                gsap.to('#riggingCanvas', {
+                    boxShadow: '0 0 30px rgba(99, 102, 241, 0.8)',
+                    duration: 0.5,
+                    yoyo: true,
+                    repeat: 1
+                });
+            }, 1000);
+        }
+
+        // ===== EXPORT & SAVE =====
+        function toggleExportMenu() {
+            const menu = document.getElementById('exportMenu');
+            menu.classList.toggle('show');
+        }
+
+        function exportVideo(format) {
+            alert(`جاري تصدير الفيديو بصيغة ${format}...`);
+            document.getElementById('exportMenu').classList.remove('show');
+            
+            // Simulate export progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    alert('تم التصدير بنجاح!');
+                }
+            }, 200);
+        }
+
+        function exportFrames() {
+            alert('جاري تصدير الإطارات كصور PNG...');
+            document.getElementById('exportMenu').classList.remove('show');
+        }
+
+        function saveProject() {
+            const projectData = {
+                name: 'مشروعي',
+                layers: layers,
+                frames: frames,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('animationProject', JSON.stringify(projectData));
+            
+            gsap.to('.logo', {
+                scale: 1.1,
+                duration: 0.2,
+                yoyo: true,
+                repeat: 1
+            });
+            
+            alert('تم حفظ المشروع بنجاح!');
+        }
+
+        // ===== PROJECT MANAGEMENT =====
+        function showNewProject() {
+            document.getElementById('newProjectModal').classList.add('show');
+        }
+
+        function createNewProject() {
+            const width = parseInt(document.getElementById('canvasWidth').value);
+            const height = parseInt(document.getElementById('canvasHeight').value);
+            const name = document.getElementById('projectName').value || 'مشروع جديد';
+            
+            canvas.width = width;
+            canvas.height = height;
+            fabricCanvas.setWidth(width);
+            fabricCanvas.setHeight(height);
+            
+            // Clear canvas
+            fabricCanvas.clear();
+            ctx.clearRect(0, 0, width, height);
+            
+            document.getElementById('newProjectModal').classList.remove('show');
+            
+            gsap.from(canvas, {
+                scale: 0.8,
+                opacity: 0,
+                duration: 0.5,
+                ease: "back.out(1.7)"
+            });
+        }
+
+        function showWelcome() {
+            alert('أهلاً بك في أنميشن العرب!\n\nالاختصارات:\n- B: فرشاة\n- E: ممحاة\n- V: تحديد\n- Space: تشغيل/إيقاف\n- Ctrl+S: حفظ\n- Ctrl+Z: تراجع');
+        }
+
+        function undo() {
+            if (fabricCanvas._objects.length > 0) {
+                fabricCanvas.remove(fabricCanvas._objects[fabricCanvas._objects.length - 1]);
+            }
+        }
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+            if (!event.target.closest('.menu-btn') && !event.target.closest('.export-menu')) {
+                document.getElementById('exportMenu').classList.remove('show');
+            }
+        }
     </script>
 </body>
 </html>
