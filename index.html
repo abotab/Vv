@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>أنميشن العرب برو ماكس - AI Animation Studio</title>
+    
+    <!-- المحركات المتقدمة -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.0/dist/pose-detection.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@latest/rive.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --glass: rgba(15, 23, 42, 0.9);
+            --glass-border: rgba(99, 102, 241, 0.3);
+            --neon: 0 0 30px rgba(99, 102, 241, 0.6);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--darker);
+            color: var(--light);
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* ===== HEADER ===== */
+        .header {
+            height: 60px;
+            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .logo-icon {
+            font-size: 28px;
+            -webkit-text-fill-color: initial;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+        
+        .icon-btn:hover, .icon-btn.active {
+            background: var(--primary);
+            box-shadow: var(--neon);
+        }
+        
+        /* ===== MAIN LAYOUT ===== */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            position: relative;
+        }
+        
+        /* ===== LEFT PANEL ===== */
+        .left-panel {
+            width: 280px;
+            background: var(--dark);
+            border-left: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .panel-section {
+            padding: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--glass-border);
+            border-radius: 16px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .upload-area.active {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .upload-hint {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        /* AI Modes */
+        .ai-modes {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .ai-mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--light);
+        }
+        
+        .ai-mode-btn:hover, .ai-mode-btn.active {
+            background: rgba(99, 102, 241, 0.25);
+            border-color: var(--primary);
+            transform: translateX(-5px);
+        }
+        
+        .ai-mode-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .ai-mode-info {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .ai-mode-title {
+            font-size: 13px;
+            font-weight: 700;
+        }
+        
+        .ai-mode-desc {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+        
+        /* Action Button */
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .action-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: var(--neon);
+        }
+        
+        /* Bone List */
+        .bone-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .bone-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        
+        .bone-item:hover, .bone-item.selected {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .bone-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .bone-name {
+            flex: 1;
+            font-size: 12px;
+        }
+        
+        .bone-visibility {
+            color: #64748b;
+            cursor: pointer;
+        }
+        
+        /* ===== CENTER CANVAS ===== */
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            background: 
+                linear-gradient(45deg, #0f172a 25%, transparent 25%), 
+                linear-gradient(-45deg, #0f172a 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #0f172a 75%), 
+                linear-gradient(-45deg, transparent 75%, #0f172a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+            border-radius: 8px;
+            background: white;
+            touch-action: none;
+        }
+        
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+        
+        #mainCanvas {
+            position: relative;
+            z-index: 1;
+        }
+        
+        #boneCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        #uiCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 3;
+        }
+        
+        /* Floating Controls */
+        .floating-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: var(--glass);
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .control-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        
+        .control-btn:hover, .control-btn.active {
+            background: var(--primary);
+            box-shadow: var(--neon);
+        }
+        
+        /* Animation Library */
+        .anim-library {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .anim-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        
+        .anim-item:hover {
+            background: var(--primary);
+            transform: translateX(-5px);
+        }
+        
+        .anim-item i {
+            font-size: 16px;
+        }
+        
+        /* ===== RIGHT PANEL ===== */
+        .right-panel {
+            width: 300px;
+            background: var(--dark);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 15px;
+        }
+        
+        .tool-btn {
+            aspect-ratio: 1;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            color: var(--light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 10px;
+        }
+        
+        .tool-btn i {
+            font-size: 18px;
+        }
+        
+        .tool-btn:hover, .tool-btn.active {
+            background: var(--primary);
+            box-shadow: var(--neon);
+        }
+        
+        /* Properties */
+        .properties {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 15px 15px;
+        }
+        
+        .prop-card {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .prop-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .prop-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .prop-label {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        
+        .prop-value {
+            width: 70px;
+            padding: 6px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+            text-align: center;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        
+        .slider-container {
+            margin-top: 8px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        
+        /* Timeline */
+        .timeline {
+            height: 180px;
+            background: linear-gradient(0deg, var(--darker) 0%, var(--dark) 100%);
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        .timeline-header {
+            height: 45px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .frame-display {
+            font-family: monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .timeline-track {
+            height: 50px;
+            background: rgba(99, 102, 241, 0.1);
+            margin: 15px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+            pointer-events: none;
+        }
+        
+        .keyframe {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            border: 2px solid white;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
+        
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 50vh;
+        }
+        
+        /* Bone Editor Modal */
+        .bone-editor {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            border: 2px dashed var(--glass-border);
+        }
+        
+        .editor-bone {
+            position: absolute;
+            width: 100px;
+            height: 4px;
+            background: var(--primary);
+            transform-origin: left center;
+            cursor: grab;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        
+        .editor-bone:active {
+            cursor: grabbing;
+        }
+        
+        .editor-joint {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--secondary);
+            border: 3px solid white;
+            border-radius: 50%;
+            cursor: grab;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+        }
+        
+        /* Gesture Pad */
+        .gesture-pad {
+            width: 100%;
+            height: 200px;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+            border-radius: 20px;
+            position: relative;
+            touch-action: none;
+        }
+        
+        .gesture-indicator {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: var(--neon);
+            transition: all 0.1s;
+        }
+        
+        /* Loading */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--darker);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(99, 102, 241, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .left-panel, .right-panel {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                z-index: 500;
+                transform: translateX(100%);
+            }
+            
+            .left-panel.open, .right-panel.open {
+                transform: translateX(0);
+            }
+            
+            .canvas-area {
+                width: 100%;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loader">
+        <div class="spinner"></div>
+        <div style="margin-top: 20px; font-size: 18px; color: var(--primary);">جاري التحميل...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">🎬</span>
+            أنميشن العرب برو ماكس
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="togglePanel('left')" title="الأدوات">
+                <i class="fas fa-tools"></i>
+            </button>
+            <button class="icon-btn" onclick="undo()" title="تراجع">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button class="icon-btn" onclick="redo()" title="إعادة">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button class="icon-btn active" onclick="togglePanel('right')" title="الخصائص">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Left Panel -->
+        <aside class="left-panel" id="leftPanel">
+            <div class="panel-section">
+                <div class="section-title">
+                    <i class="fas fa-image"></i>
+                    استيراد الشخصية
+                </div>
+                <div class="upload-area" id="uploadArea" onclick="selectImage()">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">انقر لاختيار صورة</div>
+                    <div class="upload-hint">PNG, JPG, WEBP</div>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImage(event)">
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">
+                    <i class="fas fa-robot"></i>
+                    وضع التفكيك الذكي
+                </div>
+                <div class="ai-modes">
+                    <button class="ai-mode-btn active" onclick="setMode('auto')" id="modeAuto">
+                        <div class="ai-mode-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div class="ai-mode-info">
+                            <div class="ai-mode-title">تفكيك تلقائي ذكي</div>
+                            <div class="ai-mode-desc">AI يكتشف الشخصية تلقائياً</div>
+                        </div>
+                    </button>
+                    <button class="ai-mode-btn" onclick="setMode('manual')" id="modeManual">
+                        <div class="ai-mode-icon">
+                            <i class="fas fa-hand-pointer"></i>
+                        </div>
+                        <div class="ai-mode-info">
+                            <div class="ai-mode-title">تفكيك يدوي</div>
+                            <div class="ai-mode-desc">أضف العظام بنقرة واحدة</div>
+                        </div>
+                    </button>
+                    <button class="ai-mode-btn" onclick="setMode('webcam')" id="modeWebcam">
+                        <div class="ai-mode-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="ai-mode-info">
+                            <div class="ai-mode-title">من الكاميرا</div>
+                            <div class="ai-mode-desc">التقط حركتك مباشرة</div>
+                        </div>
+                    </button>
+                </div>
+                <button class="action-btn" onclick="startRigging()" id="rigBtn" disabled>
+                    <i class="fas fa-cogs"></i>
+                    بدء التفكيك
+                </button>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">
+                    <i class="fas fa-bone"></i>
+                    العظام
+                    <span style="margin-right: auto; font-size: 10px; color: #64748b;" id="boneCount">0</span>
+                </div>
+                <div class="bone-list" id="boneList">
+                    <div style="text-align: center; color: #64748b; padding: 20px; font-size: 12px;">
+                        لم يتم إنشاء عظام بعد
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Canvas -->
+        <main class="canvas-area" id="canvasArea">
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <canvas id="mainCanvas" width="600" height="500"></canvas>
+                <canvas id="boneCanvas" width="600" height="500"></canvas>
+                <canvas id="uiCanvas" width="600" height="500"></canvas>
+            </div>
+            
+            <!-- Animation Library -->
+            <div class="anim-library">
+                <div class="section-title" style="margin-bottom: 10px;">
+                    <i class="fas fa-film"></i>
+                    حركات جاهزة
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('wave')">
+                    <i class="fas fa-hand-paper"></i>
+                    <span>تلويح باليد</span>
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('walk')">
+                    <i class="fas fa-walking"></i>
+                    <span>مشي</span>
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('sit')">
+                    <i class="fas fa-chair"></i>
+                    <span>جلوس</span>
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('talk')">
+                    <i class="fas fa-comment"></i>
+                    <span>تحدث</span>
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('blink')">
+                    <i class="fas fa-eye"></i>
+                    <span>رمش</span>
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('jump')">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>قفز</span>
+                </div>
+                <div class="anim-item" onclick="playPresetAnim('dance')">
+                    <i class="fas fa-music"></i>
+                    <span>رقص</span>
+                </div>
+            </div>
+            
+            <!-- Floating Controls -->
+            <div class="floating-controls">
+                <button class="control-btn" onclick="setTool('select')" id="toolSelect" title="اختيار">
+                    <i class="fas fa-mouse-pointer"></i>
+                </button>
+                <button class="control-btn" onclick="setTool('move')" id="toolMove" title="تحريك">
+                    <i class="fas fa-arrows-alt"></i>
+                </button>
+                <button class="control-btn" onclick="setTool('rotate')" id="toolRotate" title="تدوير">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="control-btn" onclick="setTool('scale')" id="toolScale" title="تحجيم">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="control-btn" onclick="setTool('bone')" id="toolBone" title="عظم">
+                    <i class="fas fa-bone"></i>
+                </button>
+                <div style="width: 1px; background: var(--glass-border); margin: 0 5px;"></div>
+                <button class="control-btn" onclick="addKeyframe()" title="إطار مفتاحي">
+                    <i class="fas fa-diamond"></i>
+                </button>
+                <button class="control-btn" onclick="togglePlayback()" id="playBtn" title="تشغيل">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel" id="rightPanel">
+            <div class="tools-grid">
+                <button class="tool-btn active" onclick="setAnimTool('transform')">
+                    <i class="fas fa-arrows-alt"></i>
+                    <span>تحريك</span>
+                </button>
+                <button class="tool-btn" onclick="setAnimTool('rotate')">
+                    <i class="fas fa-undo"></i>
+                    <span>دوران</span>
+                </button>
+                <button class="tool-btn" onclick="setAnimTool('scale')">
+                    <i class="fas fa-expand"></i>
+                    <span>حجم</span>
+                </button>
+                <button class="tool-btn" onclick="setAnimTool('ik')">
+                    <i class="fas fa-link"></i>
+                    <span>IK</span>
+                </button>
+            </div>
+
+            <div class="properties">
+                <div class="prop-card">
+                    <div class="prop-title">
+                        <i class="fas fa-arrows-alt"></i>
+                        التحويلات
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">الموقع X</span>
+                        <input type="number" class="prop-value" id="propX" value="0" onchange="updateFromInput()">
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">الموقع Y</span>
+                        <input type="number" class="prop-value" id="propY" value="0" onchange="updateFromInput()">
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">التدوير</span>
+                        <input type="number" class="prop-value" id="propRot" value="0" onchange="updateFromInput()">
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" min="-180" max="180" value="0" id="rotSlider" oninput="updateRotation(this.value)">
+                    </div>
+                </div>
+
+                <div class="prop-card">
+                    <div class="prop-title">
+                        <i class="fas fa-cog"></i>
+                        خصائص العظم
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">الاسم</span>
+                        <input type="text" class="prop-value" id="propName" value="Bone" style="width: 100px;" onchange="renameBone()">
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">الطول</span>
+                        <input type="number" class="prop-value" id="propLen" value="50" onchange="updateLength()">
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label">المرونة</span>
+                        <input type="range" class="slider" min="0" max="100" value="50" style="width: 100px;">
+                    </div>
+                    <button class="action-btn" onclick="openBoneEditor()" style="margin-top: 10px;">
+                        <i class="fas fa-edit"></i>
+                        تحرير متقدم
+                    </button>
+                </div>
+
+                <div class="prop-card">
+                    <div class="prop-title">
+                        <i class="fas fa-hand-pointer"></i>
+                        لوحة التحكم باللمس
+                    </div>
+                    <div class="gesture-pad" id="gesturePad">
+                        <div class="gesture-indicator" id="gestureIndicator"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #64748b;">
+                        اسحب للتحريك السلس
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+        <div class="timeline-header">
+            <button class="play-btn" onclick="togglePlayback()">
+                <i class="fas fa-play" id="timelinePlayIcon"></i>
+            </button>
+            <div class="frame-display" id="frameDisplay">001</div>
+            <button class="icon-btn" onclick="addKeyframe()">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="icon-btn" onclick="clearKeyframes()">
+                <i class="fas fa-trash"></i>
+            </button>
+            <select class="icon-btn" style="width: 70px; font-family: inherit;" onchange="changeFPS(this.value)">
+                <option value="24">24</option>
+                <option value="30">30</option>
+                <option value="60">60</option>
+            </select>
+        </div>
+        <div class="timeline-track" id="timelineTrack" onclick="seekTimeline(event)">
+            <div class="playhead" id="playhead" style="left: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- Bone Editor Modal -->
+    <div class="modal" id="boneEditorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">محرك العظام المتقدم</h3>
+            </div>
+            <div class="modal-body">
+                <div class="bone-editor" id="boneEditor">
+                    <!-- Dynamic content -->
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="action-btn" onclick="closeModal('boneEditorModal')">
+                        <i class="fas fa-check"></i>
+                        حفظ
+                    </button>
+                    <button class="action-btn" style="background: var(--gray);" onclick="closeModal('boneEditorModal')">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        const State = {
+            canvas: null,
+            ctx: null,
+            boneCanvas: null,
+            boneCtx: null,
+            uiCanvas: null,
+            uiCtx: null,
+            
+            image: null,
+            imageLoaded: false,
+            
+            bones: [],
+            selectedBone: null,
+            boneIdCounter: 0,
+            
+            currentTool: 'select',
+            rigMode: 'auto',
+            
+            isPlaying: false,
+            currentFrame: 1,
+            totalFrames: 120,
+            fps: 24,
+            keyframes: new Map(),
+            
+            isDragging: false,
+            dragStart: { x: 0, y: 0 },
+            lastTouch: { x: 0, y: 0 },
+            
+            // MediaPipe
+            holistic: null,
+            camera: null,
+            
+            // History
+            history: [],
+            historyStep: -1,
+            
+            // Animation presets
+            presets: {
+                wave: { duration: 2, loop: true },
+                walk: { duration: 1.5, loop: true },
+                sit: { duration: 1, loop: false },
+                talk: { duration: 3, loop: true },
+                blink: { duration: 0.5, loop: true },
+                jump: { duration: 0.8, loop: false },
+                dance: { duration: 4, loop: true }
+            }
+        };
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('load', async () => {
+            await initApp();
+            setupGestures();
+            setupHammer();
+            
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+
+        async function initApp() {
+            // Setup canvases
+            State.canvas = document.getElementById('mainCanvas');
+            State.ctx = State.canvas.getContext('2d');
+            
+            State.boneCanvas = document.getElementById('boneCanvas');
+            State.boneCtx = State.boneCanvas.getContext('2d');
+            
+            State.uiCanvas = document.getElementById('uiCanvas');
+            State.uiCtx = State.uiCanvas.getContext('2d');
+            
+            // Setup canvas events
+            setupCanvasEvents();
+            
+            // Initialize MediaPipe
+            await initMediaPipe();
+            
+            console.log('✅ App initialized');
+        }
+
+        async function initMediaPipe() {
+            try {
+                State.holistic = new Holistic({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
+                    }
+                });
+                
+                State.holistic.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    enableSegmentation: true,
+                    smoothSegmentation: true,
+                    refineFaceLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+                
+                State.holistic.onResults(onHolisticResults);
+                
+                console.log('✅ MediaPipe Holistic initialized');
+            } catch (e) {
+                console.warn('⚠️ MediaPipe init failed:', e);
+            }
+        }
+
+        // ===== IMAGE HANDLING =====
+        function selectImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        function handleImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    State.image = img;
+                    State.imageLoaded = true;
+                    
+                    // Resize to fit canvas
+                    const maxW = 600;
+                    const maxH = 500;
+                    let w = img.width;
+                    let h = img.height;
+                    
+                    if (w > maxW || h > maxH) {
+                        const ratio = Math.min(maxW / w, maxH / h);
+                        w *= ratio;
+                        h *= ratio;
+                    }
+                    
+                    State.canvas.width = w;
+                    State.canvas.height = h;
+                    State.boneCanvas.width = w;
+                    State.boneCanvas.height = h;
+                    State.uiCanvas.width = w;
+                    State.uiCanvas.height = h;
+                    
+                    // Draw image
+                    State.ctx.drawImage(img, 0, 0, w, h);
+                    
+                    // Enable rig button
+                    document.getElementById('rigBtn').disabled = false;
+                    
+                    // Animation
+                    gsap.from('#canvasWrapper', {
+                        scale: 0.8,
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "back.out(1.7)"
+                    });
+                    
+                    saveHistory();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== RIGGING MODES =====
+        function setMode(mode) {
+            State.rigMode = mode;
+            document.querySelectorAll('.ai-mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+        }
+
+        async function startRigging() {
+            if (State.rigMode === 'auto') {
+                await autoRig();
+            } else if (State.rigMode === 'manual') {
+                startManualRig();
+            } else if (State.rigMode === 'webcam') {
+                startWebcamRig();
+            }
+        }
+
+        // ===== AUTO RIGGING (AI) =====
+        async function autoRig() {
+            if (!State.imageLoaded) return;
+            
+            // Create temporary canvas for MediaPipe
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = State.canvas.width;
+            tempCanvas.height = State.canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(State.image, 0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // Process with MediaPipe
+            await State.holistic.send({ image: tempCanvas });
+        }
+
+        function onHolisticResults(results) {
+            if (!results.poseLandmarks) {
+                // Fallback to default rig
+                createDefaultRig();
+                return;
+            }
+            
+            State.bones = [];
+            const landmarks = results.poseLandmarks;
+            const w = State.canvas.width;
+            const h = State.canvas.height;
+            
+            // Map MediaPipe landmarks to bones
+            const landmarkBones = [
+                { name: 'nose', idx: 0, parent: null },
+                { name: 'neck', idx: null, parent: 'nose', custom: true, x: 0.5, y: 0.3 },
+                { name: 'left_shoulder', idx: 11, parent: 'neck' },
+                { name: 'right_shoulder', idx: 12, parent: 'neck' },
+                { name: 'left_elbow', idx: 13, parent: 'left_shoulder' },
+                { name: 'right_elbow', idx: 14, parent: 'right_shoulder' },
+                { name: 'left_wrist', idx: 15, parent: 'left_elbow' },
+                { name: 'right_wrist', idx: 16, parent: 'right_elbow' },
+                { name: 'left_hip', idx: 23, parent: 'neck' },
+                { name: 'right_hip', idx: 24, parent: 'neck' },
+                { name: 'left_knee', idx: 25, parent: 'left_hip' },
+                { name: 'right_knee', idx: 26, parent: 'right_hip' },
+                { name: 'left_ankle', idx: 27, parent: 'left_knee' },
+                { name: 'right_ankle', idx: 28, parent: 'right_knee' }
+            ];
+            
+            // Create bones from landmarks
+            landmarkBones.forEach((lb, i) => {
+                let x, y;
+                
+                if (lb.custom) {
+                    x = lb.x * w;
+                    y = lb.y * h;
+                } else if (landmarks[lb.idx]) {
+                    x = landmarks[lb.idx].x * w;
+                    y = landmarks[lb.idx].y * h;
+                } else {
+                    return;
+                }
+                
+                const bone = {
+                    id: i,
+                    name: lb.name,
+                    x: x,
+                    y: y,
+                    rotation: 0,
+                    length: 40,
+                    parent: lb.parent,
+                    children: [],
+                    color: `hsl(${i * 25}, 70%, 60%)`,
+                    keyframes: new Map(),
+                    visible: true
+                };
+                
+                // Calculate length from parent
+                if (lb.parent) {
+                    const parent = State.bones.find(b => b.name === lb.parent);
+                    if (parent) {
+                        const dx = x - parent.x;
+                        const dy = y - parent.y;
+                        bone.length = Math.sqrt(dx * dx + dy * dy);
+                        bone.baseRotation = Math.atan2(dy, dx) * (180 / Math.PI);
+                        parent.children.push(bone.name);
+                    }
+                }
+                
+                State.bones.push(bone);
+            });
+            
+            // Add facial features if face detected
+            if (results.faceLandmarks) {
+                addFacialBones(results.faceLandmarks, w, h);
+            }
+            
+            // Add hand bones if detected
+            if (results.leftHandLandmarks) {
+                addHandBones(results.leftHandLandmarks, 'left', w, h);
+            }
+            if (results.rightHandLandmarks) {
+                addHandBones(results.rightHandLandmarks, 'right', w, h);
+            }
+            
+            finishRigging();
+        }
+
+        function addFacialBones(faceLandmarks, w, h) {
+            // Eyes
+            const leftEye = faceLandmarks[33]; // Left eye center
+            const rightEye = faceLandmarks[263]; // Right eye center
+            
+            State.bones.push({
+                id: State.bones.length,
+                name: 'left_eye',
+                x: leftEye.x * w,
+                y: leftEye.y * h,
+                length: 15,
+                parent: 'head',
+                children: [],
+                color: '#3b82f6',
+                keyframes: new Map(),
+                visible: true
+            });
+            
+            State.bones.push({
+                id: State.bones.length,
+                name: 'right_eye',
+                x: rightEye.x * w,
+                y: rightEye.y * h,
+                length: 15,
+                parent: 'head',
+                children: [],
+                color: '#3b82f6',
+                keyframes: new Map(),
+                visible: true
+            });
+            
+            // Find head bone and add children
+            const headBone = State.bones.find(b => b.name === 'head');
+            if (!headBone) {
+                // Create head if not exists
+                const nose = State.bones.find(b => b.name === 'nose');
+                if (nose) {
+                    State.bones.push({
+                        id: State.bones.length,
+                        name: 'head',
+                        x: nose.x,
+                        y: nose.y - 30,
+                        length: 30,
+                        parent: 'nose',
+                        children: ['left_eye', 'right_eye'],
+                        color: '#f59e0b',
+                        keyframes: new Map(),
+                        visible: true
+                    });
+                    nose.children.push('head');
+                }
+            } else {
+                headBone.children.push('left_eye', 'right_eye');
+            }
+        }
+
+        function addHandBones(handLandmarks, side, w, h) {
+            const wrist = handLandmarks[0];
+            const fingerNames = ['thumb', 'index', 'middle', 'ring', 'pinky'];
+            const fingerIndices = [
+                [1, 2, 3, 4],      // thumb
+                [5, 6, 7, 8],      // index
+                [9, 10, 11, 12],   // middle
+                [13, 14, 15, 16],  // ring
+                [17, 18, 19, 20]   // pinky
+            ];
+            
+            // Wrist bone
+            const wristBone = {
+                id: State.bones.length,
+                name: `${side}_wrist`,
+                x: wrist.x * w,
+                y: wrist.y * h,
+                length: 20,
+                parent: `${side}_wrist`,
+                children: [],
+                color: side === 'left' ? '#10b981' : '#ef4444',
+                keyframes: new Map(),
+                visible: true
+            };
+            
+            // Find parent (elbow)
+            const elbow = State.bones.find(b => b.name === `${side}_elbow`);
+            if (elbow) {
+                wristBone.parent = `${side}_elbow`;
+                elbow.children.push(`${side}_wrist`);
+            }
+            
+            State.bones.push(wristBone);
+            
+            // Finger bones
+            fingerNames.forEach((finger, fi) => {
+                let parent = `${side}_wrist`;
+                fingerIndices[fi].forEach((idx, i) => {
+                    const lm = handLandmarks[idx];
+                    const boneName = `${side}_${finger}_${i === 0 ? 'base' : i === 3 ? 'tip' : 'mid' + i}`;
+                    
+                    State.bones.push({
+                        id: State.bones.length,
+                        name: boneName,
+                        x: lm.x * w,
+                        y: lm.y * h,
+                        length: 10,
+                        parent: parent,
+                        children: [],
+                        color: side === 'left' ? '#10b981' : '#ef4444',
+                        keyframes: new Map(),
+                        visible: true
+                    });
+                    
+                    // Update parent
+                    const parentBone = State.bones.find(b => b.name === parent);
+                    if (parentBone) parentBone.children.push(boneName);
+                    
+                    parent = boneName;
+                });
+            });
+        }
+
+        function createDefaultRig() {
+            // Create default humanoid rig
+            const w = State.canvas.width;
+            const h = State.canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            
+            const defaultBones = [
+                { name: 'root', x: cx, y: cy + 100, parent: null },
+                { name: 'spine', x: cx, y: cy + 50, parent: 'root' },
+                { name: 'neck', x: cx, y: cy, parent: 'spine' },
+                { name: 'head', x: cx, y: cy - 40, parent: 'neck' },
+                { name: 'left_eye', x: cx - 15, y: cy - 45, parent: 'head' },
+                { name: 'right_eye', x: cx + 15, y: cy - 45, parent: 'head' },
+                { name: 'left_shoulder', x: cx - 40, y: cy - 10, parent: 'neck' },
+                { name: 'right_shoulder', x: cx + 40, y: cy - 10, parent: 'neck' },
+                { name: 'left_elbow', x: cx - 70, y: cy + 20, parent: 'left_shoulder' },
+                { name: 'right_elbow', x: cx + 70, y: cy + 20, parent: 'right_shoulder' },
+                { name: 'left_hand', x: cx - 90, y: cy + 60, parent: 'left_elbow' },
+                { name: 'right_hand', x: cx + 90, y: cy + 60, parent: 'right_elbow' },
+                { name: 'left_hip', x: cx - 20, y: cy + 80, parent: 'root' },
+                { name: 'right_hip', x: cx + 20, y: cy + 80, parent: 'root' },
+                { name: 'left_knee', x: cx - 25, y: cy + 150, parent: 'left_hip' },
+                { name: 'right_knee', x: cx + 25, y: cy + 150, parent: 'right_hip' },
+                { name: 'left_foot', x: cx - 30, y: cy + 220, parent: 'left_knee' },
+                { name: 'right_foot', x: cx + 30, y: cy + 220, parent: 'right_knee' }
+            ];
+            
+            State.bones = defaultBones.map((b, i) => ({
+                id: i,
+                name: b.name,
+                x: b.x,
+                y: b.y,
+                rotation: 0,
+                length: 40,
+                parent: b.parent,
+                children: [],
+                color: `hsl(${i * 20}, 70%, 60%)`,
+                keyframes: new Map(),
+                visible: true
+            }));
+            
+            // Build hierarchy
+            State.bones.forEach(bone => {
+                if (bone.parent) {
+                    const parent = State.bones.find(b => b.name === bone.parent);
+                    if (parent) {
+                        const dx = bone.x - parent.x;
+                        const dy = bone.y - parent.y;
+                        bone.length = Math.sqrt(dx * dx + dy * dy);
+                        bone.baseRotation = Math.atan2(dy, dx) * (180 / Math.PI);
+                        parent.children.push(bone.name);
+                    }
+                }
+            });
+            
+            finishRigging();
+        }
+
+        function finishRigging() {
+            State.boneIdCounter = State.bones.length;
+            renderBoneList();
+            drawBones();
+            saveHistory();
+            
+            // Animation
+            gsap.from('.bone-item', {
+                x: -50,
+                opacity: 0,
+                stagger: 0.05,
+                duration: 0.3
+            });
+        }
+
+        // ===== MANUAL RIGGING =====
+        function startManualRig() {
+            setTool('bone');
+            showToast('انقر على الصورة لإضافة عظام');
+        }
+
+        function addBoneAt(x, y) {
+            const name = `bone_${State.boneIdCounter++}`;
+            const bone = {
+                id: State.boneIdCounter,
+                name: name,
+                x: x,
+                y: y,
+                rotation: 0,
+                length: 50,
+                parent: State.selectedBone ? State.selectedBone.name : null,
+                children: [],
+                color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                keyframes: new Map(),
+                visible: true
+            };
+            
+            if (State.selectedBone) {
+                State.selectedBone.children.push(name);
+                const dx = x - State.selectedBone.x;
+                const dy = y - State.selectedBone.y;
+                bone.length = Math.sqrt(dx * dx + dy * dy);
+                bone.baseRotation = Math.atan2(dy, dx) * (180 / Math.PI);
+            }
+            
+            State.bones.push(bone);
+            State.selectedBone = bone;
+            
+            renderBoneList();
+            drawBones();
+            updateProperties();
+            saveHistory();
+        }
+
+        // ===== WEBCAM RIGGING =====
+        async function startWebcamRig() {
+            const video = document.createElement('video');
+            video.style.display = 'none';
+            document.body.appendChild(video);
+            
+            State.camera = new Camera(video, {
+                onFrame: async () => {
+                    await State.holistic.send({ image: video });
+                },
+                width: 640,
+                height: 480
+            });
+            
+            await State.camera.start();
+            showToast('الكاميرا تعمل - حرك جسمك');
+        }
+
+        // ===== RENDERING =====
+        function drawBones() {
+            State.boneCtx.clearRect(0, 0, State.boneCanvas.width, State.boneCanvas.height);
+            
+            // Draw connections
+            State.bones.forEach(bone => {
+                if (!bone.visible) return;
+                
+                if (bone.parent) {
+                    const parent = State.bones.find(b => b.name === bone.parent);
+                    if (parent && parent.visible) {
+                        const isSelected = State.selectedBone === bone;
+                        
+                        State.boneCtx.beginPath();
+                        State.boneCtx.moveTo(parent.x, parent.y);
+                        State.boneCtx.lineTo(bone.x, bone.y);
+                        State.boneCtx.strokeStyle = isSelected ? '#ec4899' : bone.color;
+                        State.boneCtx.lineWidth = isSelected ? 4 : 2;
+                        State.boneCtx.lineCap = 'round';
+                        State.boneCtx.stroke();
+                        
+                        // Draw joint
+                        State.boneCtx.beginPath();
+                        State.boneCtx.arc(bone.x, bone.y, isSelected ? 8 : 5, 0, Math.PI * 2);
+                        State.boneCtx.fillStyle = isSelected ? '#10b981' : bone.color;
+                        State.boneCtx.fill();
+                        State.boneCtx.strokeStyle = 'white';
+                        State.boneCtx.lineWidth = 2;
+                        State.boneCtx.stroke();
+                    }
+                }
+            });
+            
+            // Draw root joints
+            State.bones.filter(b => !b.parent && b.visible).forEach(bone => {
+                State.boneCtx.beginPath();
+                State.boneCtx.arc(bone.x, bone.y, 8, 0, Math.PI * 2);
+                State.boneCtx.fillStyle = bone.color;
+                State.boneCtx.fill();
+                State.boneCtx.strokeStyle = 'white';
+                State.boneCtx.lineWidth = 2;
+                State.boneCtx.stroke();
+            });
+        }
+
+        function renderBoneList() {
+            const list = document.getElementById('boneList');
+            document.getElementById('boneCount').textContent = State.bones.length;
+            
+            if (State.bones.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px; font-size: 12px;">لم يتم إنشاء عظام بعد</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            State.bones.forEach(bone => {
+                const item = document.createElement('div');
+                item.className = `bone-item ${State.selectedBone === bone ? 'selected' : ''}`;
+                item.innerHTML = `
+                    <div class="bone-color" style="background: ${bone.color}"></div>
+                    <span class="bone-name">${bone.name}</span>
+                    <i class="fas ${bone.visible ? 'fa-eye' : 'fa-eye-slash'} bone-visibility" onclick="toggleBoneVisibility('${bone.name}')"></i>
+                `;
+                item.onclick = () => selectBone(bone);
+                list.appendChild(item);
+            });
+        }
+
+        // ===== INTERACTION =====
+        function setupCanvasEvents() {
+            const canvas = State.uiCanvas;
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            // Touch events
+            canvas.addEventListener('touchstart', handleTouch, { passive: false });
+            canvas.addEventListener('touchmove', handleTouch, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp);
+        }
+
+        function setupHammer() {
+            const hammer = new Hammer(State.uiCanvas);
+            hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            hammer.get('pinch').set({ enable: true });
+            hammer.get('rotate').set({ enable: true });
+            
+            hammer.on('pan', (e) => {
+                if (State.selectedBone && State.currentTool === 'move') {
+                    moveBone(State.selectedBone, e.deltaX, e.deltaY);
+                }
+            });
+            
+            hammer.on('rotate', (e) => {
+                if (State.selectedBone && State.currentTool === 'rotate') {
+                    rotateBone(State.selectedBone, e.rotation);
+                }
+            });
+        }
+
+        function setupGestures() {
+            const pad = document.getElementById('gesturePad');
+            const indicator = document.getElementById('gestureIndicator');
+            
+            const hammer = new Hammer(pad);
+            hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            
+            hammer.on('pan', (e) => {
+                const x = e.center.x - pad.offsetLeft;
+                const y = e.center.y - pad.offsetTop;
+                const centerX = pad.offsetWidth / 2;
+                const centerY = pad.offsetHeight / 2;
+                
+                const deltaX = (x - centerX) / centerX * 100;
+                const deltaY = (y - centerY) / centerY * 100;
+                
+                indicator.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+                
+                if (State.selectedBone) {
+                    moveBone(State.selectedBone, deltaX * 0.5, deltaY * 0.5);
+                }
+            });
+            
+            hammer.on('panend', () => {
+                indicator.style.transform = 'translate(-50%, -50%)';
+            });
+        }
+
+        function onPointerDown(e) {
+            const rect = State.uiCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (State.currentTool === 'bone' && State.rigMode === 'manual') {
+                addBoneAt(x, y);
+                return;
+            }
+            
+            // Check bone selection
+            const clickedBone = State.bones.find(b => {
+                if (!b.visible) return false;
+                const dist = Math.sqrt((x - b.x) ** 2 + (y - b.y) ** 2);
+                return dist < 20;
+            });
+            
+            if (clickedBone) {
+                State.selectedBone = clickedBone;
+                State.isDragging = true;
+                State.dragStart = { x: x - clickedBone.x, y: y - clickedBone.y };
+                renderBoneList();
+                updateProperties();
+                drawBones();
+            }
+        }
+
+        function onPointerMove(e) {
+            if (!State.isDragging || !State.selectedBone) return;
+            
+            const rect = State.uiCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - State.dragStart.x;
+            const y = e.clientY - rect.top - State.dragStart.y;
+            
+            moveBone(State.selectedBone, x - State.selectedBone.x, y - State.selectedBone.y);
+        }
+
+        function onPointerUp() {
+            if (State.isDragging) {
+                State.isDragging = false;
+                saveKeyframe();
+                saveHistory();
+            }
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            State.uiCanvas.dispatchEvent(mouseEvent);
+        }
+
+        function moveBone(bone, dx, dy) {
+            if (State.currentTool === 'move' || State.currentTool === 'select') {
+                bone.x += dx;
+                bone.y += dy;
+                
+                // Move children
+                moveChildren(bone, dx, dy);
+            }
+            
+            drawBones();
+            updateProperties();
+        }
+
+        function moveChildren(bone, dx, dy) {
+            bone.children.forEach(childName => {
+                const child = State.bones.find(b => b.name === childName);
+                if (child) {
+                    child.x += dx;
+                    child.y += dy;
+                    moveChildren(child, dx, dy);
+                }
+            });
+        }
+
+        function rotateBone(bone, angle) {
+            bone.rotation = angle;
+            
+            // Update children positions
+            updateChildrenFromRotation(bone);
+            drawBones();
+            updateProperties();
+        }
+
+        function updateChildrenFromRotation(bone) {
+            const angleRad = (bone.rotation + (bone.baseRotation || 0)) * Math.PI / 180;
+            
+            bone.children.forEach(childName => {
+                const child = State.bones.find(b => b.name === childName);
+                if (child) {
+                    child.x = bone.x + Math.cos(angleRad) * child.length;
+                    child.y = bone.y + Math.sin(angleRad) * child.length;
+                    updateChildrenFromRotation(child);
+                }
+            });
+        }
+
+        // ===== TOOLS =====
+        function setTool(tool) {
+            State.currentTool = tool;
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tool' + tool.charAt(0).toUpperCase() + tool.slice(1))?.classList.add('active');
+        }
+
+        function setAnimTool(tool) {
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // ===== PROPERTIES =====
+        function selectBone(bone) {
+            State.selectedBone = bone;
+            renderBoneList();
+            updateProperties();
+            drawBones();
+        }
+
+        function updateProperties() {
+            if (!State.selectedBone) return;
+            
+            document.getElementById('propX').value = Math.round(State.selectedBone.x);
+            document.getElementById('propY').value = Math.round(State.selectedBone.y);
+            document.getElementById('propRot').value = Math.round(State.selectedBone.rotation || 0);
+            document.getElementById('rotSlider').value = State.selectedBone.rotation || 0;
+            document.getElementById('propName').value = State.selectedBone.name;
+            document.getElementById('propLen').value = Math.round(State.selectedBone.length);
+        }
+
+        function updateFromInput() {
+            if (!State.selectedBone) return;
+            
+            State.selectedBone.x = parseFloat(document.getElementById('propX').value);
+            State.selectedBone.y = parseFloat(document.getElementById('propY').value);
+            State.selectedBone.rotation = parseFloat(document.getElementById('propRot').value);
+            
+            drawBones();
+        }
+
+        function updateRotation(value) {
+            if (!State.selectedBone) return;
+            State.selectedBone.rotation = parseFloat(value);
+            document.getElementById('propRot').value = value;
+            drawBones();
+        }
+
+        function renameBone() {
+            if (!State.selectedBone) return;
+            State.selectedBone.name = document.getElementById('propName').value;
+            renderBoneList();
+        }
+
+        function updateLength() {
+            if (!State.selectedBone) return;
+            State.selectedBone.length = parseFloat(document.getElementById('propLen').value);
+            drawBones();
+        }
+
+        function toggleBoneVisibility(name) {
+            const bone = State.bones.find(b => b.name === name);
+            if (bone) {
+                bone.visible = !bone.visible;
+                renderBoneList();
+                drawBones();
+            }
+        }
+
+        // ===== ANIMATION PRESETS =====
+        function playPresetAnim(presetName) {
+            const preset = State.presets[presetName];
+            if (!preset) return;
+            
+            showToast(`تشغيل: ${presetName}`);
+            
+            // Apply preset animation
+            switch(presetName) {
+                case 'wave':
+                    animateWave();
+                    break;
+                case 'walk':
+                    animateWalk();
+                    break;
+                case 'sit':
+                    animateSit();
+                    break;
+                case 'talk':
+                    animateTalk();
+                    break;
+                case 'blink':
+                    animateBlink();
+                    break;
+                case 'jump':
+                    animateJump();
+                    break;
+                case 'dance':
+                    animateDance();
+                    break;
+            }
+        }
+
+        function animateWave() {
+            const rightArm = State.bones.find(b => b.name === 'right_shoulder');
+            if (!rightArm) return;
+            
+            gsap.to(rightArm, {
+                rotation: 30,
+                duration: 0.5,
+                yoyo: true,
+                repeat: 5,
+                onUpdate: () => {
+                    updateChildrenFromRotation(rightArm);
+                    drawBones();
+                }
+            });
+        }
+
+        function animateWalk() {
+            const leftLeg = State.bones.find(b => b.name === 'left_hip');
+            const rightLeg = State.bones.find(b => b.name === 'right_hip');
+            
+            if (!leftLeg || !rightLeg) return;
+            
+            const tl = gsap.timeline({ repeat: 3 });
+            
+            tl.to(leftLeg, { rotation: 20, duration: 0.5, onUpdate: () => updateChildrenFromRotation(leftLeg) })
+              .to(rightLeg, { rotation: -20, duration: 0.5, onUpdate: () => updateChildrenFromRotation(rightLeg) }, "<")
+              .to(leftLeg, { rotation: -20, duration: 0.5, onUpdate: () => updateChildrenFromRotation(leftLeg) })
+              .to(rightLeg, { rotation: 20, duration: 0.5, onUpdate: () => updateChildrenFromRotation(rightLeg) }, "<");
+            
+            tl.eventCallback("onUpdate", drawBones);
+        }
+
+        function animateSit() {
+            const hips = State.bones.filter(b => b.name.includes('hip'));
+            const knees = State.bones.filter(b => b.name.includes('knee'));
+            
+            gsap.to(hips, {
+                y: "+=50",
+                rotation: -20,
+                duration: 1,
+                onUpdate: drawBones
+            });
+            
+            gsap.to(knees, {
+                rotation: 60,
+                duration: 1,
+                delay: 0.3,
+                onUpdate: drawBones
+            });
+        }
+
+        function animateTalk() {
+            const head = State.bones.find(b => b.name === 'head');
+            if (!head) return;
+            
+            gsap.to(head, {
+                y: "+=3",
+                rotation: "+=5",
+                duration: 0.2,
+                repeat: 10,
+                yoyo: true,
+                onUpdate: drawBones
+            });
+        }
+
+        function animateBlink() {
+            const leftEye = State.bones.find(b => b.name === 'left_eye');
+            const rightEye = State.bones.find(b => b.name === 'right_eye');
+            
+            if (!leftEye || !rightEye) return;
+            
+            gsap.to([leftEye, rightEye], {
+                scale: 0.1,
+                duration: 0.15,
+                yoyo: true,
+                repeat: 1,
+                onUpdate: drawBones
+            });
+        }
+
+        function animateJump() {
+            const root = State.bones.find(b => b.name === 'root');
+            if (!root) return;
+            
+            gsap.to(root, {
+                y: "-=100",
+                duration: 0.4,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out",
+                onUpdate: drawBones
+            });
+        }
+
+        function animateDance() {
+            const bones = State.bones.filter(b => !b.parent);
+            
+            gsap.to(bones, {
+                rotation: "+=30",
+                duration: 0.5,
+                stagger: 0.1,
+                yoyo: true,
+                repeat: 5,
+                onUpdate: drawBones
+            });
+        }
+
+        // ===== TIMELINE =====
+        function togglePlayback() {
+            State.isPlaying = !State.isPlaying;
+            document.getElementById('timelinePlayIcon').className = State.isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            
+            if (State.isPlaying) {
+                playAnimation();
+            }
+        }
+
+        function playAnimation() {
+            if (!State.isPlaying) return;
+            
+            State.currentFrame++;
+            if (State.currentFrame > State.totalFrames) {
+                State.currentFrame = 1;
+            }
+            
+            updateTimeline();
+            interpolateFrame();
+            
+            setTimeout(() => requestAnimationFrame(playAnimation), 1000 / State.fps);
+        }
+
+        function updateTimeline() {
+            const percent = (State.currentFrame / State.totalFrames) * 100;
+            document.getElementById('playhead').style.left = percent + '%';
+            document.getElementById('frameDisplay').textContent = State.currentFrame.toString().padStart(3, '0');
+        }
+
+        function seekTimeline(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            State.currentFrame = Math.round(percent * State.totalFrames);
+            updateTimeline();
+            interpolateFrame();
+        }
+
+        function addKeyframe() {
+            if (!State.selectedBone) {
+                showToast('اختر عظماً أولاً');
+                return;
+            }
+            
+            State.selectedBone.keyframes.set(State.currentFrame, {
+                x: State.selectedBone.x,
+                y: State.selectedBone.y,
+                rotation: State.selectedBone.rotation
+            });
+            
+            // Visual keyframe
+            const keyframe = document.createElement('div');
+            keyframe.className = 'keyframe';
+            const percent = (State.currentFrame / State.totalFrames) * 100;
+            keyframe.style.left = percent + '%';
+            document.getElementById('timelineTrack').appendChild(keyframe);
+            
+            gsap.from(keyframe, { scale: 0, duration: 0.3, ease: "back.out(1.7)" });
+            showToast('تم إضافة الإطار المفتاحي');
+        }
+
+        function clearKeyframes() {
+            State.bones.forEach(b => b.keyframes.clear());
+            document.querySelectorAll('.keyframe').forEach(k => k.remove());
+            showToast('تم مسح الإطارات');
+        }
+
+        function interpolateFrame() {
+            State.bones.forEach(bone => {
+                const prev = findPrevKeyframe(bone, State.currentFrame);
+                const next = findNextKeyframe(bone, State.currentFrame);
+                
+                if (prev && next) {
+                    const t = (State.currentFrame - prev.frame) / (next.frame - prev.frame);
+                    bone.x = lerp(prev.data.x, next.data.x, t);
+                    bone.y = lerp(prev.data.y, next.data.y, t);
+                    bone.rotation = lerp(prev.data.rotation, next.data.rotation, t);
+                }
+            });
+            
+            drawBones();
+        }
+
+        function findPrevKeyframe(bone, frame) {
+            let prev = null;
+            bone.keyframes.forEach((data, f) => {
+                if (f <= frame && (!prev || f > prev.frame)) {
+                    prev = { frame: f, data };
+                }
+            });
+            return prev;
+        }
+
+        function findNextKeyframe(bone, frame) {
+            let next = null;
+            bone.keyframes.forEach((data, f) => {
+                if (f >= frame && (!next || f < next.frame)) {
+                    next = { frame: f, data };
+                }
+            });
+            return next;
+        }
+
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+
+        function changeFPS(fps) {
+            State.fps = parseInt(fps);
+        }
+
+        // ===== HISTORY =====
+        function saveHistory() {
+            State.historyStep++;
+            if (State.historyStep < State.history.length) {
+                State.history.length = State.historyStep;
+            }
+            
+            State.history.push(JSON.parse(JSON.stringify(State.bones)));
+            
+            if (State.history.length > 50) {
+                State.history.shift();
+                State.historyStep--;
+            }
+        }
+
+        function undo() {
+            if (State.historyStep > 0) {
+                State.historyStep--;
+                restoreHistory();
+            }
+        }
+
+        function redo() {
+            if (State.historyStep < State.history.length - 1) {
+                State.historyStep++;
+                restoreHistory();
+            }
+        }
+
+        function restoreHistory() {
+            State.bones = JSON.parse(JSON.stringify(State.history[State.historyStep]));
+            renderBoneList();
+            drawBones();
+        }
+
+        // ===== UI UTILITIES =====
+        function togglePanel(side) {
+            const panel = document.getElementById(side + 'Panel');
+            panel.classList.toggle('open');
+        }
+
+        function openBoneEditor() {
+            document.getElementById('boneEditorModal').classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 220px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--glass);
+                border: 1px solid var(--glass-border);
+                padding: 15px 30px;
+                border-radius: 12px;
+                color: white;
+                font-weight: 600;
+                z-index: 3000;
+                backdrop-filter: blur(10px);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            gsap.from(toast, { y: 20, opacity: 0, duration: 0.3 });
+            setTimeout(() => {
+                gsap.to(toast, { y: -20, opacity: 0, duration: 0.3, onComplete: () => toast.remove() });
+            }, 2000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlayback();
+            } else if (e.ctrlKey && e.key === 'z') {
+                undo();
+            } else if (e.ctrlKey && e.key === 'y') {
+                redo();
+            }
+        });
+
+        console.log('🎬 أنميشن العرب برو ماكس - جاهز');
+    </script>
+</body>
+</html>
