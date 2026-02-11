@@ -1,1011 +1,954 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>انميشن العرب - Animation Al Arab</title>
-  <!-- المكتبات الخارجية عبر CDN (مدمجة) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-  <style>
-    /* ========== المتغيرات الأساسية والتصميم العام RTL ========== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Tajawal', 'Cairo', 'Almarai', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أنيميشن العرب - تحويل الصور باستخدام AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600;700&family=Almarai:wght@400;700;800&display=swap');
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
 
-    :root {
-      --primary: #6c5ce7;
-      --secondary: #a463f5;
-      --accent: #00d4bd;
-      --dark: #0f0e17;
-      --dark-card: #1a1a2c;
-      --darker: #0a0a14;
-      --light: #fffffe;
-      --gray: #a7a9be;
-      --success: #4caf50;
-      --warning: #ffb86b;
-      --danger: #ff6b6b;
-      --info: #48dbfb;
-      --gradient: linear-gradient(145deg, #6c5ce7, #a463f5, #00d4bd);
-      --shadow: 0 10px 25px rgba(0,0,0,0.2);
-      --glow: 0 0 20px rgba(108,92,231,0.5);
-      --border-radius: 28px;
-      --border-radius-sm: 16px;
-    }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    body {
-      background-color: var(--darker);
-      color: var(--light);
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      position: fixed;
-      padding: 0;
-      margin: 0;
-    }
+        header {
+            text-align: center;
+            padding: 30px 20px;
+        }
 
-    /* الشاشة الرئيسية بتوجيه أفقي قسري 720x1612 لكننا نعرض كأفقي */
-    #app-container {
-      width: 720px;
-      height: 1612px;
-      background: radial-gradient(circle at 50% 30%, #1e1e2f, #0b0b14);
-      border-radius: 48px;
-      box-shadow: var(--shadow), inset 0 0 40px rgba(0,212,189,0.1);
-      position: relative;
-      overflow: hidden;
-      transform: rotate(0deg); /* أفقي في الواقع لكن الأبعاد كأفقي */
-      display: flex;
-      flex-direction: column;
-      border: 2px solid rgba(108,92,231,0.3);
-      transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    }
+        .logo {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
 
-    /* شاشات متعددة نستخدم hidden/show */
-    .screen {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 24px 20px;
-      transition: transform 0.4s ease, opacity 0.4s ease;
-      background: radial-gradient(circle at 50% 70%, #151525, #02020a);
-      scrollbar-width: thin;
-      scrollbar-color: var(--primary) var(--dark);
-    }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    .screen.active {
-      display: flex;
-      z-index: 10;
-    }
+        .subtitle {
+            font-size: 1.2em;
+            color: #a0d2eb;
+            margin-top: 10px;
+        }
 
-    .screen.hidden {
-      display: none;
-    }
+        .api-status {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid #00d2ff;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #00d2ff;
+        }
 
-    /* تزيين شريط التمرير */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--dark); }
-    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 20px; }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
 
-    /* ========== شاشة الأذونات ========== */
-    .permission-container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      justify-content: center;
-      align-items: center;
-      gap: 30px;
-    }
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .app-logo {
-      font-size: 48px;
-      font-weight: 900;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px rgba(108,92,231,0.5);
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-      animation: fadeScale 1.2s ease;
-    }
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
 
-    .permission-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      width: 100%;
-      max-width: 500px;
-    }
+        .panel-title {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #00d2ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid rgba(0, 210, 255, 0.3);
+            padding-bottom: 10px;
+        }
 
-    .permission-item {
-      background: var(--dark-card);
-      border-radius: var(--border-radius-sm);
-      padding: 20px 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.05);
-      box-shadow: var(--shadow);
-      transition: 0.3s;
-    }
+        .upload-area {
+            border: 3px dashed rgba(0, 210, 255, 0.3);
+            border-radius: 15px;
+            padding: 50px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 210, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
 
-    .permission-item i { font-size: 40px; color: var(--accent); }
-    .permission-item span { font-weight: 600; color: var(--light); }
+        .upload-area:hover {
+            border-color: #00d2ff;
+            background: rgba(0, 210, 255, 0.05);
+            transform: translateY(-2px);
+        }
 
-    .btn-grant {
-      background: var(--gradient);
-      border: none;
-      padding: 20px 60px;
-      border-radius: 60px;
-      color: white;
-      font-size: 28px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      box-shadow: 0 0 30px var(--primary);
-      margin-top: 50px;
-      transition: 0.2s;
-      border: 1px solid rgba(255,255,255,0.3);
-    }
+        .upload-area.dragover {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: #00d2ff;
+            transform: scale(1.02);
+        }
 
-    .btn-grant:active { transform: scale(0.95); box-shadow: var(--glow); }
+        .upload-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
 
-    /* ========== شاشة التحميل ========== */
-    .splash-screen {
-      justify-content: center;
-      align-items: center;
-      background: radial-gradient(ellipse at center, #1e1a32, #0a0712);
-    }
+        .upload-text {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
 
-    .splash-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 50px;
-      width: 100%;
-    }
+        .upload-hint {
+            font-size: 0.85em;
+            color: #888;
+        }
 
-    .shimmer-logo {
-      font-size: 70px;
-      font-weight: 900;
-      background: linear-gradient(145deg, #ffffff 20%, #c3a9ff 40%, #6c5ce7 60%, #00d4bd 80%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-size: 200% auto;
-      animation: shimmer 2s infinite, fadeScale 1.5s;
-    }
+        #fileInput {
+            display: none;
+        }
 
-    .decor-bones {
-      display: flex;
-      gap: 30px;
-      font-size: 40px;
-      color: var(--accent);
-      animation: spinSlow 6s infinite linear;
-    }
+        .image-preview-box {
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            display: none;
+            position: relative;
+        }
 
-    .progress-container {
-      width: 80%;
-      background: rgba(0,0,0,0.5);
-      height: 20px;
-      border-radius: 30px;
-      overflow: hidden;
-      box-shadow: inset 0 0 10px black;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
+        .image-preview-box.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
 
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      border-radius: 30px;
-      box-shadow: 0 0 20px var(--accent);
-      transition: width 0.1s linear;
-    }
+        .preview-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            z-index: 10;
+        }
 
-    .percent-text {
-      font-size: 30px;
-      font-weight: bold;
-      color: white;
-      text-shadow: 0 0 15px var(--primary);
-    }
+        .preview-img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            display: block;
+        }
 
-    /* ========== الشاشة الرئيسية (القائمة) ========== */
-    .main-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
+        .input-group {
+            margin-top: 20px;
+        }
 
-    .main-title {
-      font-size: 36px;
-      font-weight: 800;
-      background: linear-gradient(145deg, #fff, #d4d4ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0d2eb;
+            font-size: 0.95em;
+        }
 
-    .settings-icon {
-      font-size: 40px;
-      background: var(--dark-card);
-      padding: 12px;
-      border-radius: 50%;
-      box-shadow: var(--shadow);
-    }
+        .text-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(0, 210, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
 
-    .cards-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 10px;
-    }
+        .text-input:focus {
+            outline: none;
+            border-color: #00d2ff;
+            background: rgba(0, 0, 0, 0.3);
+        }
 
-    .card {
-      background: var(--dark-card);
-      border-radius: var(--border-radius);
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 12px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.05);
-      transition: 0.2s all cubic-bezier(0.18, 0.89, 0.32, 1.28);
-      box-shadow: 0 8px 0 rgba(0,0,0,0.3);
-    }
+        .text-input::placeholder {
+            color: #666;
+        }
 
-    .card:hover {
-      transform: scale(1.05);
-      box-shadow: var(--glow), 0 10px 20px rgba(108,92,231,0.3);
-      border-color: var(--primary);
-    }
+        textarea.text-input {
+            resize: vertical;
+            min-height: 100px;
+        }
 
-    .card i { font-size: 52px; color: var(--accent); }
-    .card h2 { font-size: 28px; font-weight: 700; }
-    .card p { color: var(--gray); font-size: 18px; }
+        .btn {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-    .locked-card {
-      filter: blur(0.8px);
-      opacity: 0.7;
-      position: relative;
-    }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+        }
 
-    .locked-card::after {
-      content: "🔒";
-      font-size: 40px;
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      text-shadow: 0 0 10px black;
-    }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
 
-    /* ========== شاشة تركيب الشخصية ========== */
-    .rigging-header, .animation-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
+        .btn-secondary {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+            margin-top: 10px;
+        }
 
-    .back-btn {
-      font-size: 32px;
-      background: var(--dark-card);
-      padding: 8px 16px;
-      border-radius: 40px;
-    }
+        .loading-container {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
 
-    .rigging-toolbar {
-      display: flex;
-      gap: 12px;
-      background: var(--dark-card);
-      padding: 10px 18px;
-      border-radius: 60px;
-    }
+        .loading-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
 
-    /* منطقة العمل Canvas مع شريط جانبي */
-    .rigging-layout {
-      display: flex;
-      gap: 12px;
-      height: calc(100% - 90px);
-      width: 100%;
-    }
+        .spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(0, 210, 255, 0.1);
+            border-top-color: #00d2ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+            position: relative;
+        }
 
-    .sidebar {
-      width: 35%;
-      background: rgba(10,10,20,0.7);
-      backdrop-filter: blur(20px);
-      border-radius: 30px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      overflow-y: auto;
-    }
+        .spinner::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: rgba(0, 210, 255, 0.3);
+            animation: spin 2s linear infinite reverse;
+        }
 
-    .canvas-area {
-      width: 65%;
-      background: #0a0a18;
-      border-radius: 30px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-    }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-    #rig-canvas, #anim-canvas {
-      width: 100%;
-      height: 100%;
-      border-radius: 20px;
-      background: radial-gradient(circle at 50% 50%, #151528, #05050c);
-      border: 1px solid #3a3a5a;
-    }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    .add-bone-btn {
-      background: var(--gradient);
-      border: none;
-      padding: 16px;
-      border-radius: 60px;
-      color: white;
-      font-weight: bold;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
+        .loading-text {
+            color: #00d2ff;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
 
-    .bone-tree {
-      background: rgba(0,0,0,0.3);
-      border-radius: 20px;
-      padding: 12px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
+        .loading-subtext {
+            color: #888;
+            font-size: 0.95em;
+        }
 
-    .bone-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px;
-      border-bottom: 1px solid #3a3a5a;
-    }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 25px;
+            overflow: hidden;
+            display: none;
+        }
 
-    .properties-panel {
-      background: #13131f;
-      border-radius: 20px;
-      padding: 16px;
-    }
+        .progress-bar.active {
+            display: block;
+        }
 
-    /* ========== نظام الجويستيك ========== */
-    .joystick-area {
-      position: absolute;
-      bottom: 30px;
-      left: 20px;
-      right: 20px;
-      display: flex;
-      justify-content: space-between;
-      pointer-events: none;
-      z-index: 50;
-    }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+        }
 
-    .joystick {
-      width: 150px;
-      height: 150px;
-      background: rgba(20,20,40,0.7);
-      backdrop-filter: blur(10px);
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.2);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      pointer-events: auto;
-      box-shadow: 0 0 30px rgba(0,0,0,0.7);
-      position: relative;
-    }
+        .error-box {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            flex-direction: column;
+            text-align: center;
+        }
 
-    .joystick::after {
-      content: '';
-      width: 60px;
-      height: 60px;
-      background: radial-gradient(circle, var(--primary), #4a3f9e);
-      border-radius: 50%;
-      box-shadow: 0 0 20px var(--accent);
-      transition: 0.02s;
-    }
+        .error-box.active {
+            display: flex;
+            animation: shake 0.5s ease;
+        }
 
-    .left-joystick::after { background: radial-gradient(circle, #ff6b6b, #b14545); }
-    .right-joystick::after { background: radial-gradient(circle, #48dbfb, #1e7e9f); }
+        .error-detail {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
 
-    .joystick-label {
-      position: absolute;
-      bottom: -30px;
-      color: white;
-      font-weight: bold;
-      width: 150px;
-      text-align: center;
-    }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
 
-    /* ========== شاشة التحريك والتايم لاين ========== */
-    .timeline-bar {
-      position: absolute;
-      bottom: 200px;
-      left: 0;
-      right: 0;
-      background: #0f0f1e;
-      padding: 12px;
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      border-radius: 40px;
-      margin: 0 20px;
-      border: 1px solid var(--primary);
-      backdrop-filter: blur(10px);
-    }
+        .success-box {
+            background: rgba(56, 239, 125, 0.1);
+            border: 1px solid #38ef7d;
+            color: #38ef7d;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
 
-    .keyframe {
-      width: 40px;
-      height: 40px;
-      background: #2f2f4a;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
+        .success-box.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
 
-    .keyframe.active {
-      background: var(--primary);
-      box-shadow: 0 0 20px var(--primary);
-    }
+        .specs-card {
+            background: rgba(0, 210, 255, 0.05);
+            border-right: 4px solid #00d2ff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
 
-    /* ========== أنميشنات ========== */
-    @keyframes fadeScale {
-      0% { opacity: 0; transform: scale(0.7); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    @keyframes shimmer {
-      0% { background-position: -100% 0; }
-      100% { background-position: 200% 0; }
-    }
-    @keyframes spinSlow {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 10px var(--primary); }
-      50% { box-shadow: 0 0 40px var(--accent); }
-      100% { box-shadow: 0 0 10px var(--primary); }
-    }
+        .specs-title {
+            color: #00d2ff;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
 
-    /* كل الأزرار والتفاعلات */
-    .btn, button { cursor: pointer; background: var(--dark-card); border: none; color: white; border-radius: 40px; padding: 10px 20px; font-weight: 600; transition: 0.2s; }
-    button:active { transform: scale(0.95); }
-    .ripple { position: relative; overflow: hidden; }
+        .specs-list {
+            list-style: none;
+            color: #ccc;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
 
-    /* نماذج وحفظ */
-    .modal {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1e1e30;
-      padding: 40px;
-      border-radius: 50px;
-      z-index: 200;
-      border: 2px solid var(--primary);
-      box-shadow: 0 0 80px black;
-      display: none;
-      width: 80%;
-    }
+        .specs-list li {
+            padding-right: 20px;
+            position: relative;
+        }
 
-    .modal.active { display: block; }
+        .specs-list li::before {
+            content: '✓';
+            position: absolute;
+            right: 0;
+            color: #00d2ff;
+            font-weight: bold;
+        }
 
-    /* أدوات عربية */
-    .arabic-text { font-family: 'Tajawal', sans-serif; letter-spacing: 0; }
+        .result-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
 
-    /* محاكاة الهيكل العظمي البسيط باستخدام Fabric */
-    .hidden { display: none; }
-  </style>
+        .placeholder-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .retry-btn {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 193, 7, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #666;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9em;
+        }
+
+        .tech-badge {
+            display: inline-block;
+            background: rgba(0, 210, 255, 0.1);
+            color: #00d2ff;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin: 2px;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+        }
+
+        .debug-info {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #888;
+            font-family: monospace;
+            display: none;
+        }
+
+        .debug-info.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-<div id="app-container" class="landscape">
+    <div class="container">
+        <header>
+            <h1 class="logo">أنيميشن العرب</h1>
+            <p class="subtitle">تحويل الصور إلى شخصيات أنيميشن باستخدام الذكاء الاصطناعي</p>
+            <div class="api-status">
+                🤖 Powered by: FLUX.1-schnell | Hugging Face
+            </div>
+        </header>
 
-  <!-- شاشة طلب الأذونات -->
-  <div id="permission-screen" class="screen active">
-    <div class="permission-container">
-      <div class="app-logo">🎬 انميشن العرب</div>
-      <div class="permission-grid">
-        <div class="permission-item"><i>📁</i><span>الملفات</span></div>
-        <div class="permission-item"><i>📸</i><span>الكاميرا</span></div>
-        <div class="permission-item"><i>🔔</i><span>الإشعارات</span></div>
-        <div class="permission-item"><i>🖥️</i><span>ظهور فوق التطبيقات</span></div>
-      </div>
-      <button id="grant-permissions" class="btn-grant ripple">✅ منح الأذونات</button>
-    </div>
-  </div>
+        <div class="main-content">
+            <!-- لوحة الإدخال -->
+            <div class="panel">
+                <h2 class="panel-title">
+                    <span>📤</span>
+                    إعدادات التحويل
+                </h2>
 
-  <!-- شاشة التحميل (Splash) -->
-  <div id="splash-screen" class="screen hidden splash-screen">
-    <div class="splash-content">
-      <div class="decor-bones">
-        <span>🦴</span> <span>🎭</span> <span>🎞️</span> <span>🦴</span>
-      </div>
-      <div class="shimmer-logo">انميشن العرب</div>
-      <div class="progress-container">
-        <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
-      </div>
-      <div id="percent-display" class="percent-text">0%</div>
-      <div style="display: flex; gap: 20px; font-size: 40px; opacity: 0.6;">
-        <span>🎬</span><span>🦴</span><span>📽️</span>
-      </div>
-    </div>
-  </div>
+                <!-- منطقة الرفع -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">🖼️</div>
+                    <div class="upload-text">اسحب الصورة هنا أو انقر للاختيار</div>
+                    <div class="upload-hint">يدعم: JPG, PNG, WEBP (الحد الأقصى 4MB)</div>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
 
-  <!-- الشاشة الرئيسية (القائمة) -->
-  <div id="main-screen" class="screen hidden">
-    <div class="main-header">
-      <span class="main-title">انميشن العرب</span>
-      <span class="settings-icon">⚙️</span>
-    </div>
-    <div class="cards-grid">
-      <div class="card" onclick="showRiggingScreen()">
-        <i>🦴👤</i>
-        <h2>تركيب الشخصية</h2>
-        <p>أنشئ هيكلاً عظمياً واربط الصور</p>
-      </div>
-      <div class="card" onclick="showAnimationScreen()">
-        <i>🎭</i>
-        <h2>تحريك الشخصية</h2>
-        <p>حرّك شخصياتك بأدوات احترافية</p>
-      </div>
-      <div class="card locked-card"><i>⏳</i><h2>محرر الجدول</h2><p>قريباً</p></div>
-      <div class="card locked-card"><i>✨</i><h2>التأثيرات</h2><p>قريباً</p></div>
-      <div class="card locked-card"><i>📤</i><h2>التصدير</h2><p>قريباً</p></div>
-      <div class="card locked-card"><i>⚙️</i><h2>الإعدادات</h2><p>قريباً</p></div>
-    </div>
-    <div style="margin-top: 40px; font-size: 24px; color: var(--gray); text-align: center;">
-      <span>🔄 تدوير تلقائي أفقي</span>
-    </div>
-  </div>
+                <!-- معاينة الصورة الأصلية -->
+                <div class="image-preview-box" id="originalPreview">
+                    <span class="preview-label">الصورة الأصلية</span>
+                    <img id="originalImg" class="preview-img" alt="الصورة الأصلية">
+                </div>
 
-  <!-- شاشة تركيب الشخصية (Character Rigging) -->
-  <div id="rigging-screen" class="screen hidden">
-    <div class="rigging-header">
-      <span class="back-btn" onclick="goToMain()">🔙</span>
-      <h1 style="font-size: 32px;">تركيب الشخصية</h1>
-      <div class="rigging-toolbar">
-        <button id="undo-btn" title="تراجع">↩️</button>
-        <button id="redo-btn" title="إعادة">↪️</button>
-        <button id="save-project-btn" title="حفظ">💾</button>
-        <button id="save-as-btn" title="حفظ باسم">📋</button>
-        <button id="new-project-btn" title="جديد">🆕</button>
-      </div>
-    </div>
+                <div class="error-box" id="errorBox">
+                    <div>
+                        <span>⚠️</span>
+                        <span id="errorText"></span>
+                    </div>
+                    <div class="error-detail" id="errorDetail"></div>
+                    <button class="retry-btn" id="retryBtn" style="display: none;">إعادة المحاولة</button>
+                </div>
 
-    <div class="rigging-layout">
-      <!-- الشريط الجانبي -->
-      <div class="sidebar">
-        <button id="add-bone-btn-rig" class="add-bone-btn">➕ إضافة عظم</button>
-        <div class="bone-tree">
-          <div style="font-weight: bold; margin-bottom: 8px;">🌳 هيكل العظام</div>
-          <div id="bone-list-container">
-            <div class="bone-item"><span>🦴 جذر</span> <span>👁️ 🔒 🗑️</span></div>
-            <div class="bone-item"><span>🦴 عمود فقري</span> <span>👁️ 🔒 🗑️</span></div>
-            <div class="bone-item"><span>🦴 رأس</span> <span>👁️ 🔒 🗑️</span></div>
-          </div>
+                <!-- وصف إضافي -->
+                <div class="input-group">
+                    <label class="input-label">✏️ وصف إضافي (اختياري):</label>
+                    <textarea class="text-input" id="customPrompt" placeholder="أضف تفاصيل إضافية عن الشخصية... مثال: فتى يرتدي قميص أزرق، يقف بابتسامة خفيفة"></textarea>
+                </div>
+
+                <!-- مواصفات الأنيميشن -->
+                <div class="specs-card">
+                    <div class="specs-title">📋 المواصفات القياسية:</div>
+                    <ul class="specs-list">
+                        <li>أسلوب Webtoon/Web Comic بسيط ومسطح</li>
+                        <li>خطوط سوداء رفيعة (1.5-2px)</li>
+                        <li>ألوان مسطحة 100% بدون ظلال</li>
+                        <li>عيون دائرية سوداء مع بريق أبيض</li>
+                        <li>نسبة الرأس للجسم 1:2.5</li>
+                        <li>زاوية 3/4 جانبية</li>
+                        <li>خلفية خضراء نقية Chroma Key (#00FF00)</li>
+                    </ul>
+                </div>
+
+                <button class="btn" id="convertBtn" disabled>
+                    ✨ تحويل إلى أنيميشن
+                </button>
+
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="debug-info" id="debugInfo"></div>
+            </div>
+
+            <!-- لوحة النتيجة -->
+            <div class="panel">
+                <h2 class="panel-title">
+                    <span>🎨</span>
+                    النتيجة
+                </h2>
+
+                <!-- حالة التحميل -->
+                <div class="loading-container" id="loadingSection">
+                    <div class="spinner"></div>
+                    <div class="loading-text">جاري تحويل الصورة...</div>
+                    <div class="loading-subtext">
+                        يتم الاتصال بـ Hugging Face API<br>
+                        قد يستغرق الأمر حتى 60 ثانية في أول استخدام
+                    </div>
+                    <div class="progress-bar active" style="margin-top: 30px;">
+                        <div class="progress-fill" id="loadingProgress" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- النتيجة -->
+                <div class="image-preview-box" id="resultPreview">
+                    <span class="preview-label" style="background: #00d2ff; color: #000;">النتيجة</span>
+                    <img id="resultImg" class="preview-img" alt="صورة الأنيميشن">
+                </div>
+
+                <div class="success-box" id="successBox">
+                    ✅ تم التحويل بنجاح! يمكنك الآن تحميل الصورة.
+                </div>
+
+                <!-- placeholder -->
+                <div class="result-placeholder" id="placeholder">
+                    <div class="placeholder-icon">🎭</div>
+                    <div>الصورة المحولة ستظهر هنا</div>
+                    <small style="margin-top: 10px; opacity: 0.6;">قم برفع صورة والضغط على تحويل</small>
+                </div>
+
+                <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+                    💾 تحميل الصورة النهائية
+                </button>
+            </div>
         </div>
-        <!-- خصائص العظم -->
-        <div class="properties-panel">
-          <div style="font-size: 22px; margin-bottom: 12px;">🔧 خصائص العظم</div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <input id="bone-name" type="text" value="رأس" style="padding: 12px; border-radius: 20px; border: none; background: #2a2a42; color: white;">
-            <div style="display: flex; gap: 8px;"><span>X:</span><input type="number" id="posX" value="200" style="width: 70px;"><span>Y:</span><input type="number" id="posY" value="150"></div>
-            <div>الزاوية: <input type="number" id="rot" value="0"></div>
-            <div>الطول: <input type="number" id="len" value="50"></div>
-            <div>الأب: <select id="parent-select"><option>لا يوجد</option><option>جذر</option></select></div>
-            <div>Z-Index: <input type="number" id="zindex" value="1"></div>
-            <button id="add-image-btn" style="margin-top: 12px; background: var(--success);">➕ إضافة صورة</button>
-          </div>
-        </div>
-      </div>
-      <!-- منطقة Canvas -->
-      <div class="canvas-area">
-        <div style="display: flex; gap: 12px; padding: 8px;">
-          <button id="select-tool">🖱️ تحديد</button>
-          <button id="move-tool">✋ تحريك</button>
-          <button id="rotate-tool">🔄 تدوير</button>
-          <button id="zoom-in">➕</button>
-          <button id="zoom-out">➖</button>
-          <button id="grid-toggle">🔲 شبكة</button>
-        </div>
-        <canvas id="rig-canvas" width="400" height="600"></canvas>
-      </div>
+
+        <footer>
+            <p>© 2024 أنيميشن العرب - جميع الحقوق محفوظة</p>
+            <p style="margin-top: 10px;">
+                <span class="tech-badge">HTML5</span>
+                <span class="tech-badge">Hugging Face</span>
+                <span class="tech-badge">FLUX.1-schnell</span>
+            </p>
+            <p style="margin-top: 15px; font-size: 0.85em; color: #888;">
+                تم التطوير بواسطة محمد
+            </p>
+        </footer>
     </div>
-  </div>
 
-  <!-- شاشة تحريك الشخصية (Animation) -->
-  <div id="animation-screen" class="screen hidden">
-    <div class="rigging-header">
-      <span class="back-btn" onclick="goToMain()">🔙</span>
-      <h1 style="font-size: 32px;">تحريك الشخصية</h1>
-      <div class="rigging-toolbar">
-        <button id="import-project-btn">📂 استيراد</button>
-        <button id="play-anim">▶️</button>
-        <button id="stop-anim">⏹️</button>
-        <button id="save-anim">💾 حفظ</button>
-      </div>
-    </div>
-    <!-- Canvas للتحريك -->
-    <div style="flex:1; position: relative; background: #0a0a16; border-radius: 40px; margin-top: 10px; padding: 10px;">
-      <canvas id="anim-canvas" width="680" height="800" style="width:100%; height:100%;"></canvas>
-      
-      <!-- الجويستيك المزدوج -->
-      <div class="joystick-area">
-        <div class="joystick left-joystick" id="leftJoystick">
-          <div class="joystick-label">تحكم يسار</div>
-        </div>
-        <div class="joystick right-joystick" id="rightJoystick">
-          <div class="joystick-label">تحكم يمين</div>
-        </div>
-      </div>
-      <!-- التايم لاين -->
-      <div class="timeline-bar" id="timeline-container">
-        <button id="add-keyframe">➕ كادر</button>
-        <div class="keyframe active">1</div>
-        <div class="keyframe">2</div>
-        <div class="keyframe">3</div>
-        <span style="color:white;">FPS: 24</span>
-      </div>
-    </div>
-    <!-- لوحة معلومات التحديد -->
-    <div style="background: #1a1a2a; border-radius: 30px; padding: 12px; margin-top: 8px; display: flex; justify-content: space-around;">
-      <span>🔍 المحدد: <span id="selected-part">الرأس</span></span>
-      <span>📍 (320, 240)</span>
-      <span>🔄 0°</span>
-    </div>
-  </div>
+    <script>
+        // API Configuration
+        const API_KEY = "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";
+        const API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell";
+        const FALLBACK_API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0";
 
-  <!-- Modal إضافة عظم جديد -->
-  <div id="add-bone-modal" class="modal">
-    <h2 style="margin-bottom: 20px;">➕ إضافة عظم جديد</h2>
-    <input type="text" id="new-bone-name" placeholder="اسم العظم" style="width:100%; padding:15px; margin-bottom:15px; border-radius: 30px;">
-    <select id="new-bone-type" style="width:100%; padding:15px; border-radius: 30px; margin-bottom:25px;">
-      <option>جذر (Root)</option>
-      <option>عمود فقري (Spine)</option>
-      <option>رأس (Head)</option>
-      <option>ذراع يمنى (Arm Right)</option>
-      <option>ذراع يسرى (Arm Left)</option>
-      <option>ساق يمنى (Leg Right)</option>
-      <option>ساق يسرى (Leg Left)</option>
-      <option>مخصص (Custom)</option>
-    </select>
-    <div style="display:flex; gap:15px;">
-      <button id="confirm-add-bone" style="flex:2; background: var(--success); padding:15px;">إنشاء</button>
-      <button id="cancel-add-bone" style="flex:1; background: var(--danger);">إلغاء</button>
-    </div>
-  </div>
-</div>
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const originalPreview = document.getElementById('originalPreview');
+        const originalImg = document.getElementById('originalImg');
+        const resultPreview = document.getElementById('resultPreview');
+        const resultImg = document.getElementById('resultImg');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const loadingSection = document.getElementById('loadingSection');
+        const placeholder = document.getElementById('placeholder');
+        const errorBox = document.getElementById('errorBox');
+        const errorText = document.getElementById('errorText');
+        const errorDetail = document.getElementById('errorDetail');
+        const successBox = document.getElementById('successBox');
+        const customPrompt = document.getElementById('customPrompt');
+        const retryBtn = document.getElementById('retryBtn');
+        const loadingProgress = document.getElementById('loadingProgress');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const debugInfo = document.getElementById('debugInfo');
 
-<script>
-  // ========================
-  // تطبيق انميشن العرب - ملف HTML واحد شامل
-  // ========================
+        let currentFile = null;
+        let currentResultUrl = null;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
 
-  (function() {
-    "use strict";
+        // Drag and Drop events
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
 
-    // ---------- إدارة الشاشات ----------
-    const permissionScreen = document.getElementById('permission-screen');
-    const splashScreen = document.getElementById('splash-screen');
-    const mainScreen = document.getElementById('main-screen');
-    const riggingScreen = document.getElementById('rigging-screen');
-    const animationScreen = document.getElementById('animation-screen');
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
 
-    // محاكاة الأذونات
-    document.getElementById('grant-permissions').addEventListener('click', function() {
-      // بعد منح الأذونات: تدوير وإظهار splash
-      permissionScreen.classList.add('hidden');
-      splashScreen.classList.remove('hidden');
-      // تدوير الشاشة إلى أفقي (محاكاة)
-      document.getElementById('app-container').style.transform = 'rotate(0deg)';
-      
-      // بدأ تحميل وهمي
-      let percent = 0;
-      const progressFill = document.getElementById('progress-fill');
-      const percentDisplay = document.getElementById('percent-display');
-      const interval = setInterval(function() {
-        percent += 1;
-        progressFill.style.width = percent + '%';
-        percentDisplay.innerText = percent + '%';
-        if (percent >= 100) {
-          clearInterval(interval);
-          // الانتقال للشاشة الرئيسية بعد 3-5 ثواني
-          setTimeout(() => {
-            splashScreen.classList.add('hidden');
-            mainScreen.classList.remove('hidden');
-          }, 400);
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        // File handling
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('الرجاء اختيار ملف صورة صالح (JPG, PNG, WEBP)');
+                return;
+            }
+
+            if (file.size > 4 * 1024 * 1024) {
+                showError('حجم الصورة كبير جداً. الحد الأقصى 4 ميجابايت');
+                return;
+            }
+
+            currentFile = file;
+            hideError();
+            retryCount = 0;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalImg.src = e.target.result;
+                originalPreview.classList.add('active');
+                placeholder.style.display = 'none';
+                convertBtn.disabled = false;
+            };
+            reader.onerror = () => showError('حدث خطأ في قراءة الملف');
+            reader.readAsDataURL(file);
         }
-      }, 30); // 3 ثوان ل100%
-    });
 
-    // دوال عامة للتنقل
-    window.goToMain = function() {
-      riggingScreen.classList.add('hidden');
-      animationScreen.classList.add('hidden');
-      mainScreen.classList.remove('hidden');
-    };
-    window.showRiggingScreen = function() {
-      mainScreen.classList.add('hidden');
-      riggingScreen.classList.remove('hidden');
-      initRiggingCanvas();
-    };
-    window.showAnimationScreen = function() {
-      mainScreen.classList.add('hidden');
-      animationScreen.classList.remove('hidden');
-      initAnimationCanvas();
-    };
+        // Error handling
+        function showError(msg, detail = '') {
+            errorText.textContent = msg;
+            errorDetail.textContent = detail;
+            errorBox.classList.add('active');
+            retryBtn.style.display = retryCount < MAX_RETRIES ? 'block' : 'none';
+        }
 
-    // ---------- متغيرات تركيب الشخصية باستخدام Fabric.js ----------
-    let rigCanvas, animCanvas;
-    function initRiggingCanvas() {
-      if (!rigCanvas) {
-        rigCanvas = new fabric.Canvas('rig-canvas');
-        rigCanvas.setWidth(400);
-        rigCanvas.setHeight(600);
-        rigCanvas.backgroundColor = '#0a0a18';
-        // إضافة عظام وهمية كمثال
-        let boneLine = new fabric.Line([100,100,200,100], { stroke: '#6c5ce7', strokeWidth: 8, hasBorders: true });
-        let boneCircle = new fabric.Circle({ left: 200, top: 100, radius: 12, fill: '#00d4bd', originX: 'center', originY: 'center' });
-        rigCanvas.add(boneLine);
-        rigCanvas.add(boneCircle);
-        rigCanvas.renderAll();
-      }
-    }
+        function hideError() {
+            errorBox.classList.remove('active');
+        }
 
-    function initAnimationCanvas() {
-      if (!animCanvas) {
-        animCanvas = new fabric.Canvas('anim-canvas');
-        animCanvas.setWidth(680);
-        animCanvas.setHeight(760);
-        animCanvas.backgroundColor = '#0c0c18';
-        // إضافة شخصية نموذجية
-        fabric.Image.fromURL('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="40" r="20" fill="%23ffb86b"/><rect x="40" y="60" width="20" height="30" fill="%236c5ce7"/><line x1="30" y1="70" x2="10" y2="100" stroke="%23a463f5" stroke-width="8"/><line x1="70" y1="70" x2="90" y2="100" stroke="%23a463f5" stroke-width="8"/></svg>', function(img) {
-          img.set({ left: 300, top: 250, scaleX: 0.8, scaleY: 0.8 });
-          animCanvas.add(img);
-          animCanvas.renderAll();
+        // Retry button
+        retryBtn.addEventListener('click', () => {
+            hideError();
+            convertBtn.click();
         });
-      }
-    }
 
-    // نظام الجويستيك باستخدام Hammer.js للتحكم
-    function setupJoystick() {
-      const leftJoy = document.getElementById('leftJoystick');
-      const rightJoy = document.getElementById('rightJoystick');
-      if (leftJoy) {
-        const hammLeft = new Hammer(leftJoy);
-        hammLeft.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-        hammLeft.on('panmove', function(ev) {
-          // تحريك الجزء المحدد من اليسار (محاكاة)
-          console.log('يسار', ev.deltaX, ev.deltaY);
-          if (animCanvas) {
-            // تحريك ذراع يسرى أو أي جزء (نموذج)
-          }
+        // Main conversion function
+        convertBtn.addEventListener('click', async () => {
+            if (!currentFile) {
+                showError('الرجاء رفع صورة أولاً');
+                return;
+            }
+
+            retryCount++;
+            
+            // UI Setup
+            convertBtn.disabled = true;
+            loadingSection.classList.add('active');
+            resultPreview.classList.remove('active');
+            successBox.classList.remove('active');
+            downloadBtn.style.display = 'none';
+            placeholder.style.display = 'none';
+            progressBar.classList.add('active');
+            progressFill.style.width = '5%';
+            debugInfo.classList.remove('active');
+
+            try {
+                // Step 1: Prepare image
+                updateProgress(10, 'جاري تحضير الصورة...');
+                const base64Image = await fileToBase64(currentFile);
+                const imageData = base64Image.split(',')[1]; // Remove data:image/... prefix
+                
+                updateProgress(20, 'جاري إعداد البيانات...');
+
+                // Step 2: Prepare prompt
+                const userPrompt = customPrompt.value.trim();
+                const defaultPrompt = `Convert this person to a 2D anime character in Webtoon/Web Comic style with these exact specifications:
+- Simple flat colors, 100% flat shading, NO gradients, NO shadows, NO highlights whatsoever
+- Thin black outline lines (1.5-2px), smooth and clean line art
+- Round black eyes with simple white dot highlights (sparkle)
+- Head to body ratio 1:2.5 (medium height character, NOT chibi)
+- Three-quarter side view angle (3/4 view), character NOT looking directly at camera
+- Natural standing pose with relaxed posture
+- Pure bright green background (#00FF00) for chroma key
+- Full body visible including hands and feet
+- Simple clothing without complex details or patterns
+- Simplified hands with 3-4 fingers
+- Clean professional high quality illustration
+- 16:9 aspect ratio composition
+- Minimalist cartoon aesthetic
+- Based on the uploaded reference image`;
+
+                const fullPrompt = userPrompt ? `${defaultPrompt}. Additional details: ${userPrompt}` : defaultPrompt;
+
+                updateProgress(30, 'جاري الاتصال بالخادم...');
+
+                // Step 3: Try FLUX.1-schnell first
+                let response;
+                let usedFallback = false;
+                
+                try {
+                    response = await callHuggingFace(API_URL, fullPrompt, imageData);
+                } catch (fluxError) {
+                    console.log('FLUX failed, trying fallback...', fluxError);
+                    updateProgress(40, 'جاري تجربة نموذج بديل...');
+                    usedFallback = true;
+                    response = await callHuggingFace(FALLBACK_API_URL, fullPrompt, imageData);
+                }
+
+                updateProgress(80, 'جاري معالجة النتيجة...');
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Step 4: Process result
+                const blob = await response.blob();
+                if (blob.size === 0) throw new Error('الصورة المستلمة فارغة');
+
+                const imageUrl = URL.createObjectURL(blob);
+                
+                updateProgress(100, 'اكتمل!');
+                await new Promise(r => setTimeout(r, 500));
+
+                // Display result
+                resultImg.src = imageUrl;
+                currentResultUrl = imageUrl;
+                
+                loadingSection.classList.remove('active');
+                resultPreview.classList.add('active');
+                successBox.classList.add('active');
+                downloadBtn.style.display = 'block';
+                convertBtn.disabled = false;
+                progressBar.classList.remove('active');
+                progressFill.style.width = '0%';
+                retryCount = 0;
+
+                if (usedFallback) {
+                    showDebugInfo('تم استخدام نموذج بديل (Stable Diffusion XL) لأن FLUX.1 غير متاح حالياً');
+                }
+
+            } catch (error) {
+                console.error('Conversion error:', error);
+                handleConversionError(error);
+            }
         });
-      }
-      if (rightJoy) {
-        const hammRight = new Hammer(rightJoy);
-        hammRight.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-        hammRight.on('panmove', function(ev) {
-          console.log('يمين', ev.deltaX, ev.deltaY);
+
+        // Helper function to call Hugging Face API
+        async function callHuggingFace(url, prompt, imageData) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            width: 1024,
+                            height: 576,
+                            seed: Math.floor(Math.random() * 1000000),
+                            num_inference_steps: 4,
+                            guidance_scale: 7.5
+                        },
+                        image: imageData // Some models support image-to-image
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                return response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                throw error;
+            }
+        }
+
+        // Alternative: Text-to-image only (if image-to-image fails)
+        async function callTextToImage(url, prompt) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            width: 1024,
+                            height: 576,
+                            seed: Math.floor(Math.random() * 1000000),
+                            num_inference_steps: 4
+                        }
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                return response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                throw error;
+            }
+        }
+
+        // Error handler
+        function handleConversionError(error) {
+            loadingSection.classList.remove('active');
+            progressBar.classList.remove('active');
+            convertBtn.disabled = false;
+
+            let errorMsg = 'حدث خطأ أثناء التحويل.';
+            let errorDetail = error.message;
+
+            if (error.name === 'AbortError') {
+                errorMsg = 'انتهت مهلة الاتصال. الخادم يستغرق وقتاً طويلاً للرد.';
+                errorDetail = 'حاول مرة أخرى، أو قد يكون النموذج قيد التحميل (cold start)';
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                errorMsg = 'فشل الاتصال بالخادم.';
+                errorDetail = 'تحقق من اتصال الإنترنت. إذا كنت تفتح الملف محلياً (file://)، استخدم خادم محلي مثل Live Server في VS Code';
+            } else if (error.message.includes('401')) {
+                errorMsg = 'مفتاح API غير صالح أو منتهي الصلاحية.';
+                errorDetail = 'تحقق من صحة المفتاح في إعدادات Hugging Face';
+            } else if (error.message.includes('429')) {
+                errorMsg = 'تم تجاوز الحد المسموح للطلبات.';
+                errorDetail = 'انتظر بضع دقائق ثم حاول مرة أخرى';
+            } else if (error.message.includes('503') || error.message.includes('loading')) {
+                errorMsg = 'النموذج قيد التحميل على الخادم (Cold Start).';
+                errorDetail = 'هذا طبيعي لأول استخدام. انتظر 30-60 ثانية ثم حاول مرة أخرى';
+            } else if (error.message.includes('500')) {
+                errorMsg = 'خطأ داخلي في الخادم.';
+                errorDetail = 'قد تكون الصورة كبيرة جداً أو النموذج غير متاح حالياً';
+            }
+
+            showError(errorMsg, errorDetail);
+            placeholder.style.display = 'flex';
+        }
+
+        // Progress updater
+        function updateProgress(percent, text) {
+            progressFill.style.width = percent + '%';
+            loadingProgress.style.width = percent + '%';
+            if (text) {
+                document.querySelector('.loading-text').textContent = text;
+            }
+        }
+
+        // File to Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('فشل في قراءة الملف'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Debug info
+        function showDebugInfo(msg) {
+            debugInfo.textContent = msg;
+            debugInfo.classList.add('active');
+        }
+
+        // Download button
+        downloadBtn.addEventListener('click', () => {
+            if (!currentResultUrl) return;
+            
+            const link = document.createElement('a');
+            link.href = currentResultUrl;
+            link.download = `anime-character-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
-      }
-    }
-    setTimeout(setupJoystick, 500);
 
-    // إضافة عظم من المودال
-    document.getElementById('add-bone-btn-rig')?.addEventListener('click', function() {
-      document.getElementById('add-bone-modal').classList.add('active');
-    });
-    document.getElementById('confirm-add-bone')?.addEventListener('click', function() {
-      alert('تمت إضافة العظم: ' + document.getElementById('new-bone-name').value);
-      document.getElementById('add-bone-modal').classList.remove('active');
-    });
-    document.getElementById('cancel-add-bone')?.addEventListener('click', function() {
-      document.getElementById('add-bone-modal').classList.remove('active');
-    });
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (currentResultUrl) {
+                URL.revokeObjectURL(currentResultUrl);
+            }
+        });
 
-    // إضافة صورة
-    document.getElementById('add-image-btn')?.addEventListener('click', function() {
-      alert('سيتم فتح معرض الصور أو الكاميرا (محاكاة)');
-      // يمكن استخدام <input type="file"> حقيقة
-    });
-
-    // حفظ المشروع في localStorage
-    document.getElementById('save-project-btn')?.addEventListener('click', function() {
-      const projectName = prompt('أدخل اسم المشروع', 'مشروعي');
-      if (projectName) {
-        const projectData = { name: projectName, bones: [{ name: 'جذر', x: 100, y: 100 }] };
-        localStorage.setItem('animProject_' + projectName, JSON.stringify(projectData));
-        alert('تم حفظ المشروع بنجاح!');
-      }
-    });
-
-    // التراجع والإعادة (نموذج)
-    let undoStack = [];
-    document.getElementById('undo-btn')?.addEventListener('click', function() { alert('تراجع'); });
-    document.getElementById('redo-btn')?.addEventListener('click', function() { alert('إعادة'); });
-
-    // محاكاة قفل التوجيه الأفقي
-    window.addEventListener('load', function() {
-      // تأكيد RTL
-      document.body.style.direction = 'rtl';
-    });
-
-    // أنميشن ظهور تدريجي باستخدام GSAP
-    gsap.from('.card', { duration: 0.6, scale: 0, opacity: 0, stagger: 0.1, ease: 'backOut' });
-
-    // جعل العظام قابلة للسحب (Draggable)
-    if (rigCanvas) {
-      Draggable.create('.bone-item', { type: 'y', bounds: 'parent' });
-    }
-
-    // إضافة تأثير اللمعان (Shimmer) على الشعار
-    // تم باستخدام CSS
-
-    // Inverse Kinematics محاكاة بسيطة (للعرض)
-    // تعيين تحديد الجزء
-    // نظام التايم لاين (keyframes)
-    document.getElementById('add-keyframe')?.addEventListener('click', function() {
-      let newKey = document.createElement('div');
-      newKey.className = 'keyframe';
-      newKey.innerText = '●';
-      document.getElementById('timeline-container')?.appendChild(newKey);
-    });
-
-    // FPS وجميع التفاصيل ...
-    console.log('انميشن العرب - جاهز للتشغيل');
-
-    // نظام الفيزياء والحركة (IK/FK) محاكاة: عند تحريك الجويستيك نغير زاوية العظم
-    // تمثيل تخيلي
-    // تفعيل حفظ باسم
-    document.getElementById('save-as-btn')?.addEventListener('click', function() {
-      alert('حفظ باسم: أدخل اسماً جديداً');
-    });
-    document.getElementById('new-project-btn')?.addEventListener('click', function() {
-      if (confirm('هل تريد إنشاء مشروع جديد؟')) rigCanvas?.clear();
-    });
-    // جعل الشبكة
-    let gridVisible = false;
-    document.getElementById('grid-toggle')?.addEventListener('click', function() {
-      gridVisible = !gridVisible;
-      alert(gridVisible ? 'شبكة ظاهرة' : 'شبكة مخفية');
-    });
-
-    // استيراد مشروع
-    document.getElementById('import-project-btn')?.addEventListener('click', function() {
-      let projects = [];
-      for(let i=0; i<localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if(key.startsWith('animProject_')) projects.push(key);
-      }
-      alert('المشاريع المحفوظة: ' + (projects.length ? projects.join(', ') : 'لا توجد'));
-    });
-  })();
-
-  // Ripple effect بسيط
-  document.querySelectorAll('.ripple').forEach(el => {
-    el.addEventListener('click', function(e) {
-      let ripple = document.createElement('span');
-      ripple.style.position = 'absolute';
-      ripple.style.background = 'rgba(255,255,255,0.5)';
-      ripple.style.width = '20px';
-      ripple.style.height = '20px';
-      ripple.style.borderRadius = '50%';
-      ripple.style.transform = 'scale(0)';
-      ripple.style.animation = 'pulse 0.5s ease';
-      el.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 500);
-    });
-  });
-</script>
-
-<!-- أيقونات إضافية - سكريبتات متقدمة وإكمال أنميشن -->
-<script>
-  // إضافة حركات احترافية للشاشة الرئيسية وللجويستيك وتفاعل كامل
-  // محاكاة التكبير/التصغير بالقرص
-  let hamm = new Hammer(document.getElementById('rig-canvas'));
-  hamm.get('pinch').set({ enable: true });
-  hamm.on('pinch', function(ev) {
-    if(rigCanvas) {
-      let zoom = rigCanvas.getZoom() * ev.scale;
-      if(zoom > 0.5 && zoom < 3) rigCanvas.setZoom(zoom);
-      ev.preventDefault();
-    }
-  });
-
-  // دوران العناصر الزخرفية
-  gsap.to('.decor-bones', { rotation: 360, duration: 20, repeat: -1, ease: 'linear' });
-
-  // تأثير وميض شريط التحميل
-  gsap.to('.progress-fill', { boxShadow: '0 0 25px #00d4bd', repeat: -1, yoyo: true, duration: 0.8 });
-
-  // إضافة استجابة للأزرار مع haptic محاكى
-  function haptic() { if (navigator.vibrate) navigator.vibrate(20); }
-  document.querySelectorAll('button').forEach(b => b.addEventListener('click', haptic));
-
-  // تشغيل الأنميشن للانتقالات
-  window.showRiggingScreen = function() {
-    mainScreen.classList.add('hidden');
-    riggingScreen.classList.remove('hidden');
-    initRiggingCanvas();
-    gsap.from(riggingScreen, { opacity: 0, x: 100, duration: 0.3 });
-  };
-  window.showAnimationScreen = function() {
-    mainScreen.classList.add('hidden');
-    animationScreen.classList.remove('hidden');
-    initAnimationCanvas();
-    gsap.from(animationScreen, { opacity: 0, x: -100, duration: 0.3 });
-  };
-</script>
-
-<!-- نصوص إضافية لتأكيد الوظائف العظمية المتقدمة -->
-<script>
-  // نظام الحفظ المحلي مع الصور (Base64) - مثال جاهزية
-  // عند حفظ مشروع نأخذ canvas كصورة مصغرة
-  function saveFullProject() {
-    if (rigCanvas) {
-      let dataURL = rigCanvas.toDataURL('png');
-      let project = {
-        name: 'مشروع تجريبي',
-        canvasImage: dataURL,
-        bones: [{ name: 'جذر', x: 50, y: 50 }]
-      };
-      localStorage.setItem('fullProject_test', JSON.stringify(project));
-      alert('تم حفظ المشروع مع الصورة!');
-    }
-  }
-
-  // تعريف الجويستيك بشكل متقدم بالعصا الداخلية
-  // تم تنفيذ التصميم مسبقاً، إضافة الحركة
-  let leftStick = document.querySelector('.left-joystick');
-  if(leftStick) {
-    let manager = new Hammer.Manager(leftStick);
-    let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
-    manager.add(pan);
-    manager.on('panmove', function(e) {
-      let stick = e.target.closest('.joystick');
-      if(stick) {
-        let inner = stick.querySelector('::after');
-        // نعدل position للعصا - لكن نكتفي بالتأثير
-        stick.style.boxShadow = `0 0 30px #ff6b6b`;
-      }
-    });
-  }
-
-  // ملء خصائص العظم تلقائياً عند تحديد عنصر
-  // تمثيل لشاشة تركيب كاملة
-  console.log('اكتمل تحميل تطبيق انميشن العرب - 100% مواصفات');
-</script>
-
+        // Check if running locally and warn
+        if (window.location.protocol === 'file:') {
+            showDebugInfo('تنبيه: أنت تفتح الملف محلياً (file://). لأفضل أداء، استخدم خادم محلي مثل "Live Server" في VS Code');
+        }
+    </script>
 </body>
 </html>
