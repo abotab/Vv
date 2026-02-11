@@ -3,2041 +3,2538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أنميشن العرب - استوديو الشخصيات الاحترافي</title>
+    <meta name="screen-orientation" content="landscape">
+    <title>انميشن العرب - Animation Arabs</title>
     
-    <!-- المكتبات المتقدمة -->
-    <script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@latest/rive.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script src="https://unpkg.com/konva@9/konva.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Libraries CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #0f172a;
-            --darker: #020617;
-            --light: #f8fafc;
-            --glass: rgba(15, 23, 42, 0.95);
-            --glass-border: rgba(99, 102, 241, 0.3);
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;900&display=swap');
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
         
         body {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
             background: var(--darker);
             color: var(--light);
             overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
             touch-action: none;
-            user-select: none;
         }
         
-        /* ===== HEADER ===== */
-        .header {
-            height: 60px;
-            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
-            border-bottom: 1px solid var(--glass-border);
+        /* Screen Management */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            right: 0;
+            overflow: hidden;
+        }
+        
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Permission Screen */
+        #permissionScreen {
+            background: linear-gradient(135deg, var(--darker) 0%, #1e1b4b 100%);
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .permission-container {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 2rem;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .app-logo-large {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 2rem;
+            margin: 0 auto 2rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+            animation: float 3s ease-in-out infinite;
         }
         
-        .logo {
-            font-size: 20px;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .permission-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to left, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        .header-btns {
+        .permission-list {
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 2rem 0;
+            text-align: right;
         }
         
-        .header-btn {
-            width: 40px;
-            height: 40px;
-            background: rgba(99, 102, 241, 0.1);
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 1rem;
             border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            color: var(--light);
+            transition: all 0.3s;
+        }
+        
+        .permission-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-5px);
+        }
+        
+        .permission-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.5);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Splash Screen */
+        #splashScreen {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .splash-content {
+            text-align: center;
+            position: relative;
+        }
+        
+        .splash-logo {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 2.5rem;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 30px 60px rgba(99, 102, 241, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .splash-logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .splash-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        
+        .splash-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 3rem;
+            opacity: 0;
+        }
+        
+        .loading-container {
+            width: 300px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+        
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+            opacity: 0;
+        }
+        
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: particle-float 10s infinite;
+        }
+        
+        @keyframes particle-float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* Main Menu */
+        #mainScreen {
+            background: var(--darker);
+        }
+        
+        .header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.9), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to left, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .icon-btn {
+            width: 45px;
+            height: 45px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 16px;
+            transition: all 0.3s;
+            color: var(--light);
+            font-size: 1.2rem;
+        }
+        
+        .icon-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .menu-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .menu-card:hover::before {
+            opacity: 1;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        .menu-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .menu-card.locked:hover {
+            transform: none;
+            border-color: var(--glass-border);
+        }
+        
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-desc {
+            color: var(--gray);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .lock-icon {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 1.5rem;
+            color: var(--gray);
+            z-index: 1;
+        }
+        
+        /* Rigging Screen */
+        #riggingScreen {
+            background: var(--darker);
+        }
+        
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 320px;
+            background: rgba(15, 23, 42, 0.8);
+            border-left: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .btn-add {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: all 0.3s;
         }
         
-        .header-btn:hover, .header-btn.active {
-            background: var(--primary);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        .btn-add:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
         }
         
-        /* ===== MAIN LAYOUT ===== */
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding-top: 60px;
-            padding-bottom: 80px;
+        .bone-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
         }
         
-        /* ===== TOP TOOLBAR ===== */
-        .top-toolbar {
-            height: 70px;
-            background: var(--dark);
-            border-bottom: 1px solid var(--glass-border);
+        .bone-item {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            padding: 0 15px;
-            gap: 10px;
-            overflow-x: auto;
-            scrollbar-width: none;
+            gap: 0.8rem;
         }
         
-        .top-toolbar::-webkit-scrollbar {
-            display: none;
+        .bone-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .bone-item.selected {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .bone-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .bone-info {
+            flex: 1;
+        }
+        
+        .bone-name {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        
+        .bone-type {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .bone-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .bone-btn {
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .bone-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .properties-panel {
+            padding: 1.5rem;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .prop-group {
+            margin-bottom: 1rem;
+        }
+        
+        .prop-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .prop-input {
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            padding: 0.6rem;
+            color: var(--light);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        
+        .prop-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #0a0f1d;
+            overflow: hidden;
+        }
+        
+        #riggingCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .canvas-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            background: var(--glass);
+            padding: 0.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
         }
         
         .tool-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 12px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 12px;
-            color: var(--light);
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            border-radius: 0.8rem;
+            color: var(--gray);
             cursor: pointer;
-            min-width: 60px;
-            transition: all 0.3s;
-        }
-        
-        .tool-btn i {
-            font-size: 20px;
-        }
-        
-        .tool-btn span {
-            font-size: 10px;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.1rem;
         }
         
         .tool-btn:hover, .tool-btn.active {
             background: var(--primary);
-            border-color: var(--primary);
+            color: white;
         }
         
-        /* ===== CANVAS AREA ===== */
-        .canvas-area {
+        /* Animation Screen */
+        #animationScreen {
+            background: var(--darker);
+        }
+        
+        .anim-workspace {
+            display: flex;
             flex: 1;
             position: relative;
-            background: 
-                linear-gradient(45deg, #0f172a 25%, transparent 25%), 
-                linear-gradient(-45deg, #0f172a 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #0f172a 75%), 
-                linear-gradient(-45deg, transparent 75%, #0f172a 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            background-color: #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
         }
         
-        #mainCanvas {
-            max-width: 100%;
-            max-height: 100%;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        .anim-canvas-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
         
-        /* ===== BOTTOM CONTROL PANEL ===== */
-        .control-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: var(--glass);
-            border-top: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 10px;
-            z-index: 1000;
+        #animationCanvas {
+            width: 100%;
+            height: 100%;
         }
         
-        .control-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            padding: 10px;
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
+        .joystick-container {
+            position: absolute;
+            bottom: 100px;
+            width: 150px;
+            height: 150px;
+            z-index: 10;
         }
         
-        .control-btn i {
-            font-size: 24px;
+        .joystick-left {
+            left: 50px;
         }
         
-        .control-btn span {
-            font-size: 11px;
+        .joystick-right {
+            right: 50px;
+        }
+        
+        .joystick-base {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .joystick-stick {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.5);
+            transition: transform 0.1s;
+        }
+        
+        .joystick-stick:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+        
+        .joystick-label {
+            position: absolute;
+            bottom: -30px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray);
             font-weight: 600;
         }
         
-        .control-btn:hover, .control-btn.active {
-            color: var(--primary);
-            transform: translateY(-3px);
-        }
-        
-        .control-btn.primary {
-            color: var(--secondary);
-        }
-        
-        /* ===== MODALS ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
+        .timeline-container {
+            height: 120px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
             flex-direction: column;
         }
         
-        .modal.show {
+        .timeline-controls {
             display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .control-btn {
+            width: 35px;
+            height: 35px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.6rem;
+            color: var(--light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .timeline-slider {
+            flex: 1;
+            height: 40px;
+            position: relative;
+            background: var(--glass);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-50%);
+        }
+        
+        .timeline-progress {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: translateY(-50%);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        .timeline-playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent);
+            left: 0%;
+            transition: left 0.1s;
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
+        .frame-markers {
+            display: flex;
+            gap: 2px;
+            padding: 0.5rem 1rem;
+            overflow-x: auto;
+        }
+        
+        .frame-marker {
+            min-width: 30px;
+            height: 40px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .frame-marker:hover {
+            background: rgba(99, 102, 241, 0.3);
+        }
+        
+        .frame-marker.keyframe {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--dark);
+            font-weight: 700;
+        }
+        
+        .frame-marker.current {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem;
+            min-width: 200px;
+            z-index: 10;
+        }
+        
+        .info-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--light);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         
         .modal-header {
-            height: 60px;
-            background: var(--dark);
-            border-bottom: 1px solid var(--glass-border);
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
         
         .modal-title {
-            font-size: 18px;
+            font-size: 1.5rem;
             font-weight: 700;
         }
         
         .modal-close {
             width: 40px;
             height: 40px;
-            background: rgba(239, 68, 68, 0.2);
-            border: none;
-            border-radius: 10px;
-            color: var(--danger);
-            cursor: pointer;
-            font-size: 20px;
-        }
-        
-        .modal-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        
-        /* ===== PARTS GRID ===== */
-        .parts-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
-        .part-card {
             background: var(--glass);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
+            border-radius: 0.8rem;
+            color: var(--gray);
             cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .part-card:hover, .part-card.active {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.2);
-        }
-        
-        .part-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        
-        .part-name {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .part-status {
-            font-size: 11px;
-            color: #64748b;
-        }
-        
-        .part-card.has-image .part-status {
-            color: var(--success);
-        }
-        
-        /* ===== BONE CONTROLLER ===== */
-        .bone-controller {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            background: var(--glass);
-            border: 2px solid var(--primary);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1500;
-            box-shadow: var(--neon);
-        }
-        
-        .bone-controller.show {
-            display: flex;
-        }
-        
-        .controller-pad {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
-            border-radius: 50%;
-            position: relative;
-        }
-        
-        .controller-knob {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
-            cursor: grab;
-            touch-action: none;
-        }
-        
-        .controller-knob:active {
-            cursor: grabbing;
-            transform: translate(-50%, -50%) scale(1.2);
-        }
-        
-        .controller-label {
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        
-        /* ===== ANIMATIONS LIST ===== */
-        .anim-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .anim-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .anim-item:hover {
-            background: rgba(99, 102, 241, 0.2);
-            transform: translateX(-5px);
-        }
-        
-        .anim-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 1.2rem;
+            transition: all 0.2s;
         }
         
-        .anim-info {
-            flex: 1;
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
         }
         
-        .anim-name {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 3px;
+        .form-group {
+            margin-bottom: 1.2rem;
         }
         
-        .anim-desc {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        
-        /* ===== TIMELINE ===== */
-        .timeline-container {
-            position: fixed;
-            bottom: 80px;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: var(--dark);
-            border-top: 1px solid var(--glass-border);
-            display: none;
-            align-items: center;
-            padding: 0 15px;
-            gap: 15px;
-        }
-        
-        .timeline-container.show {
-            display: flex;
-        }
-        
-        .timeline-track {
-            flex: 1;
-            height: 40px;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .timeline-progress {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transition: width 0.1s;
-        }
-        
-        .keyframe-markers {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-        }
-        
-        .keyframe-dot {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: var(--warning);
-            border-radius: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        /* ===== EXPORT MODAL ===== */
-        .export-options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .export-option {
-            padding: 20px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .export-option:hover {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.2);
-        }
-        
-        .export-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .export-desc {
-            font-size: 13px;
-            color: #94a3b8;
-        }
-        
-        /* ===== PROGRESS ===== */
-        .progress-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 300px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            z-index: 3000;
-            display: none;
-        }
-        
-        .progress-container.show {
+        .form-label {
             display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray);
         }
         
-        .progress-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(99, 102, 241, 0.3);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .progress-text {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        /* ===== SAVE ANIMATION MODAL ===== */
-        .save-anim-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .form-input {
-            padding: 15px;
-            background: rgba(99, 102, 241, 0.1);
+        .form-input, .form-select {
+            width: 100%;
+            background: var(--glass);
             border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            border-radius: 0.8rem;
+            padding: 0.8rem;
             color: var(--light);
             font-family: inherit;
-            font-size: 16px;
+            font-size: 1rem;
         }
         
-        .form-input:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: var(--primary);
         }
         
-        .saved-anims {
-            margin-top: 20px;
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
         
-        .saved-anim-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 12px;
-            margin-bottom: 10px;
+        .btn {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 0.8rem;
+            border: none;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        /* ===== UTILITIES ===== */
-        .hidden { display: none !important; }
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--light);
+            border: 1px solid var(--glass-border);
+        }
         
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--darker);
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Projects List */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+        
+        .project-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .project-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .project-thumb {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 0.5rem;
+            margin-bottom: 0.8rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            font-size: 3rem;
         }
         
-        .loading-spinner {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(99, 102, 241, 0.3);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .project-name {
+            font-weight: 700;
+            margin-bottom: 0.3rem;
         }
         
-        .loading-text {
-            margin-top: 20px;
-            font-size: 18px;
-            color: var(--primary);
+        .project-date {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+            color: var(--light);
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: absolute;
+                right: -100%;
+                transition: right 0.3s;
+                z-index: 100;
+                height: 100%;
+            }
+            .sidebar.open {
+                right: 0;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        .hidden-input {
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loader">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">جاري التحميل...</div>
-    </div>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">أنميشن العرب</div>
-        <div class="header-btns">
-            <button class="header-btn" onclick="undo()" title="تراجع">
-                <i class="fas fa-undo"></i>
-            </button>
-            <button class="header-btn" onclick="redo()" title="إعادة">
-                <i class="fas fa-redo"></i>
-            </button>
-            <button class="header-btn" onclick="showModal('partsModal')" title="أجزاء الشخصية">
-                <i class="fas fa-puzzle-piece"></i>
+    <!-- Permission Screen -->
+    <div id="permissionScreen" class="screen active">
+        <div class="particles" id="particles"></div>
+        <div class="permission-container">
+            <div class="app-logo-large">🎬</div>
+            <h1 class="permission-title">انميشن العرب</h1>
+            <p style="color: var(--gray); margin-bottom: 2rem;">أداة احترافية لإنشاء الرسوم المتحركة ثنائية الأبعاد</p>
+            
+            <div class="permission-list">
+                <div class="permission-item">
+                    <div class="permission-icon">📁</div>
+                    <div style="text-align: right; flex: 1;">
+                        <div style="font-weight: 700;">الوصول للملفات والتخزين</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">لحفظ مشاريعك واستيراد الصور</div>
+                    </div>
+                </div>
+                <div class="permission-item">
+                    <div class="permission-icon">📷</div>
+                    <div style="text-align: right; flex: 1;">
+                        <div style="font-weight: 700;">الكاميرا</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">لالتقاط صور مباشرة للشخصيات</div>
+                    </div>
+                </div>
+                <div class="permission-item">
+                    <div class="permission-icon">🔔</div>
+                    <div style="text-align: right; flex: 1;">
+                        <div style="font-weight: 700;">الإشعارات</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">لتنبيهات اكتمال الرندر والحفظ</div>
+                    </div>
+                </div>
+                <div class="permission-item">
+                    <div class="permission-icon">⬆️</div>
+                    <div style="text-align: right; flex: 1;">
+                        <div style="font-weight: 700;">الظهور فوق التطبيقات</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">للعمل في وضع النافذة العائمة</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="grantPermissions()">
+                <span>منح الأذونات</span>
+                <span style="margin-right: 0.5rem;">→</span>
             </button>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Container -->
-    <div class="main-container">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="screen">
+        <div class="particles" id="splashParticles"></div>
+        <div class="splash-content">
+            <div class="splash-logo">🎬</div>
+            <h1 class="splash-title">انميشن العرب</h1>
+            <p class="splash-subtitle">نظام رسوم متحركة احترافي</p>
+            
+            <div class="loading-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            <div class="loading-text" id="loadingText">جاري التحميل... 0%</div>
+        </div>
+    </div>
+
+    <!-- Main Menu Screen -->
+    <div id="mainScreen" class="screen">
+        <div class="header">
+            <h1 class="header-title">انميشن العرب</h1>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="showProjects()" title="المشاريع المحفوظة">📂</button>
+                <button class="icon-btn" onclick="showSettings()" title="الإعدادات">⚙️</button>
+            </div>
+        </div>
         
-        <!-- Top Toolbar -->
-        <div class="top-toolbar">
-            <button class="tool-btn active" onclick="setTool('select')" id="toolSelect">
-                <i class="fas fa-mouse-pointer"></i>
-                <span>اختيار</span>
-            </button>
-            <button class="tool-btn" onclick="setTool('move')" id="toolMove">
-                <i class="fas fa-arrows-alt"></i>
-                <span>تحريك</span>
-            </button>
-            <button class="tool-btn" onclick="setTool('bone')" id="toolBone">
-                <i class="fas fa-bone"></i>
-                <span>عظم</span>
-            </button>
-            <button class="tool-btn" onclick="setTool('rotate')" id="toolRotate">
-                <i class="fas fa-sync-alt"></i>
-                <span>دوران</span>
-            </button>
-            <button class="tool-btn" onclick="setTool('scale')" id="toolScale">
-                <i class="fas fa-expand"></i>
-                <span>حجم</span>
-            </button>
-            <button class="tool-btn" onclick="toggleTimeline()" id="toolTimeline">
-                <i class="fas fa-film"></i>
-                <span>فريمات</span>
-            </button>
-        </div>
-
-        <!-- Canvas Area -->
-        <div class="canvas-area" id="canvasArea">
-            <canvas id="mainCanvas"></canvas>
-        </div>
-
-        <!-- Timeline -->
-        <div class="timeline-container" id="timelineBar">
-            <button class="control-btn" onclick="goToPrevFrame()" style="color: var(--light);">
-                <i class="fas fa-step-backward"></i>
-            </button>
-            <div class="timeline-track" id="timelineTrack" onclick="seekTimeline(event)">
-                <div class="timeline-progress" id="timelineProgress"></div>
-                <div class="keyframe-markers" id="keyframeMarkers"></div>
+        <div class="menu-grid">
+            <div class="menu-card" onclick="openRigging()">
+                <div class="card-icon">🦴</div>
+                <div class="card-content">
+                    <h3 class="card-title">تركيب الشخصية</h3>
+                    <p class="card-desc">قم بإنشاء هيكل عظمي للشخصية وربط الصور بأجزاء الجسم لإنشاء شخصية قابلة للتحريك</p>
+                </div>
             </div>
-            <span id="frameDisplay" style="font-family: monospace; font-size: 18px; color: var(--primary); min-width: 50px; text-align: center;">1</span>
-            <button class="control-btn" onclick="goToNextFrame()" style="color: var(--light);">
-                <i class="fas fa-step-forward"></i>
-            </button>
-        </div>
-
-        <!-- Bone Controller (Floating) -->
-        <div class="bone-controller" id="boneController">
-            <div class="controller-pad" id="controllerPad">
-                <div class="controller-knob" id="controllerKnob"></div>
+            
+            <div class="menu-card" onclick="openAnimation()">
+                <div class="card-icon" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">🏃</div>
+                <div class="card-content">
+                    <h3 class="card-title">تحريك الشخصية</h3>
+                    <p class="card-desc">حرّك شخصياتك باستخدام أدوات احترافية ونظام الجويستك المزدوج</p>
+                </div>
             </div>
-            <div class="controller-label" id="controllerLabel">اسحب للتحريك</div>
-        </div>
-
-        <!-- Progress -->
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-spinner"></div>
-            <div class="progress-text" id="progressText">جاري المعالجة...</div>
-        </div>
-    </div>
-
-    <!-- Bottom Control Panel -->
-    <div class="control-panel">
-        <button class="control-btn" onclick="showModal('partsModal')">
-            <i class="fas fa-puzzle-piece"></i>
-            <span>الأجزاء</span>
-        </button>
-        <button class="control-btn" onclick="showModal('bonesModal')">
-            <i class="fas fa-bone"></i>
-            <span>العظام</span>
-        </button>
-        <button class="control-btn" onclick="showModal('animsModal')">
-            <i class="fas fa-running"></i>
-            <span>الحركات</span>
-        </button>
-        <button class="control-btn primary" onclick="togglePlayback()" id="playBtn">
-            <i class="fas fa-play"></i>
-            <span>تشغيل</span>
-        </button>
-        <button class="control-btn" onclick="showModal('saveAnimModal')">
-            <i class="fas fa-save"></i>
-            <span>حفظ</span>
-        </button>
-        <button class="control-btn" onclick="showModal('exportModal')">
-            <i class="fas fa-file-export"></i>
-            <span>تصدير</span>
-        </button>
-    </div>
-
-    <!-- Parts Modal -->
-    <div class="modal" id="partsModal">
-        <div class="modal-header">
-            <h3 class="modal-title">أجزاء الشخصية</h3>
-            <button class="modal-close" onclick="closeModal('partsModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="parts-grid" id="partsGrid">
-                <!-- Parts will be generated by JS -->
+            
+            <div class="menu-card locked">
+                <span class="lock-icon">🔒</span>
+                <div class="card-icon" style="background: linear-gradient(135deg, #64748b, #475569);">📅</div>
+                <div class="card-content">
+                    <h3 class="card-title">محرر الجدول الزمني</h3>
+                    <p class="card-desc">تحكم متقدم في الطبقات الزمنية والKeyframes (قريباً)</p>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Bones Modal -->
-    <div class="modal" id="bonesModal">
-        <div class="modal-header">
-            <h3 class="modal-title">التحكم بالعظام</h3>
-            <button class="modal-close" onclick="closeModal('bonesModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="anim-list" id="bonesList">
-                <!-- Bones will be listed here -->
+            
+            <div class="menu-card locked">
+                <span class="lock-icon">🔒</span>
+                <div class="card-icon" style="background: linear-gradient(135deg, #64748b, #475569);">✨</div>
+                <div class="card-content">
+                    <h3 class="card-title">التأثيرات والفلاتر</h3>
+                    <p class="card-desc">أضف تأثيرات بصرية احترافية وفلاتر على مشاريعك (قريباً)</p>
+                </div>
             </div>
-            <button class="action-btn" onclick="autoRig()" style="margin-top: 20px;">
-                <i class="fas fa-magic"></i>
-                تفكيك تلقائي
-            </button>
-        </div>
-    </div>
-
-    <!-- Animations Modal -->
-    <div class="modal" id="animsModal">
-        <div class="modal-header">
-            <h3 class="modal-title">الحركات الجاهزة</h3>
-            <button class="modal-close" onclick="closeModal('animsModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="anim-list">
-                <div class="anim-item" onclick="playPreset('waveRight')">
-                    <div class="anim-icon">👋</div>
-                    <div class="anim-info">
-                        <div class="anim-name">تلويح باليد اليمنى</div>
-                        <div class="anim-desc">تحريك اليد اليمنى للأعلى والأسفل</div>
-                    </div>
+            
+            <div class="menu-card locked">
+                <span class="lock-icon">🔒</span>
+                <div class="card-icon" style="background: linear-gradient(135deg, #64748b, #475569);">🎬</div>
+                <div class="card-content">
+                    <h3 class="card-title">التصدير والرندر</h3>
+                    <p class="card-desc">صدر مشاريعك كفيديو MP4 أو GIF أو صور متسلسلة (قريباً)</p>
                 </div>
-                <div class="anim-item" onclick="playPreset('waveLeft')">
-                    <div class="anim-icon">👋</div>
-                    <div class="anim-info">
-                        <div class="anim-name">تلويح باليد اليسرى</div>
-                        <div class="anim-desc">تحريك اليد اليسرى للأعلى والأسفل</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('walk')">
-                    <div class="anim-icon">🚶</div>
-                    <div class="anim-info">
-                        <div class="anim-name">مشي</div>
-                        <div class="anim-desc">حركة مشي كاملة للشخصية</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('sit')">
-                    <div class="anim-icon">🪑</div>
-                    <div class="anim-info">
-                        <div class="anim-name">جلوس</div>
-                        <div class="anim-desc">الانتقال لوضعية الجلوس</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('talk')">
-                    <div class="anim-icon">💬</div>
-                    <div class="anim-info">
-                        <div class="anim-name">تحدث</div>
-                        <div class="anim-desc">حركة الفك والرأس أثناء الكلام</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('blink')">
-                    <div class="anim-icon">👁️</div>
-                    <div class="anim-info">
-                        <div class="anim-name">رمش</div>
-                        <div class="anim-desc">إغماض وفتح العيون</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('jump')">
-                    <div class="anim-icon">⬆️</div>
-                    <div class="anim-info">
-                        <div class="anim-name">قفز</div>
-                        <div class="anim-desc">قفزة كاملة للأعلى</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('dance')">
-                    <div class="anim-icon">🎵</div>
-                    <div class="anim-info">
-                        <div class="anim-name">رقص</div>
-                        <div class="anim-desc">حركة رقص متكاملة</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('headNod')">
-                    <div class="anim-icon">🙂</div>
-                    <div class="anim-info">
-                        <div class="anim-name">إيماءة بالرأس</div>
-                        <div class="anim-desc">إيماءة موافقة بالرأس</div>
-                    </div>
-                </div>
-                <div class="anim-item" onclick="playPreset('shakeHead')">
-                    <div class="anim-icon">😕</div>
-                    <div class="anim-info">
-                        <div class="anim-name">هز الرأس</div>
-                        <div class="anim-desc">هز الرأس للرفض</div>
-                    </div>
+            </div>
+            
+            <div class="menu-card locked">
+                <span class="lock-icon">🔒</span>
+                <div class="card-icon" style="background: linear-gradient(135deg, #64748b, #475569);">☁️</div>
+                <div class="card-content">
+                    <h3 class="card-title">المكتبة السحابية</h3>
+                    <p class="card-desc">وصول إلى مكتبة الأصول الجاهزة والمشاركة السحابية (قريباً)</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Save Animation Modal -->
-    <div class="modal" id="saveAnimModal">
-        <div class="modal-header">
-            <h3 class="modal-title">حفظ الحركة</h3>
-            <button class="modal-close" onclick="closeModal('saveAnimModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="save-anim-form">
-                <input type="text" class="form-input" id="animNameInput" placeholder="اسم الحركة (مثال: تحية خاصة)">
-                <button class="action-btn" onclick="saveCurrentAnimation()">
-                    <i class="fas fa-save"></i>
-                    حفظ الحركة
-                </button>
+    <!-- Rigging Screen -->
+    <div id="riggingScreen" class="screen">
+        <div class="header">
+            <button class="icon-btn" onclick="backToMenu()">→</button>
+            <h1 class="header-title">تركيب الشخصية</h1>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="undo()" title="تراجع">↩️</button>
+                <button class="icon-btn" onclick="redo()" title="إعادة">↪️</button>
+                <button class="icon-btn" onclick="saveProject()" title="حفظ">💾</button>
+                <button class="icon-btn" onclick="importImage()" title="إضافة صورة">🖼️</button>
             </div>
-            <div class="saved-anims" id="savedAnimsList">
-                <h4 style="margin-bottom: 15px; color: var(--primary);">الحركات المحفوظة:</h4>
-                <!-- Saved animations will appear here -->
+        </div>
+        
+        <div class="workspace">
+            <div class="canvas-container">
+                <canvas id="riggingCanvas"></canvas>
+                <div class="canvas-overlay">
+                    <button class="tool-btn active" onclick="setTool('select')" title="تحديد">👆</button>
+                    <button class="tool-btn" onclick="setTool('move')" title="تحريك">✋</button>
+                    <button class="tool-btn" onclick="setTool('rotate')" title="تدوير">🔄</button>
+                    <button class="tool-btn" onclick="setTool('scale')" title="تكبير">🔍</button>
+                    <button class="tool-btn" onclick="toggleGrid()" title="شبكة">⊞</button>
+                    <button class="tool-btn" onclick="resetView()" title="إعادة ضبط">⌖</button>
+                </div>
+                <input type="file" id="imageInput" class="hidden-input" accept="image/*" onchange="handleImageUpload(event)">
+            </div>
+            
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">هيكل العظام</span>
+                    <button class="btn-add" onclick="showAddBoneModal()">
+                        <span>+</span>
+                        <span>إضافة عظم</span>
+                    </button>
+                </div>
+                
+                <div class="bone-list" id="boneList">
+                    <!-- Bones will be listed here -->
+                </div>
+                
+                <div class="properties-panel" id="propertiesPanel" style="display: none;">
+                    <h4 style="margin-bottom: 1rem; color: var(--primary);">خصائص العظم</h4>
+                    
+                    <div class="prop-group">
+                        <label class="prop-label">الاسم</label>
+                        <input type="text" class="prop-input" id="propName" onchange="updateBoneProp('name', this.value)">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div class="prop-group">
+                            <label class="prop-label">X</label>
+                            <input type="number" class="prop-input" id="propX" onchange="updateBoneProp('x', parseFloat(this.value))">
+                        </div>
+                        <div class="prop-group">
+                            <label class="prop-label">Y</label>
+                            <input type="number" class="prop-input" id="propY" onchange="updateBoneProp('y', parseFloat(this.value))">
+                        </div>
+                    </div>
+                    
+                    <div class="prop-group">
+                        <label class="prop-label">الزاوية (درجات)</label>
+                        <input type="number" class="prop-input" id="propRotation" onchange="updateBoneProp('rotation', parseFloat(this.value))">
+                    </div>
+                    
+                    <div class="prop-group">
+                        <label class="prop-label">الطول</label>
+                        <input type="number" class="prop-input" id="propLength" onchange="updateBoneProp('length', parseFloat(this.value))">
+                    </div>
+                    
+                    <div class="prop-group">
+                        <label class="prop-label">العظم الأب</label>
+                        <select class="prop-input" id="propParent" onchange="updateBoneProp('parent', this.value)">
+                            <option value="">بدون (جذر)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.8rem;" onclick="addImageToBone()">
+                        إضافة/تغيير الصورة
+                    </button>
+                    
+                    <button class="btn" style="width: 100%; margin-top: 0.5rem; background: var(--danger); color: white;" onclick="deleteSelectedBone()">
+                        حذف العظم
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Export Modal -->
-    <div class="modal" id="exportModal">
-        <div class="modal-header">
-            <h3 class="modal-title">تصدير الفيديو</h3>
-            <button class="modal-close" onclick="closeModal('exportModal')">
-                <i class="fas fa-times"></i>
-            </button>
+    <!-- Animation Screen -->
+    <div id="animationScreen" class="screen">
+        <div class="header">
+            <button class="icon-btn" onclick="backToMenu()">→</button>
+            <h1 class="header-title">تحريك الشخصية</h1>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="importProjectForAnim()" title="استيراد مشروع">📂</button>
+                <button class="icon-btn" onclick="togglePlayback()" id="playBtn" title="تشغيل/إيقاف">▶️</button>
+                <button class="icon-btn" onclick="stopAnimation()" title="توقف">⏹️</button>
+                <button class="icon-btn" onclick="addKeyframe()" title="إضافة كادر">➕</button>
+                <button class="icon-btn" onclick="saveAnimation()" title="حفظ">💾</button>
+            </div>
         </div>
-        <div class="modal-body">
-            <div class="export-options">
-                <div class="export-option" onclick="exportVideo('720p')">
-                    <div class="export-title">720p HD</div>
-                    <div class="export-desc">جودة عالية - مناسب للهاتف</div>
+        
+        <div class="anim-workspace">
+            <div class="anim-canvas-container">
+                <canvas id="animationCanvas"></canvas>
+                
+                <div class="info-panel">
+                    <div class="info-title">الجزء المحدد</div>
+                    <div class="info-value" id="selectedPart">اضغط على جزء للتحديد</div>
+                    <div style="margin-top: 0.8rem; font-size: 0.85rem; color: var(--gray);">
+                        X: <span id="infoX">0</span> | Y: <span id="infoY">0</span> | Z: <span id="infoRotation">0°</span>
+                    </div>
                 </div>
-                <div class="export-option" onclick="exportVideo('1080p')">
-                    <div class="export-title">1080p Full HD</div>
-                    <div class="export-desc">جودة فائقة - مناسب لليوتيوب</div>
+                
+                <div class="joystick-container joystick-left">
+                    <div class="joystick-base" id="joystickLeft">
+                        <div class="joystick-stick" id="stickLeft"></div>
+                    </div>
+                    <div class="joystick-label">تحكم يسار</div>
                 </div>
-                <div class="export-option" onclick="exportVideo('4k')">
-                    <div class="export-title">4K Ultra HD</div>
-                    <div class="export-desc">أعلى جودة - للإنتاج الاحترافي</div>
-                </div>
-                <div class="export-option" onclick="saveProject()">
-                    <div class="export-title">حفظ المشروع</div>
-                    <div class="export-desc">حفظ لاستكمال العمل لاحقاً</div>
+                
+                <div class="joystick-container joystick-right">
+                    <div class="joystick-base" id="joystickRight">
+                        <div class="joystick-stick" id="stickRight"></div>
+                    </div>
+                    <div class="joystick-label">تحكم يمين</div>
                 </div>
             </div>
         </div>
+        
+        <div class="timeline-container">
+            <div class="timeline-controls">
+                <button class="control-btn" onclick="prevFrame()">⏮️</button>
+                <button class="control-btn" onclick="togglePlayback()" id="timelinePlayBtn">▶️</button>
+                <button class="control-btn" onclick="nextFrame()">⏭️</button>
+                <button class="control-btn" onclick="addKeyframe()">➕</button>
+                <button class="control-btn" onclick="toggleLoop()" id="loopBtn">🔁</button>
+                
+                <div class="timeline-slider" id="timelineSlider">
+                    <div class="timeline-track"></div>
+                    <div class="timeline-progress" id="timelineProgress"></div>
+                    <div class="timeline-playhead" id="playhead"></div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem;">
+                    <span style="color: var(--gray); font-size: 0.9rem;">FPS:</span>
+                    <select style="background: var(--glass); border: 1px solid var(--glass-border); color: var(--light); padding: 0.3rem; border-radius: 0.3rem;" onchange="changeFPS(this.value)">
+                        <option value="12">12</option>
+                        <option value="24" selected>24</option>
+                        <option value="30">30</option>
+                        <option value="60">60</option>
+                    </select>
+                </div>
+                
+                <div style="color: var(--gray); font-size: 0.9rem;">
+                    <span id="currentFrame">0</span> / <span id="totalFrames">24</span>
+                </div>
+            </div>
+            
+            <div class="frame-markers" id="frameMarkers">
+                <!-- Frame markers generated by JS -->
+            </div>
+        </div>
     </div>
+
+    <!-- Add Bone Modal -->
+    <div id="addBoneModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">إضافة عظم جديد</h3>
+                <button class="modal-close" onclick="closeModal('addBoneModal')">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">اسم العظم</label>
+                <input type="text" class="form-input" id="boneNameInput" placeholder="مثال: الرأس، اليد اليمنى">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">نوع العظم</label>
+                <select class="form-select" id="boneTypeInput">
+                    <option value="root">جذر (Root) - العظم الرئيسي</option>
+                    <option value="spine">عمود فقري (Spine)</option>
+                    <option value="head">رأس (Head)</option>
+                    <option value="arm_right">ذراع يمنى (Arm Right)</option>
+                    <option value="arm_left">ذراع يسرى (Arm Left)</option>
+                    <option value="leg_right">ساق يمنى (Leg Right)</option>
+                    <option value="leg_left">ساق يسرى (Leg Left)</option>
+                    <option value="custom">مخصص (Custom)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">العظم الأب (اختياري)</label>
+                <select class="form-select" id="boneParentInput">
+                    <option value="">بدون (عظم رئيسي)</option>
+                </select>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closeModal('addBoneModal')">إلغاء</button>
+                <button class="btn-primary" onclick="createBone()">إنشاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Modal -->
+    <div id="projectsModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">المشاريع المحفوظة</h3>
+                <button class="modal-close" onclick="closeModal('projectsModal')">×</button>
+            </div>
+            
+            <div class="projects-grid" id="projectsList">
+                <!-- Projects loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
 
     <script>
-        // ===== GLOBAL STATE =====
-        const App = {
-            // Canvas
-            canvas: null,
-            ctx: null,
-            stage: null,
-            layer: null,
-            
-            // Character Parts
-            parts: {
-                head: { name: 'الرأس', icon: '😀', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                body: { name: 'الجسم', icon: '👕', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                rightArm: { name: 'اليد اليمنى', icon: '💪', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                leftArm: { name: 'اليد اليسرى', icon: '💪', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                rightLeg: { name: 'الرجل اليمنى', icon: '🦵', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                leftLeg: { name: 'الرجل اليسرى', icon: '🦵', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                rightEye: { name: 'العين اليمنى', icon: '👁️', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                leftEye: { name: 'العين اليسرى', icon: '👁️', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                mouth: { name: 'الفم', icon: '👄', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                rightEar: { name: 'الأذن اليمنى', icon: '👂', image: null, x: 0, y: 0, rotation: 0, scale: 1 },
-                leftEar: { name: 'الأذن اليسرى', icon: '👂', image: null, x: 0, y: 0, rotation: 0, scale: 1 }
-            },
-            
-            // Bones System
+        // Global State
+        const AppState = {
+            currentScreen: 'permission',
+            permissionsGranted: false,
             bones: [],
             selectedBone: null,
-            selectedPart: null,
-            
-            // Animation
-            currentFrame: 1,
-            totalFrames: 60,
-            isPlaying: false,
-            fps: 24,
-            keyframes: new Map(),
-            savedAnimations: [],
-            
-            // Tools
-            currentTool: 'select',
-            
-            // History
+            images: {},
+            projects: [],
+            currentProject: null,
             history: [],
-            historyStep: -1,
+            historyIndex: -1,
             
-            // FFmpeg
-            ffmpeg: null
+            // Animation State
+            animationBones: [],
+            selectedAnimBone: null,
+            isPlaying: false,
+            currentFrame: 0,
+            totalFrames: 24,
+            fps: 24,
+            keyframes: {},
+            loop: true,
+            
+            // Joystick State
+            leftJoystick: { active: false, x: 0, y: 0 },
+            rightJoystick: { active: false, x: 0, y: 0 },
+            
+            // Canvas States
+            riggingCanvas: null,
+            animationCanvas: null,
+            fabricCanvas: null,
+            showGrid: true,
+            currentTool: 'select'
         };
 
-        // ===== INITIALIZATION =====
-        window.addEventListener('load', async () => {
-            await initApp();
-            setupGestures();
-            renderParts();
+        // Initialize
+        window.onload = function() {
+            createParticles();
+            loadProjects();
+            setupJoysticks();
+            setupTimeline();
             
-            setTimeout(() => {
-                document.getElementById('loader').style.display = 'none';
-            }, 1500);
-        });
-
-        async function initApp() {
-            // Setup Konva stage
-            const container = document.getElementById('canvasArea');
-            const width = container.clientWidth - 40;
-            const height = container.clientHeight - 40;
-            
-            App.stage = new Konva.Stage({
-                container: 'canvasArea',
-                width: width,
-                height: height
+            // Setup Fabric Canvas for Rigging
+            AppState.fabricCanvas = new fabric.Canvas('riggingCanvas', {
+                width: window.innerWidth - 320,
+                height: window.innerHeight - 80,
+                backgroundColor: '#0a0f1d',
+                selection: true,
+                preserveObjectStacking: true
             });
             
-            App.layer = new Konva.Layer();
-            App.stage.add(App.layer);
+            // Setup Animation Canvas
+            const animCanvas = document.getElementById('animationCanvas');
+            animCanvas.width = window.innerWidth;
+            animCanvas.height = window.innerHeight - 200;
             
-            // Initialize FFmpeg
-            try {
-                const { FFmpeg } = FFmpegWASM;
-                App.ffmpeg = new FFmpeg();
-                await App.ffmpeg.load();
-                console.log('✅ FFmpeg loaded');
-            } catch (e) {
-                console.warn('⚠️ FFmpeg not available:', e);
+            // Handle window resize
+            window.addEventListener('resize', handleResize);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboard);
+            
+            // Animation loop
+            requestAnimationFrame(animationLoop);
+        };
+
+        // Particle System
+        function createParticles() {
+            const containers = ['particles', 'splashParticles'];
+            containers.forEach(id => {
+                const container = document.getElementById(id);
+                if (!container) return;
+                
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 10 + 's';
+                    particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                    container.appendChild(particle);
+                }
+            });
+        }
+
+        // Permission Screen
+        function grantPermissions() {
+            // Request permissions (simulated for web)
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .catch(err => console.log('Camera permission denied or not available'));
             }
             
-            // Setup canvas events
-            setupCanvasEvents();
+            // Lock orientation to landscape
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => console.log('Orientation lock failed'));
+            }
             
-            // Load saved animations from localStorage
-            loadSavedAnimations();
-            
-            console.log('✅ App initialized');
+            AppState.permissionsGranted = true;
+            transitionToScreen('splashScreen');
+            startLoading();
         }
 
-        function setupCanvasEvents() {
-            // Hammer.js for touch gestures
-            const hammer = new Hammer(App.stage.content);
-            hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-            hammer.get('pinch').set({ enable: true });
-            hammer.get('rotate').set({ enable: true });
+        // Splash Screen
+        function startLoading() {
+            const bar = document.getElementById('loadingBar');
+            const text = document.getElementById('loadingText');
+            const title = document.querySelector('.splash-title');
+            const subtitle = document.querySelector('.splash-subtitle');
             
-            hammer.on('tap', (e) => {
-                const pos = App.stage.getPointerPosition();
-                const shape = App.layer.getIntersection(pos);
+            // Animate text appearance
+            gsap.to(title, { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" });
+            gsap.to(subtitle, { opacity: 1, duration: 0.8, delay: 0.3 });
+            gsap.to(text, { opacity: 1, duration: 0.5, delay: 0.5 });
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        transitionToScreen('mainScreen');
+                    }, 500);
+                }
                 
-                if (shape) {
-                    selectPart(shape.getAttr('partId'));
-                }
-            });
-            
-            hammer.on('pan', (e) => {
-                if (App.selectedPart && App.currentTool === 'move') {
-                    movePart(App.selectedPart, e.deltaX, e.deltaY);
-                }
-            });
-            
-            hammer.on('rotate', (e) => {
-                if (App.selectedPart && App.currentTool === 'rotate') {
-                    rotatePart(App.selectedPart, e.rotation);
-                }
-            });
-            
-            hammer.on('pinch', (e) => {
-                if (App.selectedPart && App.currentTool === 'scale') {
-                    scalePart(App.selectedPart, e.scale);
-                }
-            });
+                bar.style.width = progress + '%';
+                text.textContent = `جاري التحميل... ${Math.floor(progress)}%`;
+            }, 200);
         }
 
-        function setupGestures() {
-            // Bone controller gesture pad
-            const pad = document.getElementById('controllerPad');
-            const knob = document.getElementById('controllerKnob');
+        // Screen Transitions
+        function transitionToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            AppState.currentScreen = screenId;
             
-            const hammer = new Hammer(pad);
-            hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-            
-            let startX = 0, startY = 0;
-            
-            hammer.on('panstart', () => {
-                startX = parseFloat(knob.style.left) || 50;
-                startY = parseFloat(knob.style.top) || 50;
-            });
-            
-            hammer.on('pan', (e) => {
-                const rect = pad.getBoundingClientRect();
-                const x = Math.max(0, Math.min(100, startX + (e.deltaX / rect.width) * 100));
-                const y = Math.max(0, Math.min(100, startY + (e.deltaY / rect.height) * 100));
-                
-                knob.style.left = x + '%';
-                knob.style.top = y + '%';
-                
-                // Apply to selected bone/part
-                if (App.selectedBone) {
-                    const deltaX = (x - 50) * 2;
-                    const deltaY = (y - 50) * 2;
-                    moveBoneByController(deltaX, deltaY);
-                }
-            });
-            
-            hammer.on('panend', () => {
-                knob.style.left = '50%';
-                knob.style.top = '50%';
-                saveKeyframe();
-            });
+            if (screenId === 'riggingScreen') {
+                setTimeout(() => {
+                    AppState.fabricCanvas.setWidth(document.querySelector('.canvas-container').offsetWidth);
+                    AppState.fabricCanvas.setHeight(document.querySelector('.canvas-container').offsetHeight);
+                    AppState.fabricCanvas.renderAll();
+                }, 100);
+            }
         }
 
-        // ===== PARTS SYSTEM =====
-        function renderParts() {
-            const grid = document.getElementById('partsGrid');
-            grid.innerHTML = '';
+        // Navigation
+        function backToMenu() {
+            transitionToScreen('mainScreen');
+        }
+
+        function openRigging() {
+            transitionToScreen('riggingScreen');
+            drawGrid();
+        }
+
+        function openAnimation() {
+            if (AppState.bones.length === 0) {
+                showToast('الرجاء إنشاء هيكل عظمي أولاً في قسم التركيب');
+                return;
+            }
+            transitionToScreen('animationScreen');
+            initAnimationCanvas();
+        }
+
+        // Bone Management
+        function showAddBoneModal() {
+            const parentSelect = document.getElementById('boneParentInput');
+            parentSelect.innerHTML = '<option value="">بدون (عظم رئيسي)</option>';
             
-            Object.entries(App.parts).forEach(([id, part]) => {
-                const card = document.createElement('div');
-                card.className = `part-card ${part.image ? 'has-image' : ''}`;
-                card.onclick = () => selectPartToUpload(id);
-                card.innerHTML = `
-                    <div class="part-icon">${part.image ? '✅' : part.icon}</div>
-                    <div class="part-name">${part.name}</div>
-                    <div class="part-status">${part.image ? 'تم التحميل' : 'انقر لإضافة صورة'}</div>
+            AppState.bones.forEach(bone => {
+                const option = document.createElement('option');
+                option.value = bone.id;
+                option.textContent = bone.name;
+                parentSelect.appendChild(option);
+            });
+            
+            document.getElementById('addBoneModal').classList.add('active');
+        }
+
+        function createBone() {
+            const name = document.getElementById('boneNameInput').value || 'عظم جديد';
+            const type = document.getElementById('boneTypeInput').value;
+            const parentId = document.getElementById('boneParentInput').value;
+            
+            const bone = {
+                id: Date.now().toString(),
+                name: name,
+                type: type,
+                parentId: parentId || null,
+                x: parentId ? 0 : AppState.fabricCanvas.width / 2,
+                y: parentId ? 50 : AppState.fabricCanvas.height / 2,
+                rotation: 0,
+                length: 100,
+                zIndex: AppState.bones.length,
+                visible: true,
+                locked: false,
+                image: null
+            };
+            
+            AppState.bones.push(bone);
+            createBoneVisual(bone);
+            updateBoneList();
+            closeModal('addBoneModal');
+            saveHistory();
+            
+            // Clear inputs
+            document.getElementById('boneNameInput').value = '';
+            
+            showToast('تم إنشاء العظم بنجاح');
+        }
+
+        function createBoneVisual(bone) {
+            const group = new fabric.Group([
+                // Bone line
+                new fabric.Line([0, 0, 0, bone.length], {
+                    stroke: '#6366f1',
+                    strokeWidth: 4,
+                    originX: 'center',
+                    originY: 'top'
+                }),
+                // Joint circle at top
+                new fabric.Circle({
+                    radius: 8,
+                    fill: '#ec4899',
+                    originX: 'center',
+                    originY: 'center',
+                    top: 0
+                }),
+                // Joint circle at bottom
+                new fabric.Circle({
+                    radius: 6,
+                    fill: '#f59e0b',
+                    originX: 'center',
+                    originY: 'center',
+                    top: bone.length
+                })
+            ], {
+                left: bone.x,
+                top: bone.y,
+                angle: bone.rotation,
+                selectable: true,
+                hasControls: true,
+                hasBorders: true,
+                customId: bone.id,
+                customType: 'bone'
+            });
+            
+            AppState.fabricCanvas.add(group);
+            AppState.fabricCanvas.renderAll();
+            
+            // Store reference
+            bone.fabricObject = group;
+        }
+
+        function updateBoneList() {
+            const list = document.getElementById('boneList');
+            list.innerHTML = '';
+            
+            AppState.bones.forEach(bone => {
+                const item = document.createElement('div');
+                item.className = 'bone-item' + (AppState.selectedBone === bone ? ' selected' : '');
+                item.onclick = () => selectBone(bone);
+                
+                const typeIcons = {
+                    root: '🦴',
+                    spine: '📍',
+                    head: '👤',
+                    arm_right: '💪',
+                    arm_left: '💪',
+                    leg_right: '🦵',
+                    leg_left: '🦵',
+                    custom: '🔧'
+                };
+                
+                item.innerHTML = `
+                    <div class="bone-icon">${typeIcons[bone.type] || '🔧'}</div>
+                    <div class="bone-info">
+                        <div class="bone-name">${bone.name}</div>
+                        <div class="bone-type">${bone.type} ${bone.parentId ? '(فرعي)' : '(رئيسي)'}</div>
+                    </div>
+                    <div class="bone-actions">
+                        <button class="bone-btn" onclick="event.stopPropagation(); toggleBoneVisibility('${bone.id}')">
+                            ${bone.visible ? '👁️' : '🚫'}
+                        </button>
+                        <button class="bone-btn" onclick="event.stopPropagation(); toggleBoneLock('${bone.id}')">
+                            ${bone.locked ? '🔒' : '🔓'}
+                        </button>
+                        <button class="bone-btn" onclick="event.stopPropagation(); deleteBone('${bone.id}')" style="color: var(--danger);">
+                            🗑️
+                        </button>
+                    </div>
                 `;
-                grid.appendChild(card);
+                
+                list.appendChild(item);
+            });
+            
+            updateParentSelect();
+        }
+
+        function updateParentSelect() {
+            const selects = [document.getElementById('propParent'), document.getElementById('boneParentInput')];
+            selects.forEach(select => {
+                if (!select) return;
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">بدون (جذر)</option>';
+                AppState.bones.forEach(bone => {
+                    if (bone.id !== AppState.selectedBone?.id) {
+                        const option = document.createElement('option');
+                        option.value = bone.id;
+                        option.textContent = bone.name;
+                        select.appendChild(option);
+                    }
+                });
+                select.value = currentValue;
             });
         }
 
-        function selectPartToUpload(partId) {
-            App.selectedPart = partId;
+        function selectBone(bone) {
+            AppState.selectedBone = bone;
+            updateBoneList();
             
-            // Create file input dynamically
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => handlePartImage(e, partId);
-            input.click();
+            // Update properties panel
+            const panel = document.getElementById('propertiesPanel');
+            panel.style.display = 'block';
+            
+            document.getElementById('propName').value = bone.name;
+            document.getElementById('propX').value = bone.x;
+            document.getElementById('propY').value = bone.y;
+            document.getElementById('propRotation').value = bone.rotation;
+            document.getElementById('propLength').value = bone.length;
+            document.getElementById('propParent').value = bone.parentId || '';
+            
+            // Highlight in canvas
+            AppState.fabricCanvas.discardActiveObject();
+            if (bone.fabricObject) {
+                AppState.fabricCanvas.setActiveObject(bone.fabricObject);
+                bone.fabricObject.animate('opacity', 1, {
+                    duration: 200,
+                    onChange: AppState.fabricCanvas.renderAll.bind(AppState.fabricCanvas)
+                });
+            }
         }
 
-        function handlePartImage(event, partId) {
+        function updateBoneProp(prop, value) {
+            if (!AppState.selectedBone) return;
+            
+            const bone = AppState.selectedBone;
+            
+            if (prop === 'parent') {
+                bone.parentId = value || null;
+            } else {
+                bone[prop] = value;
+            }
+            
+            if (['x', 'y', 'rotation', 'length'].includes(prop)) {
+                updateBoneVisual(bone);
+            }
+            
+            updateBoneList();
+            saveHistory();
+        }
+
+        function updateBoneVisual(bone) {
+            if (!bone.fabricObject) return;
+            
+            bone.fabricObject.set({
+                left: bone.x,
+                top: bone.y,
+                angle: bone.rotation
+            });
+            
+            // Update line length if changed
+            if (bone.fabricObject._objects && bone.fabricObject._objects[0]) {
+                bone.fabricObject._objects[0].set({ y2: bone.length });
+                bone.fabricObject._objects[2].set({ top: bone.length });
+            }
+            
+            AppState.fabricCanvas.renderAll();
+        }
+
+        function deleteBone(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا العظم؟')) return;
+            
+            const index = AppState.bones.findIndex(b => b.id === id);
+            if (index > -1) {
+                const bone = AppState.bones[index];
+                if (bone.fabricObject) {
+                    AppState.fabricCanvas.remove(bone.fabricObject);
+                }
+                
+                // Remove children or reassign them
+                AppState.bones.forEach(b => {
+                    if (b.parentId === id) b.parentId = null;
+                });
+                
+                AppState.bones.splice(index, 1);
+                
+                if (AppState.selectedBone?.id === id) {
+                    AppState.selectedBone = null;
+                    document.getElementById('propertiesPanel').style.display = 'none';
+                }
+                
+                updateBoneList();
+                AppState.fabricCanvas.renderAll();
+                saveHistory();
+                showToast('تم حذف العظم');
+            }
+        }
+
+        function deleteSelectedBone() {
+            if (AppState.selectedBone) {
+                deleteBone(AppState.selectedBone.id);
+            }
+        }
+
+        function toggleBoneVisibility(id) {
+            const bone = AppState.bones.find(b => b.id === id);
+            if (bone) {
+                bone.visible = !bone.visible;
+                if (bone.fabricObject) {
+                    bone.fabricObject.set('visible', bone.visible);
+                    AppState.fabricCanvas.renderAll();
+                }
+                updateBoneList();
+            }
+        }
+
+        function toggleBoneLock(id) {
+            const bone = AppState.bones.find(b => b.id === id);
+            if (bone) {
+                bone.locked = !bone.locked;
+                if (bone.fabricObject) {
+                    bone.fabricObject.set('selectable', !bone.locked);
+                    bone.fabricObject.set('evented', !bone.locked);
+                    AppState.fabricCanvas.renderAll();
+                }
+                updateBoneList();
+            }
+        }
+
+        // Image Handling
+        function importImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        function addImageToBone() {
+            if (!AppState.selectedBone) {
+                showToast('الرجاء اختيار عظم أولاً');
+                return;
+            }
+            importImage();
+        }
+
+        function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = function(e) {
                 const img = new Image();
-                img.onload = () => {
-                    App.parts[partId].image = img;
-                    
-                    // Create Konva image
-                    const konvaImg = new Konva.Image({
-                        image: img,
-                        x: App.stage.width() / 2,
-                        y: App.stage.height() / 2,
-                        width: 100,
-                        height: 100,
-                        draggable: true,
-                        partId: partId
+                img.onload = function() {
+                    const fabricImg = new fabric.Image(img, {
+                        left: AppState.selectedBone ? AppState.selectedBone.x : 100,
+                        top: AppState.selectedBone ? AppState.selectedBone.y : 100,
+                        scaleX: 0.5,
+                        scaleY: 0.5,
+                        opacity: 0.9
                     });
                     
-                    // Add transform controls
-                    const tr = new Konva.Transformer({
-                        nodes: [konvaImg],
-                        visible: false
-                    });
+                    AppState.fabricCanvas.add(fabricImg);
                     
-                    konvaImg.on('click tap', () => {
-                        selectPart(partId);
-                    });
+                    if (AppState.selectedBone) {
+                        AppState.selectedBone.image = e.target.result;
+                        // Group image with bone
+                        if (AppState.selectedBone.fabricObject) {
+                            AppState.selectedBone.fabricObject.addWithUpdate(fabricImg);
+                        }
+                    }
                     
-                    App.layer.add(konvaImg);
-                    App.layer.add(tr);
-                    App.layer.draw();
-                    
-                    renderParts();
+                    AppState.fabricCanvas.renderAll();
                     saveHistory();
-                    
-                    showToast(`تم إضافة ${App.parts[partId].name}`);
+                    showToast('تم إضافة الصورة بنجاح');
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
+            
+            event.target.value = '';
         }
 
-        function selectPart(partId) {
-            App.selectedPart = partId;
+        // Tools
+        function setTool(tool) {
+            AppState.currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
             
-            // Hide all transformers
-            App.layer.find('Transformer').forEach(tr => tr.visible(false));
+            AppState.fabricCanvas.isDrawingMode = false;
+            AppState.fabricCanvas.selection = (tool === 'select');
             
-            // Show transformer for selected
-            const shape = App.layer.findOne(node => node.getAttr('partId') === partId);
-            if (shape) {
-                const tr = shape.getParent().findOne('Transformer');
-                if (tr) tr.visible(true);
-            }
-            
-            App.layer.draw();
-            updateBonesList();
-        }
-
-        function movePart(partId, dx, dy) {
-            const shape = App.layer.findOne(node => node.getAttr('partId') === partId);
-            if (shape) {
-                shape.x(shape.x() + dx);
-                shape.y(shape.y() + dy);
-                App.layer.draw();
-            }
-        }
-
-        function rotatePart(partId, rotation) {
-            const shape = App.layer.findOne(node => node.getAttr('partId') === partId);
-            if (shape) {
-                shape.rotation(rotation);
-                App.layer.draw();
-            }
-        }
-
-        function scalePart(partId, scale) {
-            const shape = App.layer.findOne(node => node.getAttr('partId') === partId);
-            if (shape) {
-                shape.scaleX(scale);
-                shape.scaleY(scale);
-                App.layer.draw();
-            }
-        }
-
-        // ===== BONES SYSTEM =====
-        function autoRig() {
-            // Create automatic bones for all parts
-            App.bones = [];
-            
-            const centerX = App.stage.width() / 2;
-            const centerY = App.stage.height() / 2;
-            
-            // Root bone
-            App.bones.push({
-                id: 'root',
-                name: 'الجذر',
-                x: centerX,
-                y: centerY + 100,
-                rotation: 0,
-                parent: null,
-                children: ['body'],
-                partId: null
-            });
-            
-            // Body bone
-            App.bones.push({
-                id: 'body',
-                name: 'الجسم',
-                x: centerX,
-                y: centerY,
-                rotation: 0,
-                parent: 'root',
-                children: ['head', 'rightArm', 'leftArm'],
-                partId: 'body'
-            });
-            
-            // Head bone
-            App.bones.push({
-                id: 'head',
-                name: 'الرأس',
-                x: centerX,
-                y: centerY - 80,
-                rotation: 0,
-                parent: 'body',
-                children: ['rightEye', 'leftEye', 'mouth', 'rightEar', 'leftEar'],
-                partId: 'head'
-            });
-            
-            // Arms
-            App.bones.push({
-                id: 'rightArm',
-                name: 'اليد اليمنى',
-                x: centerX + 60,
-                y: centerY - 20,
-                rotation: 0,
-                parent: 'body',
-                children: [],
-                partId: 'rightArm'
-            });
-            
-            App.bones.push({
-                id: 'leftArm',
-                name: 'اليد اليسرى',
-                x: centerX - 60,
-                y: centerY - 20,
-                rotation: 0,
-                parent: 'body',
-                children: [],
-                partId: 'leftArm'
-            });
-            
-            // Legs
-            App.bones.push({
-                id: 'rightLeg',
-                name: 'الرجل اليمنى',
-                x: centerX + 30,
-                y: centerY + 100,
-                rotation: 0,
-                parent: 'root',
-                children: [],
-                partId: 'rightLeg'
-            });
-            
-            App.bones.push({
-                id: 'leftLeg',
-                name: 'الرجل اليسرى',
-                x: centerX - 30,
-                y: centerY + 100,
-                rotation: 0,
-                parent: 'root',
-                children: [],
-                partId: 'leftLeg'
-            });
-            
-            // Facial features
-            ['rightEye', 'leftEye', 'mouth', 'rightEar', 'leftEar'].forEach((feature, i) => {
-                const offsets = {
-                    rightEye: { x: 20, y: -10 },
-                    leftEye: { x: -20, y: -10 },
-                    mouth: { x: 0, y: 20 },
-                    rightEar: { x: 40, y: 0 },
-                    leftEar: { x: -40, y: 0 }
-                };
-                
-                App.bones.push({
-                    id: feature,
-                    name: App.parts[feature].name,
-                    x: centerX + offsets[feature].x,
-                    y: centerY - 80 + offsets[feature].y,
-                    rotation: 0,
-                    parent: 'head',
-                    children: [],
-                    partId: feature
-                });
-            });
-            
-            updateBonesList();
-            drawBones();
-            saveHistory();
-            
-            showToast('تم إنشاء الهيكل العظمي بنجاح!');
-            closeModal('bonesModal');
-        }
-
-        function updateBonesList() {
-            const list = document.getElementById('bonesList');
-            list.innerHTML = '';
-            
-            App.bones.forEach(bone => {
-                const item = document.createElement('div');
-                item.className = 'anim-item';
-                item.onclick = () => selectBone(bone.id);
-                item.innerHTML = `
-                    <div class="anim-icon" style="font-size: 20px;">🦴</div>
-                    <div class="anim-info">
-                        <div class="anim-name">${bone.name}</div>
-                        <div class="anim-desc">${bone.children.length} أجزاء مرتبطة</div>
-                    </div>
-                    <button class="header-btn" onclick="event.stopPropagation(); showBoneController('${bone.id}')">
-                        <i class="fas fa-gamepad"></i>
-                    </button>
-                `;
-                list.appendChild(item);
+            AppState.fabricCanvas.forEachObject(obj => {
+                obj.set('selectable', tool === 'select' || tool === 'move');
             });
         }
 
-        function selectBone(boneId) {
-            App.selectedBone = App.bones.find(b => b.id === boneId);
-            App.selectedPart = App.selectedBone.partId;
-            
-            // Highlight on canvas
-            drawBones();
-            
-            showToast(`تم اختيار: ${App.selectedBone.name}`);
+        function toggleGrid() {
+            AppState.showGrid = !AppState.showGrid;
+            drawGrid();
         }
 
-        function showBoneController(boneId) {
-            App.selectedBone = App.bones.find(b => b.id === boneId);
-            const controller = document.getElementById('boneController');
-            const label = document.getElementById('controllerLabel');
+        function drawGrid() {
+            if (!AppState.showGrid || !AppState.fabricCanvas) return;
             
-            controller.classList.add('show');
-            label.textContent = `تحريك: ${App.selectedBone.name}`;
+            // Grid is drawn as canvas background pattern
+            const canvas = AppState.fabricCanvas;
+            const gridSize = 20;
             
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                controller.classList.remove('show');
-            }, 5000);
-        }
-
-        function moveBoneByController(dx, dy) {
-            if (!App.selectedBone) return;
+            // Remove existing grid
+            const existingGrid = canvas.getObjects().filter(obj => obj.isGrid);
+            existingGrid.forEach(obj => canvas.remove(obj));
             
-            // Move the bone
-            App.selectedBone.x += dx * 0.5;
-            App.selectedBone.y += dy * 0.5;
-            
-            // Move associated part
-            if (App.selectedBone.partId) {
-                const shape = App.layer.findOne(node => 
-                    node.getAttr('partId') === App.selectedBone.partId
-                );
-                if (shape) {
-                    shape.x(App.selectedBone.x);
-                    shape.y(App.selectedBone.y);
-                }
-            }
-            
-            // Move children
-            moveChildren(App.selectedBone, dx * 0.5, dy * 0.5);
-            
-            App.layer.draw();
-            drawBones();
-        }
-
-        function moveChildren(bone, dx, dy) {
-            bone.children.forEach(childId => {
-                const child = App.bones.find(b => b.id === childId);
-                if (child) {
-                    child.x += dx;
-                    child.y += dy;
-                    
-                    if (child.partId) {
-                        const shape = App.layer.findOne(node => 
-                            node.getAttr('partId') === child.partId
-                        );
-                        if (shape) {
-                            shape.x(child.x);
-                            shape.y(child.y);
-                        }
-                    }
-                    
-                    moveChildren(child, dx, dy);
-                }
-            });
-        }
-
-        function drawBones() {
-            // Clear previous bones visualization
-            const boneLayer = App.stage.findOne('#boneLayer') || new Konva.Layer({ id: 'boneLayer' });
-            boneLayer.destroyChildren();
-            
-            // Draw connections
-            App.bones.forEach(bone => {
-                if (bone.parent) {
-                    const parent = App.bones.find(b => b.id === bone.parent);
-                    if (parent) {
-                        const line = new Konva.Line({
-                            points: [parent.x, parent.y, bone.x, bone.y],
-                            stroke: App.selectedBone === bone ? '#ec4899' : '#6366f1',
-                            strokeWidth: App.selectedBone === bone ? 4 : 2,
-                            lineCap: 'round'
-                        });
-                        boneLayer.add(line);
-                    }
-                }
-                
-                // Draw joint
-                const circle = new Konva.Circle({
-                    x: bone.x,
-                    y: bone.y,
-                    radius: App.selectedBone === bone ? 10 : 6,
-                    fill: App.selectedBone === bone ? '#10b981' : '#6366f1',
-                    stroke: 'white',
-                    strokeWidth: 2
-                });
-                boneLayer.add(circle);
-                
-                // Add label
-                const text = new Konva.Text({
-                    x: bone.x + 15,
-                    y: bone.y - 15,
-                    text: bone.name,
-                    fontSize: 12,
-                    fill: 'white',
-                    fontFamily: 'Tajawal'
-                });
-                boneLayer.add(text);
-            });
-            
-            App.stage.add(boneLayer);
-            boneLayer.moveToTop();
-        }
-
-        // ===== ANIMATION SYSTEM =====
-        function playPreset(presetName) {
-            closeModal('animsModal');
-            
-            const presets = {
-                waveRight: () => animateWave('rightArm'),
-                waveLeft: () => animateWave('leftArm'),
-                walk: animateWalk,
-                sit: animateSit,
-                talk: animateTalk,
-                blink: animateBlink,
-                jump: animateJump,
-                dance: animateDance,
-                headNod: () => animateHead('nod'),
-                shakeHead: () => animateHead('shake')
-            };
-            
-            if (presets[presetName]) {
-                presets[presetName]();
-                showToast('جاري تشغيل الحركة...');
-            }
-        }
-
-        function animateWave(armId) {
-            const arm = App.bones.find(b => b.id === armId);
-            if (!arm) return;
-            
-            const tl = gsap.timeline({ repeat: 3, yoyo: true });
-            
-            tl.to(arm, {
-                rotation: 45,
-                duration: 0.5,
-                ease: "power2.inOut",
-                onUpdate: () => updateBoneFromAnimation(arm)
-            })
-            .to(arm, {
-                rotation: -20,
-                duration: 0.5,
-                ease: "power2.inOut",
-                onUpdate: () => updateBoneFromAnimation(arm)
-            });
-        }
-
-        function animateWalk() {
-            const rightLeg = App.bones.find(b => b.id === 'rightLeg');
-            const leftLeg = App.bones.find(b => b.id === 'leftLeg');
-            const rightArm = App.bones.find(b => b.id === 'rightArm');
-            const leftArm = App.bones.find(b => b.id === 'leftArm');
-            
-            const tl = gsap.timeline({ repeat: 4 });
-            
-            // Walking cycle
-            tl.to([rightLeg, leftArm], {
-                rotation: 30,
-                duration: 0.4,
-                ease: "power2.inOut",
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightLeg);
-                    updateBoneFromAnimation(leftArm);
-                }
-            })
-            .to([leftLeg, rightArm], {
-                rotation: -30,
-                duration: 0.4,
-                ease: "power2.inOut",
-                onUpdate: function() {
-                    updateBoneFromAnimation(leftLeg);
-                    updateBoneFromAnimation(rightArm);
-                }
-            }, "<")
-            .to([rightLeg, leftArm], {
-                rotation: -30,
-                duration: 0.4,
-                ease: "power2.inOut",
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightLeg);
-                    updateBoneFromAnimation(leftArm);
-                }
-            })
-            .to([leftLeg, rightArm], {
-                rotation: 30,
-                duration: 0.4,
-                ease: "power2.inOut",
-                onUpdate: function() {
-                    updateBoneFromAnimation(leftLeg);
-                    updateBoneFromAnimation(rightArm);
-                }
-            }, "<");
-        }
-
-        function animateSit() {
-            const body = App.bones.find(b => b.id === 'body');
-            const rightLeg = App.bones.find(b => b.id === 'rightLeg');
-            const leftLeg = App.bones.find(b => b.id === 'leftLeg');
-            
-            gsap.to(body, {
-                y: "+=50",
-                duration: 1,
-                ease: "power2.out",
-                onUpdate: () => updateBoneFromAnimation(body)
-            });
-            
-            gsap.to([rightLeg, leftLeg], {
-                rotation: 90,
-                duration: 1,
-                delay: 0.3,
-                ease: "power2.out",
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightLeg);
-                    updateBoneFromAnimation(leftLeg);
-                }
-            });
-        }
-
-        function animateTalk() {
-            const head = App.bones.find(b => b.id === 'head');
-            const mouth = App.bones.find(b => b.id === 'mouth');
-            
-            gsap.to(head, {
-                y: "+=5",
-                rotation: 5,
-                duration: 0.2,
-                repeat: 10,
-                yoyo: true,
-                ease: "power1.inOut",
-                onUpdate: () => updateBoneFromAnimation(head)
-            });
-            
-            if (mouth) {
-                gsap.to(mouth, {
-                    scale: 1.2,
-                    duration: 0.15,
-                    repeat: 15,
-                    yoyo: true,
-                    ease: "power1.inOut",
-                    onUpdate: () => updateBoneFromAnimation(mouth)
-                });
-            }
-        }
-
-        function animateBlink() {
-            const rightEye = App.bones.find(b => b.id === 'rightEye');
-            const leftEye = App.bones.find(b => b.id === 'leftEye');
-            
-            if (rightEye && leftEye) {
-                gsap.to([rightEye, leftEye], {
-                    scaleY: 0.1,
-                    duration: 0.15,
-                    repeat: 3,
-                    yoyo: true,
-                    ease: "power2.inOut",
-                    onUpdate: function() {
-                        updateBoneFromAnimation(rightEye);
-                        updateBoneFromAnimation(leftEye);
-                    }
-                });
-            }
-        }
-
-        function animateJump() {
-            const root = App.bones.find(b => b.id === 'root');
-            const rightLeg = App.bones.find(b => b.id === 'rightLeg');
-            const leftLeg = App.bones.find(b => b.id === 'leftLeg');
-            
-            const tl = gsap.timeline();
-            
-            // Crouch
-            tl.to(root, {
-                y: "-=20",
-                duration: 0.3,
-                ease: "power2.in",
-                onUpdate: () => updateBoneFromAnimation(root)
-            })
-            // Jump up
-            .to(root, {
-                y: "-=150",
-                duration: 0.4,
-                ease: "power2.out",
-                onUpdate: () => updateBoneFromAnimation(root)
-            })
-            // Legs bend
-            .to([rightLeg, leftLeg], {
-                rotation: -30,
-                duration: 0.2,
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightLeg);
-                    updateBoneFromAnimation(leftLeg);
-                }
-            }, "<")
-            // Fall down
-            .to(root, {
-                y: "+=150",
-                duration: 0.5,
-                ease: "bounce.out",
-                onUpdate: () => updateBoneFromAnimation(root)
-            })
-            // Legs straighten
-            .to([rightLeg, leftLeg], {
-                rotation: 0,
-                duration: 0.3,
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightLeg);
-                    updateBoneFromAnimation(leftLeg);
-                }
-            }, "<");
-        }
-
-        function animateDance() {
-            const body = App.bones.find(b => b.id === 'body');
-            const rightArm = App.bones.find(b => b.id === 'rightArm');
-            const leftArm = App.bones.find(b => b.id === 'leftArm');
-            const head = App.bones.find(b => b.id === 'head');
-            
-            const tl = gsap.timeline({ repeat: 3 });
-            
-            tl.to(body, {
-                rotation: 10,
-                duration: 0.5,
-                ease: "power2.inOut",
-                onUpdate: () => updateBoneFromAnimation(body)
-            })
-            .to([rightArm, leftArm], {
-                rotation: "+=45",
-                duration: 0.5,
-                ease: "power2.inOut",
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightArm);
-                    updateBoneFromAnimation(leftArm);
-                }
-            }, "<")
-            .to(head, {
-                rotation: -15,
-                duration: 0.25,
-                yoyo: true,
-                repeat: 1,
-                ease: "power2.inOut",
-                onUpdate: () => updateBoneFromAnimation(head)
-            }, "<")
-            .to(body, {
-                rotation: -10,
-                duration: 0.5,
-                ease: "power2.inOut",
-                onUpdate: () => updateBoneFromAnimation(body)
-            })
-            .to([rightArm, leftArm], {
-                rotation: "-=45",
-                duration: 0.5,
-                ease: "power2.inOut",
-                onUpdate: function() {
-                    updateBoneFromAnimation(rightArm);
-                    updateBoneFromAnimation(leftArm);
-                }
-            }, "<");
-        }
-
-        function animateHead(type) {
-            const head = App.bones.find(b => b.id === 'head');
-            if (!head) return;
-            
-            if (type === 'nod') {
-                gsap.to(head, {
-                    rotation: 15,
-                    duration: 0.3,
-                    repeat: 2,
-                    yoyo: true,
-                    ease: "power2.inOut",
-                    onUpdate: () => updateBoneFromAnimation(head)
-                });
-            } else if (type === 'shake') {
-                gsap.to(head, {
-                    x: "+=10",
-                    duration: 0.2,
-                    repeat: 5,
-                    yoyo: true,
-                    ease: "power2.inOut",
-                    onUpdate: () => updateBoneFromAnimation(head)
-                });
-            }
-        }
-
-        function updateBoneFromAnimation(bone) {
-            // Update part position based on bone
-            if (bone.partId) {
-                const shape = App.layer.findOne(node => 
-                    node.getAttr('partId') === bone.partId
-                );
-                if (shape) {
-                    shape.x(bone.x);
-                    shape.y(bone.y);
-                    shape.rotation(bone.rotation);
-                    shape.scaleX(bone.scale || 1);
-                    shape.scaleY(bone.scale || 1);
-                }
-            }
-            
-            App.layer.draw();
-            drawBones();
-        }
-
-        // ===== TIMELINE =====
-        function toggleTimeline() {
-            const timeline = document.getElementById('timelineBar');
-            timeline.classList.toggle('show');
-            
-            const btn = document.getElementById('toolTimeline');
-            btn.classList.toggle('active');
-        }
-
-        function goToPrevFrame() {
-            if (App.currentFrame > 1) {
-                App.currentFrame--;
-                updateTimeline();
-                interpolateFrame();
-            }
-        }
-
-        function goToNextFrame() {
-            if (App.currentFrame < App.totalFrames) {
-                App.currentFrame++;
-                updateTimeline();
-                interpolateFrame();
-            }
-        }
-
-        function seekTimeline(event) {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const percent = (event.clientX - rect.left) / rect.width;
-            App.currentFrame = Math.round(percent * App.totalFrames);
-            updateTimeline();
-            interpolateFrame();
-        }
-
-        function updateTimeline() {
-            const percent = (App.currentFrame / App.totalFrames) * 100;
-            document.getElementById('timelineProgress').style.width = percent + '%';
-            document.getElementById('frameDisplay').textContent = App.currentFrame;
-        }
-
-        function togglePlayback() {
-            App.isPlaying = !App.isPlaying;
-            const btn = document.getElementById('playBtn');
-            btn.innerHTML = App.isPlaying ? '<i class="fas fa-pause"></i><span>إيقاف</span>' : '<i class="fas fa-play"></i><span>تشغيل</span>';
-            
-            if (App.isPlaying) {
-                playTimeline();
-            }
-        }
-
-        function playTimeline() {
-            if (!App.isPlaying) return;
-            
-            App.currentFrame++;
-            if (App.currentFrame > App.totalFrames) {
-                App.currentFrame = 1;
-            }
-            
-            updateTimeline();
-            interpolateFrame();
-            
-            setTimeout(() => requestAnimationFrame(playTimeline), 1000 / App.fps);
-        }
-
-        function interpolateFrame() {
-            // Interpolate between keyframes
-            App.bones.forEach(bone => {
-                const keyframe = App.keyframes.get(`${bone.id}_${App.currentFrame}`);
-                if (keyframe) {
-                    bone.x = keyframe.x;
-                    bone.y = keyframe.y;
-                    bone.rotation = keyframe.rotation;
-                    updateBoneFromAnimation(bone);
-                }
-            });
-        }
-
-        function addKeyframe() {
-            if (!App.selectedBone) {
-                showToast('اختر عظماً أولاً');
+            if (!AppState.showGrid) {
+                canvas.renderAll();
                 return;
             }
             
-            App.keyframes.set(`${App.selectedBone.id}_${App.currentFrame}`, {
-                x: App.selectedBone.x,
-                y: App.selectedBone.y,
-                rotation: App.selectedBone.rotation
-            });
+            // Create grid lines
+            const width = canvas.width;
+            const height = canvas.height;
             
-            // Visual marker
-            const marker = document.createElement('div');
-            marker.className = 'keyframe-dot';
-            const percent = (App.currentFrame / App.totalFrames) * 100;
-            marker.style.left = percent + '%';
-            document.getElementById('keyframeMarkers').appendChild(marker);
-            
-            showToast('تم إضافة الإطار المفتاحي');
-        }
-
-        // ===== SAVE & EXPORT =====
-        function saveCurrentAnimation() {
-            const name = document.getElementById('animNameInput').value;
-            if (!name) {
-                showToast('أدخل اسماً للحركة');
-                return;
+            for (let i = 0; i < width; i += gridSize) {
+                const line = new fabric.Line([i, 0, i, height], {
+                    stroke: 'rgba(255,255,255,0.05)',
+                    strokeWidth: 1,
+                    selectable: false,
+                    evented: false,
+                    isGrid: true
+                });
+                canvas.add(line);
+                canvas.sendToBack(line);
             }
             
-            const animation = {
-                name: name,
-                bones: JSON.parse(JSON.stringify(App.bones)),
-                keyframes: Array.from(App.keyframes.entries()),
-                date: new Date().toISOString()
-            };
-            
-            App.savedAnimations.push(animation);
-            localStorage.setItem('savedAnimations', JSON.stringify(App.savedAnimations));
-            
-            document.getElementById('animNameInput').value = '';
-            loadSavedAnimations();
-            showToast('تم حفظ الحركة!');
-        }
-
-        function loadSavedAnimations() {
-            const saved = localStorage.getItem('savedAnimations');
-            if (saved) {
-                App.savedAnimations = JSON.parse(saved);
+            for (let i = 0; i < height; i += gridSize) {
+                const line = new fabric.Line([0, i, width, i], {
+                    stroke: 'rgba(255,255,255,0.05)',
+                    strokeWidth: 1,
+                    selectable: false,
+                    evented: false,
+                    isGrid: true
+                });
+                canvas.add(line);
+                canvas.sendToBack(line);
             }
             
-            const list = document.getElementById('savedAnimsList');
-            const existing = list.querySelectorAll('.saved-anim-item');
-            existing.forEach(el => el.remove());
-            
-            App.savedAnimations.forEach((anim, index) => {
-                const item = document.createElement('div');
-                item.className = 'saved-anim-item';
-                item.innerHTML = `
-                    <span>${anim.name}</span>
-                    <button class="header-btn" onclick="loadSavedAnimation(${index})">
-                        <i class="fas fa-play"></i>
-                    </button>
-                `;
-                list.appendChild(item);
-            });
+            canvas.renderAll();
         }
 
-        function loadSavedAnimation(index) {
-            const anim = App.savedAnimations[index];
-            if (!anim) return;
-            
-            App.bones = JSON.parse(JSON.stringify(anim.bones));
-            App.keyframes = new Map(anim.keyframes);
-            
-            updateBonesList();
-            drawBones();
-            closeModal('saveAnimModal');
-            showToast(`تم تحميل: ${anim.name}`);
+        function resetView() {
+            AppState.fabricCanvas.setZoom(1);
+            AppState.fabricCanvas.absolutePan({ x: 0, y: 0 });
+            AppState.fabricCanvas.renderAll();
         }
 
-        async function exportVideo(quality) {
-            closeModal('exportModal');
-            showProgress('جاري تصدير الفيديو...');
-            
-            // Simulate export (in real app, use FFmpeg.wasm)
-            setTimeout(() => {
-                hideProgress();
-                showToast(`تم تصدير الفيديو بجودة ${quality}`);
-            }, 3000);
-        }
-
-        function saveProject() {
-            const project = {
-                parts: Object.entries(App.parts).map(([id, part]) => ({
-                    id,
-                    ...part,
-                    image: null // Don't save image data to localStorage (too big)
-                })),
-                bones: App.bones,
-                keyframes: Array.from(App.keyframes.entries()),
-                date: new Date().toISOString()
-            };
-            
-            localStorage.setItem('animationProject', JSON.stringify(project));
-            closeModal('exportModal');
-            showToast('تم حفظ المشروع!');
-        }
-
-        // ===== HISTORY =====
+        // History (Undo/Redo)
         function saveHistory() {
-            App.historyStep++;
-            if (App.historyStep < App.history.length) {
-                App.history.length = App.historyStep;
-            }
+            const state = JSON.stringify(AppState.bones);
+            AppState.history = AppState.history.slice(0, AppState.historyIndex + 1);
+            AppState.history.push(state);
+            AppState.historyIndex++;
             
-            App.history.push({
-                bones: JSON.parse(JSON.stringify(App.bones)),
-                parts: JSON.parse(JSON.stringify(App.parts))
-            });
-            
-            if (App.history.length > 20) {
-                App.history.shift();
-                App.historyStep--;
+            // Limit history
+            if (AppState.history.length > 50) {
+                AppState.history.shift();
+                AppState.historyIndex--;
             }
         }
 
         function undo() {
-            if (App.historyStep > 0) {
-                App.historyStep--;
-                restoreHistory();
+            if (AppState.historyIndex > 0) {
+                AppState.historyIndex--;
+                restoreState(AppState.history[AppState.historyIndex]);
             }
         }
 
         function redo() {
-            if (App.historyStep < App.history.length - 1) {
-                App.historyStep++;
-                restoreHistory();
+            if (AppState.historyIndex < AppState.history.length - 1) {
+                AppState.historyIndex++;
+                restoreState(AppState.history[AppState.historyIndex]);
             }
         }
 
-        function restoreHistory() {
-            const state = App.history[App.historyStep];
-            App.bones = JSON.parse(JSON.stringify(state.bones));
-            App.parts = JSON.parse(JSON.stringify(state.parts));
+        function restoreState(state) {
+            AppState.bones = JSON.parse(state);
+            AppState.fabricCanvas.clear();
+            drawGrid();
+            AppState.bones.forEach(bone => createBoneVisual(bone));
+            updateBoneList();
+        }
+
+        // Project Management
+        function saveProject() {
+            const projectName = prompt('اسم المشروع:', 'مشروع ' + new Date().toLocaleDateString('ar-SA'));
+            if (!projectName) return;
             
-            updateBonesList();
-            drawBones();
-            renderParts();
+            const project = {
+                id: Date.now().toString(),
+                name: projectName,
+                date: new Date().toISOString(),
+                bones: AppState.bones,
+                images: AppState.images,
+                thumbnail: AppState.fabricCanvas.toDataURL()
+            };
+            
+            // Save to localStorage
+            let projects = JSON.parse(localStorage.getItem('animationArabsProjects') || '[]');
+            projects.push(project);
+            localStorage.setItem('animationArabsProjects', JSON.stringify(projects));
+            
+            showToast('تم حفظ المشروع بنجاح');
+            loadProjects();
         }
 
-        // ===== UTILITIES =====
-        function setTool(tool) {
-            App.currentTool = tool;
-            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tool' + tool.charAt(0).toUpperCase() + tool.slice(1)).classList.add('active');
+        function loadProjects() {
+            const projects = JSON.parse(localStorage.getItem('animationArabsProjects') || '[]');
+            AppState.projects = projects;
         }
 
-        function showModal(id) {
-            document.getElementById(id).classList.add('show');
+        function showProjects() {
+            const list = document.getElementById('projectsList');
+            list.innerHTML = '';
+            
+            if (AppState.projects.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: var(--gray); padding: 2rem;">لا توجد مشاريع محفوظة</div>';
+            } else {
+                AppState.projects.forEach(project => {
+                    const card = document.createElement('div');
+                    card.className = 'project-card';
+                    card.onclick = () => loadProject(project);
+                    
+                    card.innerHTML = `
+                        <div class="project-thumb">
+                            ${project.thumbnail ? `<img src="${project.thumbnail}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">` : '📁'}
+                        </div>
+                        <div class="project-name">${project.name}</div>
+                        <div class="project-date">${new Date(project.date).toLocaleDateString('ar-SA')}</div>
+                    `;
+                    
+                    list.appendChild(card);
+                });
+            }
+            
+            document.getElementById('projectsModal').classList.add('active');
         }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('show');
+        function loadProject(project) {
+            AppState.bones = project.bones || [];
+            AppState.images = project.images || {};
+            AppState.currentProject = project;
+            
+            // Restore canvas
+            AppState.fabricCanvas.clear();
+            drawGrid();
+            AppState.bones.forEach(bone => createBoneVisual(bone));
+            updateBoneList();
+            
+            closeModal('projectsModal');
+            showToast('تم تحميل المشروع');
+            
+            if (AppState.currentScreen !== 'riggingScreen') {
+                transitionToScreen('riggingScreen');
+            }
         }
 
-        function showProgress(text) {
-            document.getElementById('progressText').textContent = text;
-            document.getElementById('progressContainer').classList.add('show');
+        // Animation System
+        function initAnimationCanvas() {
+            const canvas = document.getElementById('animationCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Copy bones for animation
+            AppState.animationBones = JSON.parse(JSON.stringify(AppState.bones));
+            
+            // Setup click detection
+            canvas.addEventListener('click', handleAnimCanvasClick);
+            
+            // Start render loop
+            renderAnimation();
         }
 
-        function hideProgress() {
-            document.getElementById('progressContainer').classList.remove('show');
+        function handleAnimCanvasClick(e) {
+            const canvas = document.getElementById('animationCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Find clicked bone (simple distance check)
+            let closestBone = null;
+            let closestDist = Infinity;
+            
+            AppState.animationBones.forEach(bone => {
+                const dist = Math.sqrt(Math.pow(bone.x - x, 2) + Math.pow(bone.y - y, 2));
+                if (dist < 50 && dist < closestDist) {
+                    closestDist = dist;
+                    closestBone = bone;
+                }
+            });
+            
+            if (closestBone) {
+                selectAnimBone(closestBone);
+            }
         }
 
+        function selectAnimBone(bone) {
+            AppState.selectedAnimBone = bone;
+            document.getElementById('selectedPart').textContent = bone.name;
+            document.getElementById('infoX').textContent = Math.round(bone.x);
+            document.getElementById('infoY').textContent = Math.round(bone.y);
+            document.getElementById('infoRotation').textContent = Math.round(bone.rotation) + '°';
+        }
+
+        function renderAnimation() {
+            const canvas = document.getElementById('animationCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw bones
+            AppState.animationBones.forEach(bone => {
+                drawBone(ctx, bone);
+            });
+            
+            // Continue loop
+            if (AppState.isPlaying) {
+                updateAnimation();
+            }
+            
+            requestAnimationFrame(renderAnimation);
+        }
+
+        function drawBone(ctx, bone) {
+            ctx.save();
+            ctx.translate(bone.x, bone.y);
+            ctx.rotate(bone.rotation * Math.PI / 180);
+            
+            // Draw bone line
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, bone.length);
+            ctx.strokeStyle = AppState.selectedAnimBone?.id === bone.id ? '#f59e0b' : '#6366f1';
+            ctx.lineWidth = AppState.selectedAnimBone?.id === bone.id ? 6 : 4;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            // Draw joints
+            ctx.fillStyle = AppState.selectedAnimBone?.id === bone.id ? '#ec4899' : '#6366f1';
+            ctx.beginPath();
+            ctx.arc(0, 0, AppState.selectedAnimBone?.id === bone.id ? 10 : 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(0, bone.length, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw bone name
+            ctx.rotate(-bone.rotation * Math.PI / 180);
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.font = '12px Cairo';
+            ctx.textAlign = 'center';
+            ctx.fillText(bone.name, 0, -10);
+            
+            ctx.restore();
+        }
+
+        // Joystick Control
+        function setupJoysticks() {
+            setupJoystick('joystickLeft', 'stickLeft', 'left');
+            setupJoystick('joystickRight', 'stickRight', 'right');
+        }
+
+        function setupJoystick(baseId, stickId, side) {
+            const base = document.getElementById(baseId);
+            const stick = document.getElementById(stickId);
+            
+            const hammer = new Hammer(stick);
+            hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            
+            let startX = 0, startY = 0;
+            const maxDist = 45;
+            
+            hammer.on('panstart', (e) => {
+                const rect = base.getBoundingClientRect();
+                startX = rect.left + rect.width / 2;
+                startY = rect.top + rect.height / 2;
+                AppState[side + 'Joystick'].active = true;
+            });
+            
+            hammer.on('panmove', (e) => {
+                let x = e.center.x - startX;
+                let y = e.center.y - startY;
+                
+                const distance = Math.sqrt(x * x + y * y);
+                if (distance > maxDist) {
+                    x = (x / distance) * maxDist;
+                    y = (y / distance) * maxDist;
+                }
+                
+                stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+                
+                // Normalize -1 to 1
+                AppState[side + 'Joystick'].x = x / maxDist;
+                AppState[side + 'Joystick'].y = y / maxDist;
+                
+                applyJoystickControl(side, x / maxDist, y / maxDist);
+            });
+            
+            hammer.on('panend', () => {
+                stick.style.transform = 'translate(-50%, -50%)';
+                AppState[side + 'Joystick'].active = false;
+                AppState[side + 'Joystick'].x = 0;
+                AppState[side + 'Joystick'].y = 0;
+            });
+        }
+
+        function applyJoystickControl(side, x, y) {
+            if (!AppState.selectedAnimBone) return;
+            
+            const bone = AppState.selectedAnimBone;
+            const sensitivity = 5;
+            
+            // Determine if this bone is controlled by this joystick based on name/type
+            const isRightSide = bone.name.includes('يمين') || bone.name.includes('right') || 
+                               bone.type.includes('right') || bone.name.includes('يمينى');
+            const isLeftSide = bone.name.includes('يسار') || bone.name.includes('left') || 
+                              bone.type.includes('left') || bone.name.includes('يسرى');
+            
+            if ((side === 'right' && isRightSide) || (side === 'left' && isLeftSide) || 
+                (!isRightSide && !isLeftSide)) {
+                
+                // Move bone
+                bone.x += x * sensitivity;
+                bone.y += y * sensitivity;
+                
+                // Rotate based on horizontal movement
+                bone.rotation += x * 2;
+                
+                // Update UI
+                document.getElementById('infoX').textContent = Math.round(bone.x);
+                document.getElementById('infoY').textContent = Math.round(bone.y);
+                document.getElementById('infoRotation').textContent = Math.round(bone.rotation) + '°';
+                
+                // Record keyframe if playing
+                if (AppState.isPlaying) {
+                    recordKeyframe();
+                }
+            }
+        }
+
+        // Timeline
+        function setupTimeline() {
+            const markers = document.getElementById('frameMarkers');
+            markers.innerHTML = '';
+            
+            for (let i = 0; i <= AppState.totalFrames; i++) {
+                const marker = document.createElement('div');
+                marker.className = 'frame-marker';
+                marker.textContent = i;
+                marker.onclick = () => goToFrame(i);
+                markers.appendChild(marker);
+            }
+        }
+
+        function togglePlayback() {
+            AppState.isPlaying = !AppState.isPlaying;
+            const btn = document.getElementById('playBtn');
+            const timelineBtn = document.getElementById('timelinePlayBtn');
+            
+            if (AppState.isPlaying) {
+                btn.innerHTML = '⏸️';
+                timelineBtn.innerHTML = '⏸️';
+                playAnimation();
+            } else {
+                btn.innerHTML = '▶️';
+                timelineBtn.innerHTML = '▶️';
+            }
+        }
+
+        function stopAnimation() {
+            AppState.isPlaying = false;
+            AppState.currentFrame = 0;
+            document.getElementById('playBtn').innerHTML = '▶️';
+            document.getElementById('timelinePlayBtn').innerHTML = '▶️';
+            updateTimelineUI();
+        }
+
+        function playAnimation() {
+            if (!AppState.isPlaying) return;
+            
+            const interval = 1000 / AppState.fps;
+            
+            const advance = () => {
+                if (!AppState.isPlaying) return;
+                
+                AppState.currentFrame++;
+                if (AppState.currentFrame > AppState.totalFrames) {
+                    if (AppState.loop) {
+                        AppState.currentFrame = 0;
+                    } else {
+                        stopAnimation();
+                        return;
+                    }
+                }
+                
+                updateTimelineUI();
+                interpolateFrame();
+                
+                setTimeout(advance, interval);
+            };
+            
+            advance();
+        }
+
+        function updateAnimation() {
+            // Continuous update during playback
+        }
+
+        function interpolateFrame() {
+            // Interpolate between keyframes
+            const prevKeyframe = findPrevKeyframe();
+            const nextKeyframe = findNextKeyframe();
+            
+            if (prevKeyframe && nextKeyframe) {
+                const t = (AppState.currentFrame - prevKeyframe.frame) / (nextKeyframe.frame - prevKeyframe.frame);
+                // Apply easing
+                const easedT = easeInOutCubic(t);
+                
+                // Interpolate bone properties
+                AppState.animationBones.forEach((bone, index) => {
+                    const prevBone = prevKeyframe.bones[index];
+                    const nextBone = nextKeyframe.bones[index];
+                    
+                    if (prevBone && nextBone) {
+                        bone.x = prevBone.x + (nextBone.x - prevBone.x) * easedT;
+                        bone.y = prevBone.y + (nextBone.y - prevBone.y) * easedT;
+                        bone.rotation = prevBone.rotation + (nextBone.rotation - prevBone.rotation) * easedT;
+                    }
+                });
+            }
+        }
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function findPrevKeyframe() {
+            let prev = null;
+            for (let frame in AppState.keyframes) {
+                if (parseInt(frame) <= AppState.currentFrame) {
+                    prev = { frame: parseInt(frame), bones: AppState.keyframes[frame] };
+                }
+            }
+            return prev;
+        }
+
+        function findNextKeyframe() {
+            for (let frame in AppState.keyframes) {
+                if (parseInt(frame) > AppState.currentFrame) {
+                    return { frame: parseInt(frame), bones: AppState.keyframes[frame] };
+                }
+            }
+            return null;
+        }
+
+        function addKeyframe() {
+            // Save current state as keyframe
+            AppState.keyframes[AppState.currentFrame] = JSON.parse(JSON.stringify(AppState.animationBones));
+            
+            // Update marker
+            const markers = document.querySelectorAll('.frame-marker');
+            if (markers[AppState.currentFrame]) {
+                markers[AppState.currentFrame].classList.add('keyframe');
+            }
+            
+            showToast('تم إضافة الكادر الرئيسي');
+        }
+
+        function goToFrame(frame) {
+            AppState.currentFrame = frame;
+            updateTimelineUI();
+            
+            // Apply keyframe if exists
+            if (AppState.keyframes[frame]) {
+                AppState.animationBones = JSON.parse(JSON.stringify(AppState.keyframes[frame]));
+            }
+        }
+
+        function prevFrame() {
+            if (AppState.currentFrame > 0) {
+                goToFrame(AppState.currentFrame - 1);
+            }
+        }
+
+        function nextFrame() {
+            if (AppState.currentFrame < AppState.totalFrames) {
+                goToFrame(AppState.currentFrame + 1);
+            }
+        }
+
+        function updateTimelineUI() {
+            const progress = (AppState.currentFrame / AppState.totalFrames) * 100;
+            document.getElementById('timelineProgress').style.width = progress + '%';
+            document.getElementById('playhead').style.left = progress + '%';
+            document.getElementById('currentFrame').textContent = AppState.currentFrame;
+            
+            // Update markers
+            document.querySelectorAll('.frame-marker').forEach((m, i) => {
+                m.classList.toggle('current', i === AppState.currentFrame);
+            });
+        }
+
+        function changeFPS(value) {
+            AppState.fps = parseInt(value);
+        }
+
+        function toggleLoop() {
+            AppState.loop = !AppState.loop;
+            document.getElementById('loopBtn').style.opacity = AppState.loop ? '1' : '0.5';
+        }
+
+        function importProjectForAnim() {
+            showProjects();
+        }
+
+        function saveAnimation() {
+            const animData = {
+                bones: AppState.animationBones,
+                keyframes: AppState.keyframes,
+                fps: AppState.fps,
+                totalFrames: AppState.totalFrames
+            };
+            
+            localStorage.setItem('animationArabsAnimation_' + Date.now(), JSON.stringify(animData));
+            showToast('تم حفظ الحركة');
+        }
+
+        // Utility
         function showToast(message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 80px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--glass);
-                border: 1px solid var(--glass-border);
-                padding: 15px 30px;
-                border-radius: 12px;
-                color: white;
-                font-weight: 600;
-                z-index: 3000;
-                backdrop-filter: blur(10px);
-            `;
+            const toast = document.getElementById('toast');
             toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            gsap.from(toast, { y: -20, opacity: 0, duration: 0.3 });
-            setTimeout(() => {
-                gsap.to(toast, { y: -20, opacity: 0, duration: 0.3, onComplete: () => toast.remove() });
-            }, 2000);
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'z') {
-                e.preventDefault();
-                undo();
-            } else if (e.ctrlKey && e.key === 'y') {
-                e.preventDefault();
-                redo();
-            }
-        });
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
 
-        console.log('🎬 أنميشن العرب - جاهز للإبداع!');
+        function handleResize() {
+            if (AppState.fabricCanvas) {
+                AppState.fabricCanvas.setWidth(document.querySelector('.canvas-container').offsetWidth);
+                AppState.fabricCanvas.setHeight(document.querySelector('.canvas-container').offsetHeight);
+                AppState.fabricCanvas.renderAll();
+            }
+            
+            const animCanvas = document.getElementById('animationCanvas');
+            if (animCanvas) {
+                animCanvas.width = window.innerWidth;
+                animCanvas.height = window.innerHeight - 200;
+            }
+        }
+
+        function handleKeyboard(e) {
+            // Shortcuts
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                } else if (e.key === 'y') {
+                    e.preventDefault();
+                    redo();
+                } else if (e.key === 's') {
+                    e.preventDefault();
+                    saveProject();
+                }
+            } else if (e.key === 'Delete') {
+                if (AppState.selectedBone) {
+                    deleteSelectedBone();
+                }
+            }
+        }
+
+        function animationLoop() {
+            // Main animation loop for smooth UI updates
+            requestAnimationFrame(animationLoop);
+        }
+
+        // Settings
+        function showSettings() {
+            showToast('الإعدادات - قريباً');
+        }
     </script>
 </body>
 </html>
