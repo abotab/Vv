@@ -1,743 +1,280 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>استوديو صفوان</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>صفوان ستوديو - استوديو الرسم الرقمي</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
-<body>
+<body class="landing-page" id="body">
 
-<!-- ===== SPLASH SCREEN ===== -->
-<div id="splash-screen">
-  <div class="splash-bg"></div>
-  <div class="splash-content">
-    <div class="splash-logo">
-      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="60" cy="60" r="55" stroke="url(#lg1)" stroke-width="3"/>
-        <path d="M30 75 Q45 35 60 60 Q75 85 90 45" stroke="url(#lg2)" stroke-width="5" stroke-linecap="round" fill="none"/>
-        <circle cx="60" cy="60" r="8" fill="url(#lg1)"/>
+<!-- Particles Background -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navigation -->
+<nav class="nav-bar">
+  <div class="nav-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="28" stroke="url(#grad1)" stroke-width="2.5"/>
+        <path d="M15 38 Q22 18 30 28 Q38 38 45 18" stroke="url(#grad2)" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="30" cy="30" r="4" fill="url(#grad1)"/>
         <defs>
-          <linearGradient id="lg1" x1="0" y1="0" x2="120" y2="120">
-            <stop offset="0%" stop-color="#e8a87c"/>
-            <stop offset="100%" stop-color="#d4567a"/>
+          <linearGradient id="grad1" x1="0" y1="0" x2="60" y2="60">
+            <stop offset="0%" stop-color="#FF6B6B"/>
+            <stop offset="100%" stop-color="#FFE66D"/>
           </linearGradient>
-          <linearGradient id="lg2" x1="0" y1="0" x2="120" y2="0">
-            <stop offset="0%" stop-color="#e8a87c"/>
-            <stop offset="50%" stop-color="#a78bfa"/>
-            <stop offset="100%" stop-color="#d4567a"/>
+          <linearGradient id="grad2" x1="0" y1="0" x2="60" y2="60">
+            <stop offset="0%" stop-color="#4ECDC4"/>
+            <stop offset="100%" stop-color="#44A8B3"/>
           </linearGradient>
         </defs>
       </svg>
     </div>
-    <h1 class="splash-title">استوديو صفوان</h1>
-    <p class="splash-sub">للرسوم المتحركة</p>
-    <div class="splash-loader">
-      <div class="splash-bar"></div>
-    </div>
+    <span class="logo-text">صفوان ستوديو</span>
   </div>
-</div>
-
-<!-- ===== HOME PAGE ===== -->
-<div id="page-home" class="page active">
-  <div class="home-bg"></div>
-  <!-- Header -->
-  <header class="home-header">
-    <div class="header-logo">
-      <svg viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="18" stroke="url(#hg)" stroke-width="2"/>
-        <path d="M10 25 Q15 12 20 20 Q25 28 30 15" stroke="url(#hg)" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <defs>
-          <linearGradient id="hg" x1="0" y1="0" x2="40" y2="40">
-            <stop offset="0%" stop-color="#e8a87c"/>
-            <stop offset="100%" stop-color="#d4567a"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <span>استوديو صفوان</span>
-    </div>
-    <button class="btn-settings" onclick="showSettings()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
+  <div class="nav-actions">
+    <button class="btn-theme-toggle" onclick="toggleTheme()" title="تبديل الوضع">
+      <span class="theme-icon" id="themeIcon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </span>
     </button>
-  </header>
-
-  <!-- Hero -->
-  <div class="home-hero">
-    <div class="hero-glow"></div>
-    <h2 class="hero-title">ابدأ إبداعك <span class="grad-text">الآن</span></h2>
-    <p class="hero-sub">أنشئ رسوماً ثابتة أو متحركة احترافية</p>
+    <a href="studio.html" class="btn-start-nav">الدخول للاستوديو</a>
   </div>
+</nav>
 
-  <!-- New Project Buttons -->
-  <div class="new-project-section">
-    <div class="project-type-card" onclick="showNewProjectDialog('static')">
-      <div class="ptc-icon">
-        <svg viewBox="0 0 48 48" fill="none">
-          <rect x="6" y="6" width="36" height="36" rx="4" stroke="currentColor" stroke-width="2.5"/>
-          <path d="M14 30 Q20 18 24 24 Q28 30 34 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-          <circle cx="14" cy="30" r="2" fill="currentColor"/>
-        </svg>
-      </div>
-      <div class="ptc-info">
-        <h3>رسم ثابت</h3>
-        <p>صورة احترافية بطبقات</p>
-      </div>
-      <svg class="ptc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="hero-badge animate__animated animate__fadeInDown">
+      <span class="badge-dot"></span>
+      استوديو رسم رقمي احترافي
     </div>
-    <div class="project-type-card" onclick="showNewProjectDialog('animated')">
-      <div class="ptc-icon anim-icon">
-        <svg viewBox="0 0 48 48" fill="none">
-          <rect x="6" y="10" width="24" height="28" rx="3" stroke="currentColor" stroke-width="2.5"/>
-          <rect x="32" y="14" width="10" height="20" rx="2" stroke="currentColor" stroke-width="2"/>
-          <path d="M15 20 Q18 16 21 20 Q24 24 27 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    
+    <div class="hero-logo-big">
+      <div class="big-logo-ring">
+        <svg viewBox="0 0 200 200" class="rotating-ring">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FF6B6B"/>
+              <stop offset="33%" stop-color="#FFE66D"/>
+              <stop offset="66%" stop-color="#4ECDC4"/>
+              <stop offset="100%" stop-color="#A8EDEA"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="90" stroke="url(#ringGrad)" stroke-width="3" fill="none" stroke-dasharray="12 8" opacity="0.6"/>
+          <circle cx="100" cy="100" r="75" stroke="url(#ringGrad)" stroke-width="1.5" fill="none" opacity="0.3"/>
         </svg>
-      </div>
-      <div class="ptc-info">
-        <h3>رسوم متحركة</h3>
-        <p>فريم باي فريم احترافي</p>
-      </div>
-      <svg class="ptc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-    </div>
-  </div>
-
-  <!-- Recent Projects -->
-  <div class="recent-section">
-    <div class="recent-header">
-      <h3>المشاريع الأخيرة</h3>
-      <button class="btn-all" onclick="showAllProjects()">عرض الكل</button>
-    </div>
-    <div id="recent-projects-list" class="projects-grid">
-      <div class="empty-projects">
-        <svg viewBox="0 0 64 64" fill="none">
-          <rect x="8" y="8" width="48" height="48" rx="6" stroke="currentColor" stroke-width="2" opacity="0.4"/>
-          <path d="M24 32h16M32 24v16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
-        </svg>
-        <p>لا توجد مشاريع بعد</p>
-        <span>ابدأ بإنشاء مشروع جديد</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== NEW PROJECT DIALOG ===== -->
-<div id="dialog-new-project" class="dialog-overlay hidden">
-  <div class="dialog-box">
-    <div class="dialog-header">
-      <h3 id="dialog-title">مشروع جديد</h3>
-      <button class="btn-close" onclick="closeDialog('dialog-new-project')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-    <div class="dialog-body">
-      <div class="form-group">
-        <label>اسم المشروع</label>
-        <input type="text" id="proj-name" placeholder="مشروعي الجديد" />
-      </div>
-      <div class="form-group">
-        <label>الحجم</label>
-        <div class="size-presets">
-          <button class="size-btn active" data-w="1080" data-h="1080" onclick="selectSize(this)">مربع<br/><small>1080×1080</small></button>
-          <button class="size-btn" data-w="1080" data-h="1920" onclick="selectSize(this)">هاتف<br/><small>1080×1920</small></button>
-          <button class="size-btn" data-w="1920" data-h="1080" onclick="selectSize(this)">HD<br/><small>1920×1080</small></button>
-          <button class="size-btn" data-w="2480" data-h="3508" onclick="selectSize(this)">A4<br/><small>2480×3508</small></button>
-        </div>
-        <div class="custom-size">
-          <input type="number" id="proj-width" value="1080" placeholder="العرض" />
-          <span>×</span>
-          <input type="number" id="proj-height" value="1080" placeholder="الارتفاع" />
-          <span>px</span>
-        </div>
-      </div>
-      <div class="form-group" id="fps-group" style="display:none">
-        <label>معدل الفريمات (FPS)</label>
-        <div class="fps-btns">
-          <button class="fps-btn active" data-fps="12" onclick="selectFps(this)">12</button>
-          <button class="fps-btn" data-fps="24" onclick="selectFps(this)">24</button>
-          <button class="fps-btn" data-fps="30" onclick="selectFps(this)">30</button>
-          <button class="fps-btn" data-fps="60" onclick="selectFps(this)">60</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>الخلفية</label>
-        <div class="bg-btns">
-          <button class="bg-btn active" data-bg="white" onclick="selectBg(this)">
-            <span class="bg-swatch" style="background:#fff;border:1px solid #ccc"></span> بيضاء
-          </button>
-          <button class="bg-btn" data-bg="transparent" onclick="selectBg(this)">
-            <span class="bg-swatch checker"></span> شفافة
-          </button>
-          <button class="bg-btn" data-bg="black" onclick="selectBg(this)">
-            <span class="bg-swatch" style="background:#000"></span> سوداء
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="dialog-footer">
-      <button class="btn-cancel" onclick="closeDialog('dialog-new-project')">إلغاء</button>
-      <button class="btn-create" onclick="createProject()">إنشاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== ALL PROJECTS PAGE ===== -->
-<div id="page-all-projects" class="page hidden">
-  <div class="page-topbar">
-    <button class="btn-back" onclick="goHome()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
-    </button>
-    <h2>كل المشاريع</h2>
-    <button class="btn-icon" onclick="showNewProjectDialog('static')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
-      </svg>
-    </button>
-  </div>
-  <div id="all-projects-grid" class="projects-grid all-grid"></div>
-</div>
-
-<!-- ===== CANVAS PAGE (Editor) ===== -->
-<div id="page-canvas" class="page hidden">
-
-  <!-- Top Bar -->
-  <div class="canvas-topbar">
-    <button class="btn-back-small" onclick="exitEditor()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
-    </button>
-    <span id="canvas-title" class="canvas-proj-name">مشروع</span>
-    <div class="topbar-actions">
-      <button class="tb-btn" onclick="undoAction()" title="تراجع">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 7v6h6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M3 13a9 9 0 1 0 2.2-5.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="tb-btn" onclick="redoAction()" title="إعادة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 7v6h-6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M21 13a9 9 0 1 1-2.2-5.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="tb-btn" onclick="showExportDialog()" title="تصدير">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </button>
-      <button class="tb-btn" onclick="showLayersPanel()" title="الطبقات">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-          <polyline points="2 17 12 22 22 17"/>
-          <polyline points="2 12 12 17 22 12"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Editor Layout -->
-  <div class="editor-layout">
-
-    <!-- Left Toolbar -->
-    <div class="left-toolbar">
-      <button class="tool-btn active" data-tool="brush" onclick="selectTool('brush',this)" title="فرشاة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/>
-          <path d="M7.07 14.94C5.79 16.22 4 16 4 16s-.22-1.79 1.06-3.07"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="eraser" onclick="selectTool('eraser',this)" title="ممحاة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 20H7L3 16l10-10 7 7-1.5 1.5"/>
-          <path d="M6.5 17.5l5-5"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="fill" onclick="selectTool('fill',this)" title="دلو">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78l8.72-8.28"/>
-          <path d="M20 11.5a2.5 2.5 0 0 0 0-5"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="eyedropper" onclick="selectTool('eyedropper',this)" title="قطارة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M2 22l1-1h3l9-9"/>
-          <path d="M3 21v-3l9-9"/>
-          <path d="M15 6l3.5-3.5a2.12 2.12 0 0 1 3 3L18 9l.5.5a2.12 2.12 0 0 1 0 3L15 15l-.5-.5a2.12 2.12 0 0 1 0-3L12 9l3-3z"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="select" onclick="selectTool('select',this)" title="تحديد">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 2"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="move" onclick="selectTool('move',this)" title="تحريك">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="5 9 2 12 5 15"/>
-          <polyline points="9 5 12 2 15 5"/>
-          <polyline points="15 19 12 22 9 19"/>
-          <polyline points="19 9 22 12 19 15"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <line x1="12" y1="2" x2="12" y2="22"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="line" onclick="selectTool('line',this)" title="خط">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="5" y1="19" x2="19" y2="5"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="rect" onclick="selectTool('rect',this)" title="مستطيل">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="5" width="18" height="14" rx="2"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="circle" onclick="selectTool('circle',this)" title="دائرة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="9"/>
-        </svg>
-      </button>
-      <button class="tool-btn" data-tool="text" onclick="selectTool('text',this)" title="نص">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="4 7 4 4 20 4 20 7"/>
-          <line x1="9" y1="20" x2="15" y2="20"/>
-          <line x1="12" y1="4" x2="12" y2="20"/>
-        </svg>
-      </button>
-      <!-- Color -->
-      <div class="tool-divider"></div>
-      <div class="color-picker-mini" onclick="showColorPanel()">
-        <div id="current-color-swatch" class="color-swatch-main" style="background:#000"></div>
-        <div id="secondary-color-swatch" class="color-swatch-sec" style="background:#fff"></div>
-      </div>
-    </div>
-
-    <!-- Canvas Container -->
-    <div class="canvas-container" id="canvas-container">
-      <div class="canvas-wrapper" id="canvas-wrapper">
-        <canvas id="main-canvas"></canvas>
-        <canvas id="overlay-canvas"></canvas>
-      </div>
-    </div>
-
-    <!-- Right Panel -->
-    <div class="right-panel" id="right-panel">
-      <!-- Brush Settings -->
-      <div class="panel-section" id="panel-brush">
-        <div class="panel-title">الفرشاة</div>
-        <button class="brush-select-btn" onclick="showBrushPanel()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/>
-            <path d="M7.07 14.94C5.79 16.22 4 16 4 16s-.22-1.79 1.06-3.07"/>
+        <div class="big-logo-inner">
+          <svg viewBox="0 0 120 120" fill="none">
+            <path d="M25 85 Q40 35 60 55 Q80 75 95 25" stroke="url(#heroGrad)" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <circle cx="25" cy="85" r="6" fill="#FF6B6B"/>
+            <circle cx="60" cy="55" r="5" fill="#FFE66D"/>
+            <circle cx="95" cy="25" r="6" fill="#4ECDC4"/>
+            <defs>
+              <linearGradient id="heroGrad" x1="0" y1="0" x2="120" y2="120">
+                <stop offset="0%" stop-color="#FF6B6B"/>
+                <stop offset="50%" stop-color="#FFE66D"/>
+                <stop offset="100%" stop-color="#4ECDC4"/>
+              </linearGradient>
+            </defs>
           </svg>
-          <span id="current-brush-name">فرشاة صفوان</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron">
-            <path d="M6 9l6 6 6-6"/>
+        </div>
+      </div>
+    </div>
+
+    <h1 class="hero-title animate__animated animate__fadeInUp">
+      <span class="title-main">صفوان</span>
+      <span class="title-sub">ستوديو</span>
+    </h1>
+    <p class="hero-desc animate__animated animate__fadeInUp animate__delay-1s">
+      استوديو رسم رقمي احترافي — ارسم، أبدع، عبّر.<br>
+      أدوات متكاملة للرسم الرقمي بجودة احترافية.
+    </p>
+
+    <a href="studio.html" class="btn-start-main animate__animated animate__fadeInUp animate__delay-1s">
+      <span class="btn-glow"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      ابدأ الآن
+    </a>
+  </div>
+
+  <!-- Floating Art Elements -->
+  <div class="floating-art">
+    <div class="float-item float-1">
+      <svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="#FF6B6B" stroke-width="2" fill="rgba(255,107,107,0.08)"/><path d="M20 50 Q35 20 50 40 Q60 55 65 25" stroke="#FF6B6B" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>
+    </div>
+    <div class="float-item float-2">
+      <svg viewBox="0 0 80 80" fill="none"><rect x="5" y="5" width="70" height="70" rx="12" stroke="#4ECDC4" stroke-width="2" fill="rgba(78,205,196,0.08)"/><path d="M15 60 L35 25 L55 45 L65 30" stroke="#4ECDC4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    </div>
+    <div class="float-item float-3">
+      <svg viewBox="0 0 80 80" fill="none"><polygon points="40,5 75,70 5,70" stroke="#FFE66D" stroke-width="2" fill="rgba(255,230,109,0.08)"/><circle cx="40" cy="45" r="12" stroke="#FFE66D" stroke-width="2" fill="none"/></svg>
+    </div>
+    <div class="float-item float-4">
+      <svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="35" stroke="#A8EDEA" stroke-width="2" fill="rgba(168,237,234,0.08)" stroke-dasharray="8 5"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="section-header">
+    <h2 class="section-title">خدمات الاستوديو</h2>
+    <p class="section-sub">اختر نوع عملك الإبداعي</p>
+  </div>
+
+  <div class="gallery-grid">
+    <!-- Card 1 -->
+    <div class="gallery-card" onclick="openCard(this, 'رسم كاريكاتير')">
+      <div class="card-image-wrap">
+        <div class="card-image caricature-bg">
+          <svg viewBox="0 0 200 200" class="card-svg">
+            <circle cx="100" cy="80" r="55" fill="rgba(255,107,107,0.15)" stroke="#FF6B6B" stroke-width="2"/>
+            <ellipse cx="100" cy="95" rx="30" ry="35" fill="rgba(255,107,107,0.2)"/>
+            <circle cx="85" cy="75" r="8" fill="#FF6B6B" opacity="0.7"/>
+            <circle cx="115" cy="75" r="8" fill="#FF6B6B" opacity="0.7"/>
+            <path d="M85 105 Q100 120 115 105" stroke="#FF6B6B" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M70 60 Q85 50 90 62" stroke="#FF6B6B" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M130 60 Q115 50 110 62" stroke="#FF6B6B" stroke-width="2.5" stroke-linecap="round" fill="none"/>
           </svg>
-        </button>
-        <div class="slider-row">
-          <label>الحجم</label>
-          <div class="slider-wrap">
-            <input type="range" id="brush-size" min="1" max="200" value="10" oninput="updateBrushSize(this.value)"/>
-          </div>
-          <span id="brush-size-val">10</span>
         </div>
-        <div class="slider-row">
-          <label>التعتيم</label>
-          <div class="slider-wrap">
-            <input type="range" id="brush-opacity" min="1" max="100" value="100" oninput="updateBrushOpacity(this.value)"/>
-          </div>
-          <span id="brush-opacity-val">100%</span>
-        </div>
-        <div class="slider-row">
-          <label>التنعيم</label>
-          <div class="slider-wrap">
-            <input type="range" id="brush-smooth" min="0" max="100" value="50" oninput="updateBrushSmooth(this.value)"/>
-          </div>
-          <span id="brush-smooth-val">50</span>
-        </div>
-        <div class="slider-row">
-          <label>الضغط</label>
-          <div class="slider-wrap">
-            <input type="range" id="brush-pressure" min="0" max="100" value="70" oninput="updateBrushPressure(this.value)"/>
-          </div>
-          <span id="brush-pressure-val">70</span>
+        <div class="card-overlay">
+          <span class="card-tag-reveal">رسم كاريكاتير</span>
         </div>
       </div>
-
-      <!-- Transform -->
-      <div class="panel-section" id="panel-transform" style="display:none">
-        <div class="panel-title">التحويل</div>
-        <div class="transform-grid">
-          <div class="tf-row">
-            <label>X</label>
-            <input type="number" id="tf-x" value="0" onchange="applyTransform()"/>
-          </div>
-          <div class="tf-row">
-            <label>Y</label>
-            <input type="number" id="tf-y" value="0" onchange="applyTransform()"/>
-          </div>
-          <div class="tf-row">
-            <label>العرض</label>
-            <input type="number" id="tf-w" value="100" onchange="applyTransform()"/>
-          </div>
-          <div class="tf-row">
-            <label>الارتفاع</label>
-            <input type="number" id="tf-h" value="100" onchange="applyTransform()"/>
-          </div>
-          <div class="tf-row full">
-            <label>الدوران</label>
-            <input type="range" id="tf-rot" min="0" max="360" value="0" oninput="applyRotation(this.value)"/>
-            <span id="tf-rot-val">0°</span>
-          </div>
+      <div class="card-info">
+        <div class="card-icon-wrap" style="background: rgba(255,107,107,0.15)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2" width="22"><circle cx="12" cy="8" r="5"/><path d="M8 12 Q4 14 4 18h16q0-4-4-6"/><path d="M9 7 Q12 5 15 7"/></svg>
         </div>
-        <div class="transform-btns">
-          <button onclick="flipH()">قلب أفقي</button>
-          <button onclick="flipV()">قلب عمودي</button>
+        <div>
+          <h3 class="card-title">رسم كاريكاتير</h3>
+          <p class="card-desc">رسوم ساخرة ومعبرة بأسلوب احترافي</p>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Animation Timeline (shown for animated projects) -->
-  <div class="timeline-panel" id="timeline-panel" style="display:none">
-    <div class="timeline-header">
-      <button class="tl-btn" onclick="addFrame()" title="إضافة فريم">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <path d="M12 8v8M8 12h8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="tl-btn" onclick="duplicateFrame()" title="نسخ فريم">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="9" y="9" width="13" height="13" rx="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
-      </button>
-      <button class="tl-btn" onclick="deleteFrame()" title="حذف فريم">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-        </svg>
-      </button>
-      <div class="tl-separator"></div>
-      <button class="tl-btn play-btn" id="play-btn" onclick="togglePlayback()" title="تشغيل">
-        <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor">
-          <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-      </button>
-      <div class="tl-separator"></div>
-      <span class="fps-display">FPS: <span id="fps-display">12</span></span>
-      <div class="tl-separator"></div>
-      <label class="onion-toggle">
-        <input type="checkbox" id="onion-skin" onchange="toggleOnionSkin(this.checked)"/>
-        <span>البصلة</span>
-      </label>
+    <!-- Card 2 -->
+    <div class="gallery-card" onclick="openCard(this, 'رسم رقمي')">
+      <div class="card-image-wrap">
+        <div class="card-image digital-bg">
+          <svg viewBox="0 0 200 200" class="card-svg">
+            <defs><linearGradient id="dg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ECDC4"/><stop offset="100%" stop-color="#44A8B3"/></linearGradient></defs>
+            <rect x="30" y="30" width="140" height="140" rx="20" fill="rgba(78,205,196,0.1)" stroke="url(#dg1)" stroke-width="2"/>
+            <path d="M50 140 Q80 80 110 110 Q140 80 160 60" stroke="url(#dg1)" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <circle cx="50" cy="140" r="6" fill="#4ECDC4"/>
+            <circle cx="110" cy="110" r="5" fill="#4ECDC4" opacity="0.7"/>
+            <circle cx="160" cy="60" r="6" fill="#44A8B3"/>
+            <rect x="60" y="155" width="20" height="8" rx="4" fill="#4ECDC4" opacity="0.5"/>
+            <rect x="90" y="155" width="30" height="8" rx="4" fill="#4ECDC4" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="card-overlay">
+          <span class="card-tag-reveal">رسم رقمي</span>
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-icon-wrap" style="background: rgba(78,205,196,0.15)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4ECDC4" stroke-width="2" width="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div>
+          <h3 class="card-title">رسم رقمي</h3>
+          <p class="card-desc">فن رقمي بأعلى مستويات الجودة</p>
+        </div>
+      </div>
     </div>
-    <div class="frames-track" id="frames-track">
-      <!-- frames inserted here by JS -->
+
+    <!-- Card 3 -->
+    <div class="gallery-card" onclick="openCard(this, 'رسم سكتشات')">
+      <div class="card-image-wrap">
+        <div class="card-image sketch-bg">
+          <svg viewBox="0 0 200 200" class="card-svg">
+            <path d="M40 160 Q60 100 80 120 Q100 140 120 80 Q140 20 160 50" stroke="#FFE66D" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M50 150 Q70 130 90 140 Q110 150 130 100 Q150 50 165 65" stroke="#FFE66D" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+            <line x1="40" y1="170" x2="170" y2="170" stroke="#FFE66D" stroke-width="2" opacity="0.3"/>
+            <rect x="70" y="30" width="15" height="60" rx="5" fill="rgba(255,230,109,0.3)" transform="rotate(-15 77 60)"/>
+          </svg>
+        </div>
+        <div class="card-overlay">
+          <span class="card-tag-reveal">رسم سكتشات</span>
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-icon-wrap" style="background: rgba(255,230,109,0.15)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FFE66D" stroke-width="2" width="22"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <h3 class="card-title">رسم سكتشات</h3>
+          <p class="card-desc">ارسم أفكارك بسرعة وحرية</p>
+        </div>
+      </div>
     </div>
+
+    <!-- Card 4 -->
+    <div class="gallery-card" onclick="openCard(this, 'رسوم متحركة')">
+      <div class="card-image-wrap">
+        <div class="card-image anim-bg">
+          <svg viewBox="0 0 200 200" class="card-svg">
+            <defs><linearGradient id="ag1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#A8EDEA"/><stop offset="100%" stop-color="#FED6E3"/></linearGradient></defs>
+            <circle cx="70" cy="100" r="30" fill="rgba(168,237,234,0.2)" stroke="url(#ag1)" stroke-width="2">
+              <animateTransform attributeName="transform" type="translate" values="0,0;15,0;0,0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="135" cy="100" r="22" fill="rgba(254,214,227,0.2)" stroke="url(#ag1)" stroke-width="2">
+              <animateTransform attributeName="transform" type="translate" values="0,0;-15,0;0,0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <path d="M55 75 L75 65 L80 80" stroke="#A8EDEA" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M125 75 L145 65 L140 80" stroke="#FED6E3" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="card-overlay">
+          <span class="card-tag-reveal">رسوم متحركة</span>
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-icon-wrap" style="background: rgba(168,237,234,0.15)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A8EDEA" stroke-width="2" width="22"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div>
+          <h3 class="card-title">رسوم متحركة</h3>
+          <p class="card-desc">أنيميشن وحركة بشكل إبداعي</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-content">
+    <h2>جاهز للإبداع؟</h2>
+    <p>انضم لآلاف الرسامين وابدأ رحلتك الإبداعية اليوم</p>
+    <a href="studio.html" class="btn-start-main">
+      <span class="btn-glow"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      ادخل الاستوديو
+    </a>
+  </div>
+</section>
+
+<!-- Card Modal -->
+<div class="card-modal" id="cardModal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <button class="modal-close" onclick="document.getElementById('cardModal').classList.remove('active')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h3 id="modalTitle"></h3>
+    <p id="modalDesc"></p>
+    <a href="studio.html" class="btn-start-main" style="margin-top:1.5rem; display:inline-flex">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      افتح الاستوديو
+    </a>
   </div>
 </div>
 
-<!-- ===== BRUSH PANEL ===== -->
-<div id="brush-panel" class="side-panel hidden">
-  <div class="side-panel-header">
-    <h3>الفرش</h3>
-    <button class="btn-close" onclick="hideBrushPanel()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
-  </div>
-  <div class="brush-search">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-    </svg>
-    <input type="text" placeholder="بحث..." oninput="filterBrushes(this.value)"/>
-  </div>
-  <div class="brush-categories" id="brush-categories">
-    <!-- Inserted by JS -->
-  </div>
-</div>
-
-<!-- ===== COLOR PANEL ===== -->
-<div id="color-panel" class="side-panel hidden">
-  <div class="side-panel-header">
-    <h3>اللون</h3>
-    <button class="btn-close" onclick="hideColorPanel()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
-  </div>
-  <div class="color-panel-body">
-    <div class="color-wheel-wrap">
-      <canvas id="color-wheel" width="220" height="220"></canvas>
-      <div id="color-wheel-cursor" class="wheel-cursor"></div>
-    </div>
-    <div class="brightness-slider-wrap">
-      <canvas id="brightness-bar" width="220" height="24"></canvas>
-      <div id="brightness-cursor" class="brightness-cursor"></div>
-    </div>
-    <div class="color-hex-row">
-      <div id="color-preview" class="color-preview-box"></div>
-      <input type="text" id="hex-input" class="hex-input" placeholder="#000000" onchange="setColorFromHex(this.value)"/>
-    </div>
-    <div class="rgb-sliders">
-      <div class="rgb-row">
-        <label>R</label>
-        <input type="range" id="r-slider" min="0" max="255" value="0" oninput="updateFromRGB()"/>
-        <input type="number" id="r-val" min="0" max="255" value="0" onchange="updateFromRGB()"/>
-      </div>
-      <div class="rgb-row">
-        <label>G</label>
-        <input type="range" id="g-slider" min="0" max="255" value="0" oninput="updateFromRGB()"/>
-        <input type="number" id="g-val" min="0" max="255" value="0" onchange="updateFromRGB()"/>
-      </div>
-      <div class="rgb-row">
-        <label>B</label>
-        <input type="range" id="b-slider" min="0" max="255" value="0" oninput="updateFromRGB()"/>
-        <input type="number" id="b-val" min="0" max="255" value="0" onchange="updateFromRGB()"/>
-      </div>
-    </div>
-    <div class="recent-colors-row">
-      <label>ألوان حديثة</label>
-      <div id="recent-colors" class="recent-colors-grid"></div>
-    </div>
-    <div class="palette-row">
-      <label>لوحة سريعة</label>
-      <div class="quick-palette">
-        <div class="qp-color" style="background:#000000" onclick="setQuickColor('#000000')"></div>
-        <div class="qp-color" style="background:#ffffff" onclick="setQuickColor('#ffffff')"></div>
-        <div class="qp-color" style="background:#e74c3c" onclick="setQuickColor('#e74c3c')"></div>
-        <div class="qp-color" style="background:#e67e22" onclick="setQuickColor('#e67e22')"></div>
-        <div class="qp-color" style="background:#f1c40f" onclick="setQuickColor('#f1c40f')"></div>
-        <div class="qp-color" style="background:#2ecc71" onclick="setQuickColor('#2ecc71')"></div>
-        <div class="qp-color" style="background:#3498db" onclick="setQuickColor('#3498db')"></div>
-        <div class="qp-color" style="background:#9b59b6" onclick="setQuickColor('#9b59b6')"></div>
-        <div class="qp-color" style="background:#1abc9c" onclick="setQuickColor('#1abc9c')"></div>
-        <div class="qp-color" style="background:#34495e" onclick="setQuickColor('#34495e')"></div>
-        <div class="qp-color" style="background:#e8a87c" onclick="setQuickColor('#e8a87c')"></div>
-        <div class="qp-color" style="background:#d4567a" onclick="setQuickColor('#d4567a')"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== LAYERS PANEL ===== -->
-<div id="layers-panel" class="side-panel hidden">
-  <div class="side-panel-header">
-    <h3>الطبقات</h3>
-    <button class="btn-close" onclick="hideLayersPanel()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
-  </div>
-  <div class="layers-toolbar">
-    <button onclick="addLayer()" title="إضافة طبقة">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
-      </svg>
-    </button>
-    <button onclick="duplicateLayer()" title="نسخ طبقة">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="9" y="9" width="13" height="13" rx="2"/>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-      </svg>
-    </button>
-    <button onclick="mergeLayerDown()" title="دمج للأسفل">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 5v14M5 15l7 7 7-7" stroke-linecap="round"/>
-      </svg>
-    </button>
-    <button onclick="deleteLayer()" title="حذف طبقة">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-      </svg>
-    </button>
-  </div>
-  <div class="layers-list" id="layers-list">
-    <!-- Inserted by JS -->
-  </div>
-  <div class="layer-options">
-    <div class="lo-row">
-      <label>وضع المزج</label>
-      <select id="blend-mode-select" onchange="changeBlendMode(this.value)">
-        <option value="normal">عادي</option>
-        <option value="multiply">ضرب</option>
-        <option value="screen">شاشة</option>
-        <option value="overlay">تراكب</option>
-        <option value="soft-light">ضوء ناعم</option>
-        <option value="hard-light">ضوء قاسٍ</option>
-        <option value="difference">فرق</option>
-        <option value="exclusion">استثناء</option>
-        <option value="color-dodge">تفتيح اللون</option>
-        <option value="color-burn">تعتيم اللون</option>
-      </select>
-    </div>
-    <div class="lo-row">
-      <label>الشفافية</label>
-      <input type="range" id="layer-opacity" min="0" max="100" value="100" oninput="changeLayerOpacity(this.value)"/>
-      <span id="layer-opacity-val">100%</span>
-    </div>
-  </div>
-</div>
-
-<!-- ===== EXPORT DIALOG ===== -->
-<div id="dialog-export" class="dialog-overlay hidden">
-  <div class="dialog-box">
-    <div class="dialog-header">
-      <h3>تصدير وتنزيل</h3>
-      <button class="btn-close" onclick="closeDialog('dialog-export')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-    <div class="dialog-body">
-      <div class="export-formats">
-        <button class="exp-btn active" data-fmt="png" onclick="selectExportFmt(this)">PNG</button>
-        <button class="exp-btn" data-fmt="jpeg" onclick="selectExportFmt(this)">JPEG</button>
-        <button class="exp-btn" data-fmt="webp" onclick="selectExportFmt(this)">WebP</button>
-        <button class="exp-btn" id="gif-btn" data-fmt="gif" onclick="selectExportFmt(this)" style="display:none">GIF</button>
-        <button class="exp-btn" id="mp4-btn" data-fmt="mp4" onclick="selectExportFmt(this)" style="display:none">MP4</button>
-      </div>
-      <div class="form-group" id="quality-group">
-        <label>الجودة</label>
-        <input type="range" id="export-quality" min="10" max="100" value="95" oninput="document.getElementById('eq-val').textContent=this.value+'%'"/>
-        <span id="eq-val">95%</span>
-      </div>
-      <div class="form-group">
-        <label>الحجم</label>
-        <select id="export-scale">
-          <option value="1">مقياس 1x</option>
-          <option value="2">مقياس 2x</option>
-          <option value="0.5">مقياس 0.5x</option>
-        </select>
-      </div>
-    </div>
-    <div class="dialog-footer">
-      <button class="btn-cancel" onclick="closeDialog('dialog-export')">إلغاء</button>
-      <button class="btn-create" onclick="doExport()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        تنزيل
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== SETTINGS PAGE ===== -->
-<div id="page-settings" class="page hidden">
-  <div class="page-topbar">
-    <button class="btn-back" onclick="goHome()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
-    </button>
-    <h2>الإعدادات</h2>
-    <span></span>
-  </div>
-  <div class="settings-body">
-    <div class="settings-section">
-      <h4>المظهر</h4>
-      <div class="setting-row">
-        <span>الوضع الليلي</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)"/>
-          <span class="toggle-thumb"></span>
-        </label>
-      </div>
-    </div>
-    <div class="settings-section">
-      <h4>الرسم</h4>
-      <div class="setting-row">
-        <span>حساسية اللمس</span>
-        <input type="range" min="1" max="10" value="5" id="touch-sensitivity"/>
-      </div>
-      <div class="setting-row">
-        <span>تنعيم تلقائي</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="auto-smooth" checked/>
-          <span class="toggle-thumb"></span>
-        </label>
-      </div>
-    </div>
-    <div class="settings-section">
-      <h4>المشاريع</h4>
-      <div class="setting-row">
-        <span>حفظ تلقائي</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="auto-save" checked/>
-          <span class="toggle-thumb"></span>
-        </label>
-      </div>
-      <div class="setting-row danger">
-        <span>حذف كل المشاريع</span>
-        <button class="btn-danger" onclick="deleteAllProjects()">حذف</button>
-      </div>
-    </div>
-    <div class="settings-section">
-      <h4>حول الاستوديو</h4>
-      <div class="setting-row">
-        <span>الإصدار</span>
-        <span class="setting-val">1.0.0</span>
-      </div>
-      <div class="setting-row">
-        <span>المطور</span>
-        <span class="setting-val">استوديو صفوان</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== FRAME SETTINGS DIALOG ===== -->
-<div id="dialog-frame-settings" class="dialog-overlay hidden">
-  <div class="dialog-box small">
-    <div class="dialog-header">
-      <h3>إعدادات الفريم</h3>
-      <button class="btn-close" onclick="closeDialog('dialog-frame-settings')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-    <div class="dialog-body">
-      <div class="form-group">
-        <label>مدة الفريم (ثانية)</label>
-        <input type="number" id="frame-duration" min="0.1" max="10" step="0.1" value="0.1"/>
-      </div>
-    </div>
-    <div class="dialog-footer">
-      <button class="btn-cancel" onclick="closeDialog('dialog-frame-settings')">إلغاء</button>
-      <button class="btn-create" onclick="applyFrameSettings()">تطبيق</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== OVERLAY / TOAST ===== -->
-<div id="toast" class="toast hidden"></div>
-
-<script src="app.js"></script>
+<script src="landing.js"></script>
 </body>
 </html>
