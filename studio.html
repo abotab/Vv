@@ -3,485 +3,299 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الاستوديو - صفوان ستوديو</title>
-<link rel="stylesheet" href="style.css">
+<title>الاستوديو — صفوان ستوديو</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-<style>
-/* Studio-specific extras */
-.studio-page { height: 100vh; overflow: hidden; }
-.panel-section { margin-bottom: 1.2rem; }
-.panel-sep { height: 1px; background: var(--border); margin: 0.75rem 0; }
-.mini-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text2);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  font-family: var(--font);
-  transition: all 0.2s;
-}
-.mini-btn:hover { border-color: var(--accent1); color: var(--accent1); }
-.mini-btn.danger:hover { border-color: #ff4444; color: #ff4444; }
-.flex-row { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
-
-/* Settings overlay */
-.settings-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(10px);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.settings-overlay.open { opacity: 1; pointer-events: all; }
-.settings-modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 2rem;
-  width: 480px;
-  max-height: 80vh;
-  overflow-y: auto;
-  position: relative;
-}
-.settings-title {
-  font-size: 1.4rem;
-  font-weight: 900;
-  margin-bottom: 1.5rem;
-  background: var(--grad1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.settings-group { margin-bottom: 1.5rem; }
-.settings-group-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--border);
-}
-.settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 0;
-}
-.settings-label { font-size: 0.85rem; font-weight: 600; color: var(--text2); }
-.toggle-switch {
-  width: 44px; height: 24px;
-  background: var(--bg3);
-  border-radius: 100px;
-  position: relative;
-  cursor: pointer;
-  transition: background 0.3s;
-  border: none;
-}
-.toggle-switch.on { background: var(--accent1); }
-.toggle-switch::after {
-  content: '';
-  position: absolute;
-  top: 3px; right: 3px;
-  width: 18px; height: 18px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.3s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-.toggle-switch.on::after { transform: translateX(-20px); }
-.settings-select {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.35rem 0.6rem;
-  font-family: var(--font);
-  cursor: pointer;
-  outline: none;
-}
-.close-settings {
-  position: absolute;
-  top: 1rem; left: 1rem;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--text2);
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.close-settings:hover { border-color: var(--accent1); color: var(--accent1); }
-.close-settings svg { width: 16px; }
-
-/* New Canvas dialog */
-.dialog-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(8px);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
-}
-.dialog-overlay.open { opacity: 1; pointer-events: all; }
-.dialog-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 1.75rem;
-  width: 420px;
-  position: relative;
-}
-.dialog-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 1.25rem; }
-.dialog-row {
-  display: flex; align-items: center; gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-.dialog-label { font-size: 0.8rem; font-weight: 700; color: var(--text3); width: 80px; }
-.dialog-input, .dialog-select {
-  flex: 1;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.45rem 0.7rem;
-  font-family: var(--font);
-  outline: none;
-}
-.dialog-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-  justify-content: flex-end;
-}
-.btn-primary {
-  background: var(--grad1);
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 0.55rem 1.4rem;
-  cursor: pointer;
-  font-family: var(--font);
-  transition: all 0.2s;
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,107,0.35); }
-.btn-secondary {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text2);
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 0.55rem 1.2rem;
-  cursor: pointer;
-  font-family: var(--font);
-  transition: all 0.2s;
-}
-.btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
-
-.size-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.75rem;
-}
-.size-preset {
-  padding: 0.3rem 0.7rem;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text3);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font);
-}
-.size-preset:hover { border-color: var(--accent2); color: var(--accent2); }
-
-/* Brush name badges */
-.brush-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.6rem;
-  background: rgba(255,107,107,0.1);
-  border: 1px solid rgba(255,107,107,0.2);
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--accent1);
-  margin-bottom: 0.35rem;
-  cursor: pointer;
-}
-
-/* Checkerboard for transparency */
-.canvas-wrap-outer {
-  position: relative;
-  display: inline-block;
-}
-.canvas-checker {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(45deg, #333 25%, transparent 25%),
-    linear-gradient(-45deg, #333 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #333 75%),
-    linear-gradient(-45deg, transparent 75%, #333 75%);
-  background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-  z-index: 0;
-  border-radius: 2px;
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body class="studio-page" id="studioBody">
-
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- TOP BAR -->
+<!-- ============ TOP BAR ============ -->
 <div class="studio-topbar">
-  <!-- Logo -->
   <a href="index.html" class="topbar-logo">
-    <svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="url(#tn1)" stroke-width="2.5"/><path d="M15 38 Q22 18 30 28 Q38 38 45 18" stroke="url(#tn2)" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="30" cy="30" r="4" fill="url(#tn1)"/><defs><linearGradient id="tn1" x1="0" y1="0" x2="60" y2="60"><stop offset="0%" stop-color="#FF6B6B"/><stop offset="100%" stop-color="#FFE66D"/></linearGradient><linearGradient id="tn2" x1="0" y1="0" x2="60" y2="60"><stop offset="0%" stop-color="#4ECDC4"/><stop offset="100%" stop-color="#44A8B3"/></linearGradient></defs></svg>
+    <svg viewBox="0 0 60 60" fill="none" width="28"><circle cx="30" cy="30" r="28" stroke="url(#tl1)" stroke-width="2.5"/><path d="M15 38 Q22 18 30 28 Q38 38 45 18" stroke="url(#tl2)" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="30" cy="30" r="4" fill="url(#tl1)"/><defs><linearGradient id="tl1" x1="0" y1="0" x2="60" y2="60"><stop offset="0%" stop-color="#FF6B6B"/><stop offset="100%" stop-color="#FFE66D"/></linearGradient><linearGradient id="tl2" x1="0" y1="0" x2="60" y2="60"><stop offset="0%" stop-color="#4ECDC4"/><stop offset="100%" stop-color="#44A8B3"/></linearGradient></defs></svg>
     <span>صفوان ستوديو</span>
   </a>
 
-  <!-- File Menu -->
   <div class="topbar-menu">
+    <!-- FILE -->
     <div class="topbar-menu-item">
       <button class="topbar-menu-btn">ملف</button>
       <div class="topbar-dropdown">
-        <button class="dd-item" onclick="showNewCanvas()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>مشروع جديد <span class="dd-kbd">Ctrl+N</span></button>
-        <button class="dd-item" onclick="openImage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>فتح صورة</button>
+        <button class="dd-item" onclick="showNewCanvas()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>مشروع جديد<span class="dd-kbd">Ctrl+N</span></button>
+        <button class="dd-item" onclick="openProjects()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>المشاريع المحفوظة<span class="dd-kbd">Ctrl+P</span></button>
+        <button class="dd-item" onclick="document.getElementById('fileInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>فتح صورة</button>
         <div class="dd-sep"></div>
-        <button class="dd-item" onclick="exportPNG()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>تصدير PNG <span class="dd-kbd">Ctrl+E</span></button>
+        <button class="dd-item" onclick="saveProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>حفظ المشروع<span class="dd-kbd">Ctrl+S</span></button>
+        <button class="dd-item" onclick="exportPNG()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>تصدير PNG<span class="dd-kbd">Ctrl+E</span></button>
         <button class="dd-item" onclick="exportJPEG()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>تصدير JPEG</button>
         <button class="dd-item" onclick="exportWebP()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>تصدير WebP</button>
-        <button class="dd-item" onclick="exportTransparentPNG()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>PNG شفاف</button>
-        <div class="dd-sep"></div>
-        <button class="dd-item" onclick="saveProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>حفظ المشروع <span class="dd-kbd">Ctrl+S</span></button>
+        <button class="dd-item" onclick="exportTransparent()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>PNG شفاف</button>
+        <div id="exportGifBtn" style="display:none"><button class="dd-item" onclick="exportGIF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>تصدير GIF متحرك</button>
+        <button class="dd-item" onclick="exportVideo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>تصدير فيديو WebM</button></div>
       </div>
     </div>
 
+    <!-- EDIT -->
     <div class="topbar-menu-item">
       <button class="topbar-menu-btn">تعديل</button>
       <div class="topbar-dropdown">
-        <button class="dd-item" onclick="doUndo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>تراجع <span class="dd-kbd">Ctrl+Z</span></button>
-        <button class="dd-item" onclick="doRedo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>إعادة <span class="dd-kbd">Ctrl+Y</span></button>
+        <button class="dd-item" onclick="doUndo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>تراجع<span class="dd-kbd">Ctrl+Z</span></button>
+        <button class="dd-item" onclick="doRedo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>إعادة<span class="dd-kbd">Ctrl+Y</span></button>
         <div class="dd-sep"></div>
-        <button class="dd-item" onclick="doCopy()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>نسخ <span class="dd-kbd">Ctrl+C</span></button>
-        <button class="dd-item" onclick="doPaste()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>لصق <span class="dd-kbd">Ctrl+V</span></button>
-        <button class="dd-item" onclick="doCut()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>قص <span class="dd-kbd">Ctrl+X</span></button>
+        <button class="dd-item" onclick="doCopy()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>نسخ<span class="dd-kbd">Ctrl+C</span></button>
+        <button class="dd-item" onclick="doPaste()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>لصق<span class="dd-kbd">Ctrl+V</span></button>
+        <button class="dd-item" onclick="doSelectAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 2"/></svg>تحديد الكل<span class="dd-kbd">Ctrl+A</span></button>
         <div class="dd-sep"></div>
-        <button class="dd-item" onclick="selectAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>تحديد الكل <span class="dd-kbd">Ctrl+A</span></button>
-        <button class="dd-item" onclick="clearCanvas()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>مسح الكل</button>
+        <button class="dd-item" onclick="doFlipH()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M4 7l4 4-4 4M20 7l-4 4 4 4"/></svg>قلب أفقي</button>
+        <button class="dd-item" onclick="doFlipV()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M7 4l4 4-4 4M7 20l4-4-4-4"/></svg>قلب رأسي</button>
+        <button class="dd-item" onclick="doRotateCW()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>تدوير 90°</button>
+        <div class="dd-sep"></div>
+        <button class="dd-item" onclick="clearCanvas()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>مسح اللوحة</button>
       </div>
     </div>
 
+    <!-- VIEW -->
     <div class="topbar-menu-item">
       <button class="topbar-menu-btn">عرض</button>
       <div class="topbar-dropdown">
-        <button class="dd-item" onclick="toggleGrid()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>الشبكة المساعدة <span class="dd-kbd">Ctrl+G</span></button>
-        <button class="dd-item" onclick="toggleRuler()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16.5L16.5 2l5.5 5.5L7.5 22z"/><line x1="8" y1="14" x2="11" y2="11"/><line x1="12" y1="10" x2="15" y2="7"/></svg>المسطرة</button>
-        <button class="dd-item" onclick="zoomIn()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>تكبير <span class="dd-kbd">Ctrl++</span></button>
-        <button class="dd-item" onclick="zoomOut()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>تصغير <span class="dd-kbd">Ctrl+-</span></button>
-        <button class="dd-item" onclick="zoomFit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>ملاءمة الشاشة <span class="dd-kbd">Ctrl+0</span></button>
+        <button class="dd-item" onclick="toggleGrid()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>الشبكة المساعدة<span class="dd-kbd">G</span></button>
+        <button class="dd-item" onclick="toggleChecker()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>خلفية شطرنج (شفافية)</button>
+        <div class="dd-sep"></div>
+        <button class="dd-item" onclick="zoomIn()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>تكبير<span class="dd-kbd">Ctrl++</span></button>
+        <button class="dd-item" onclick="zoomOut()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>تصغير<span class="dd-kbd">Ctrl+-</span></button>
+        <button class="dd-item" onclick="zoomFit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>ملاءمة الشاشة<span class="dd-kbd">Ctrl+0</span></button>
       </div>
     </div>
 
+    <!-- IMAGE -->
     <div class="topbar-menu-item">
       <button class="topbar-menu-btn">صورة</button>
       <div class="topbar-dropdown">
-        <button class="dd-item" onclick="importReference()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>استيراد مرجع</button>
-        <button class="dd-item" onclick="flipH()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M4 7l4 4-4 4M20 7l-4 4 4 4"/></svg>قلب أفقي</button>
-        <button class="dd-item" onclick="flipV()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M7 4l4 4-4 4M7 20l4-4-4-4"/></svg>قلب رأسي</button>
-        <button class="dd-item" onclick="rotateCW()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>تدوير 90° يميناً</button>
+        <button class="dd-item" onclick="document.getElementById('refInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>استيراد مرجع</button>
+        <button class="dd-item" onclick="addFilterBlur()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6" opacity="0.5"/><circle cx="12" cy="12" r="2"/></svg>تمويه (Blur)</button>
+        <button class="dd-item" onclick="addFilterBrightness()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg>السطوع والتباين</button>
+        <button class="dd-item" onclick="addFilterGrayscale()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>تحويل رمادي</button>
       </div>
     </div>
 
     <div class="topbar-menu-item">
       <button class="topbar-menu-btn" onclick="openSettings()">الإعدادات</button>
     </div>
+    <div class="topbar-menu-item">
+      <button class="topbar-menu-btn" onclick="openProjects()">مشاريعي</button>
+    </div>
   </div>
 
-  <!-- Spacer -->
   <div style="flex:1"></div>
 
-  <!-- Quick Actions -->
-  <div style="display:flex; align-items:center; gap:0.35rem; padding:0 0.5rem; border-right: 1px solid var(--border);">
-    <button class="tool-btn" style="position:relative" onclick="doUndo()" title="تراجع">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-    </button>
-    <button class="tool-btn" style="position:relative" onclick="doRedo()" title="إعادة">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
-    </button>
+  <!-- Quick actions -->
+  <div style="display:flex;align-items:center;gap:3px;padding:0 0.4rem;border-right:1px solid var(--border)">
+    <button class="tool-btn" style="position:relative" onclick="doUndo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg><div class="tool-tooltip">تراجع (Ctrl+Z)</div></button>
+    <button class="tool-btn" style="position:relative" onclick="doRedo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg><div class="tool-tooltip">إعادة (Ctrl+Y)</div></button>
   </div>
 
-  <!-- Zoom display -->
-  <div style="display:flex; align-items:center; gap:0.4rem; padding: 0 0.75rem; font-size:0.78rem; font-weight:700; color:var(--text3); border-right:1px solid var(--border); flex-shrink:0">
-    <span id="zoomDisplay">100%</span>
+  <div style="padding:0 0.75rem;font-size:0.72rem;font-weight:700;color:var(--text3);border-right:1px solid var(--border);flex-shrink:0" id="zoomDisplay">100%</div>
+
+  <!-- Mode badge -->
+  <div style="padding:0 0.75rem;flex-shrink:0">
+    <span id="modeBadge" style="font-size:0.7rem;font-weight:800;padding:0.2rem 0.7rem;border-radius:100px;background:rgba(255,107,107,0.15);color:var(--accent1);border:1px solid rgba(255,107,107,0.3)">رسم ثابت</span>
   </div>
 
-  <!-- Theme toggle -->
-  <button class="btn-theme-toggle" onclick="toggleTheme()" style="margin:0 0.5rem; flex-shrink:0">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" id="studioThemeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <button class="btn-theme-toggle" onclick="toggleTheme()" style="margin:0 0.4rem;flex-shrink:0" id="themeBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
   </button>
 </div>
 
-<!-- MAIN WORKSPACE -->
+<!-- ============ WORKSPACE ============ -->
 <div class="studio-workspace">
 
-  <!-- LEFT TOOLS SIDEBAR -->
-  <div class="tools-sidebar">
-    <!-- Selection Tools -->
-    <button class="tool-btn active" id="tool-select" onclick="setTool('select')" title="">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M4 4l7 18 3-7 7-3L4 4z"/></svg>
-      <div class="tool-tooltip">تحديد (V)</div>
+  <!-- TOOLS SIDEBAR -->
+  <div class="tools-sidebar" id="toolsSidebar">
+
+    <!-- تحديد -->
+    <div style="font-size:0.45rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin:3px 0 1px;opacity:0.7">تحديد</div>
+    <button class="tool-btn active" id="tool-select" onclick="setTool('select')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M4 4l7 18 3-7 7-3L4 4z"/></svg>
+      <div class="tool-tooltip">أداة التحديد (V)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('rect-select')" title="">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18"><rect x="3" y="3" width="18" height="18" rx="1" stroke-dasharray="4 2"/></svg>
+    <button class="tool-btn" id="tool-rect-select" onclick="setTool('rect-select')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="17"><rect x="3" y="3" width="18" height="18" rx="1" stroke-dasharray="4 2"/></svg>
       <div class="tool-tooltip">تحديد مستطيل (M)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('ellipse-select')" title="">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18"><ellipse cx="12" cy="12" rx="9" ry="7" stroke-dasharray="4 2"/></svg>
-      <div class="tool-tooltip">تحديد دائري (E)</div>
+    <button class="tool-btn" id="tool-ellipse-select" onclick="setTool('ellipse-select')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="17"><ellipse cx="12" cy="12" rx="9" ry="7" stroke-dasharray="4 2"/></svg>
+      <div class="tool-tooltip">تحديد دائري</div>
     </button>
-    <button class="tool-btn" onclick="setTool('lasso')" title="">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M7 20C4 20 2 17 2 14c0-5.5 5-9 10-9s10 3.5 10 9c0 3-2 6-5 6" stroke-dasharray="3 2"/></svg>
-      <div class="tool-tooltip">تحديد حر (L)</div>
+    <button class="tool-btn" id="tool-lasso" onclick="setTool('lasso')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M7 20C4 20 2 17 2 14c0-5.5 5-9 10-9s10 3.5 10 9c0 3-2 6-5 6" stroke-dasharray="3 2"/></svg>
+      <div class="tool-tooltip">تحديد حر — لاسو (L)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('magic-wand')" title="">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M15 4V2M15 16v-2M8 9H6M20 9h-2M17.8 11.8 19.2 10.4M10.2 11.8 8.8 10.4M17.8 6.2 19.2 7.6M10.2 6.2 8.8 7.6"/><circle cx="15" cy="9" r="3"/><path d="M2 22l10-10"/></svg>
+    <button class="tool-btn" id="tool-magic-wand" onclick="setTool('magic-wand')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M15 4V2M15 16v-2M8 9H6M20 9h-2M17.8 11.8 19.2 10.4M10.2 11.8 8.8 10.4M17.8 6.2 19.2 7.6M10.2 6.2 8.8 7.6"/><circle cx="15" cy="9" r="3"/><path d="M2 22l10-10"/></svg>
       <div class="tool-tooltip">العصا السحرية (W)</div>
     </button>
 
     <div class="tool-sep"></div>
 
-    <!-- Draw Tools -->
-    <button class="tool-btn" onclick="setTool('brush')" id="tool-brush">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M12 19c-1.7-1.7-2-4-2-6 1 0 2-1 2-2"/><path d="M20 3 8.5 14.5"/><circle cx="7" cy="17" r="2"/><path d="M5 19 3 21"/></svg>
+    <!-- رسم -->
+    <div style="font-size:0.45rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin:1px 0;opacity:0.7">رسم</div>
+    <button class="tool-btn" id="tool-brush" onclick="setTool('brush')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M12 19c-1.7-1.7-2-4-2-6 1 0 2-1 2-2"/><path d="M20 3 8.5 14.5"/><circle cx="7" cy="17" r="2"/><path d="M5 19 3 21"/></svg>
       <div class="tool-tooltip">فرشاة (B)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('pencil')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    <button class="tool-btn" id="tool-pencil" onclick="setTool('pencil')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       <div class="tool-tooltip">قلم رصاص (P)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('pen')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
-      <div class="tool-tooltip">قلم (G)</div>
+    <button class="tool-btn" id="tool-pen" onclick="setTool('pen')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+      <div class="tool-tooltip">قلم حبر (G)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('calligraphy')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M3 21 5 12 17 3l2 2-12 12-4 2zm8-14 2 2"/></svg>
-      <div class="tool-tooltip">خط خطاطي</div>
+    <button class="tool-btn" id="tool-calligraphy" onclick="setTool('calligraphy')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M3 21 5 12 17 3l2 2-12 12-4 2zm8-14 2 2"/></svg>
+      <div class="tool-tooltip">خط خطاطي (K)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('eraser')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M20 20H7L3 16l12.7-12.7a1 1 0 0 1 1.4 0l3.6 3.6a1 1 0 0 1 0 1.4L8 20"/><path d="m6.1 15.9 4-4"/></svg>
+    <button class="tool-btn" id="tool-marker" onclick="setTool('marker')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M21 6.5a4 4 0 0 0-4-4h-1l-6.5 6.5a4 4 0 0 0 0 5.66l1.83 1.83a4 4 0 0 0 5.66 0L21 12.5v-6z"/><path d="M3.5 20.5 7 17"/></svg>
+      <div class="tool-tooltip">ماركر</div>
+    </button>
+    <button class="tool-btn" id="tool-airbrush" onclick="setTool('airbrush')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M3 12h18M3 6h18M3 18h18"/><circle cx="7" cy="12" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="17" cy="15" r="1"/></svg>
+      <div class="tool-tooltip">فرشاة هواء</div>
+    </button>
+    <button class="tool-btn" id="tool-watercolor" onclick="setTool('watercolor')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+      <div class="tool-tooltip">ألوان مائية</div>
+    </button>
+
+    <div class="tool-sep"></div>
+
+    <!-- محو وتأثيرات -->
+    <div style="font-size:0.45rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin:1px 0;opacity:0.7">محو</div>
+    <button class="tool-btn" id="tool-eraser" onclick="setTool('eraser')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M20 20H7L3 16l12.7-12.7a1 1 0 0 1 1.4 0l3.6 3.6a1 1 0 0 1 0 1.4L8 20"/><path d="m6.1 15.9 4-4"/></svg>
       <div class="tool-tooltip">ممحاة (E)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('smudge')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M14 12 3.8 22"/><circle cx="16" cy="10" r="6"/></svg>
-      <div class="tool-tooltip">تلطيخ</div>
+    <button class="tool-btn" id="tool-smudge" onclick="setTool('smudge')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M14 12 3.8 22"/><circle cx="16" cy="10" r="6"/></svg>
+      <div class="tool-tooltip">تلطيخ (F)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('fill')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M19 11V9l-5-5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9"/><path d="M14 4v5h5"/><circle cx="19" cy="18" r="2"/><path d="M19 16v-2M19 22v-2M17 18h-2M23 18h-2"/></svg>
-      <div class="tool-tooltip">دلو الطلاء (G)</div>
+    <button class="tool-btn" id="tool-blur" onclick="setTool('blur')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" opacity="0.4"/><circle cx="12" cy="12" r="11" opacity="0.15"/></svg>
+      <div class="tool-tooltip">تمويه موضعي</div>
     </button>
-    <button class="tool-btn" onclick="setTool('eyedropper')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M2 22 8.5 15.5"/><path d="M15 5.5l-9 9L12 20.5l9-9-6-6z"/><path d="M17 3a2.85 2.83 0 1 1 4 4L19 9l-4-4z"/></svg>
+    <button class="tool-btn" id="tool-sharpen" onclick="setTool('sharpen')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2"/></svg>
+      <div class="tool-tooltip">حدّة</div>
+    </button>
+    <button class="tool-btn" id="tool-dodge" onclick="setTool('dodge')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/></svg>
+      <div class="tool-tooltip">تفتيح</div>
+    </button>
+    <button class="tool-btn" id="tool-burn" onclick="setTool('burn')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      <div class="tool-tooltip">تعتيم</div>
+    </button>
+
+    <div class="tool-sep"></div>
+
+    <!-- ملء وقطارة -->
+    <div style="font-size:0.45rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin:1px 0;opacity:0.7">ملء</div>
+    <button class="tool-btn" id="tool-fill" onclick="setTool('fill')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M19 11V9l-5-5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9"/><path d="M14 4v5h5"/><circle cx="19" cy="18" r="2"/><path d="M19 16v-2M19 22v-2M17 18h-2M23 18h-2"/></svg>
+      <div class="tool-tooltip">دلو الطلاء (F)</div>
+    </button>
+    <button class="tool-btn" id="tool-gradient" onclick="setTool('gradient')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><defs><linearGradient id="gi"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="2" fill="url(#gi)" stroke="currentColor"/></svg>
+      <div class="tool-tooltip">تدرج لوني</div>
+    </button>
+    <button class="tool-btn" id="tool-eyedropper" onclick="setTool('eyedropper')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M2 22 8.5 15.5"/><path d="M15 5.5l-9 9L12 20.5l9-9-6-6z"/><path d="M17 3a2.85 2.83 0 1 1 4 4L19 9l-4-4z"/></svg>
       <div class="tool-tooltip">قطارة اللون (I)</div>
     </button>
 
     <div class="tool-sep"></div>
 
-    <!-- Shape Tools -->
-    <button class="tool-btn" onclick="setTool('rect')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+    <!-- أشكال -->
+    <div style="font-size:0.45rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin:1px 0;opacity:0.7">أشكال</div>
+    <button class="tool-btn" id="tool-line" onclick="setTool('line')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+      <div class="tool-tooltip">خط مستقيم (U)</div>
+    </button>
+    <button class="tool-btn" id="tool-rect" onclick="setTool('rect')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
       <div class="tool-tooltip">مستطيل (R)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('ellipse')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><ellipse cx="12" cy="12" rx="9" ry="7"/></svg>
+    <button class="tool-btn" id="tool-ellipse" onclick="setTool('ellipse')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><ellipse cx="12" cy="12" rx="9" ry="7"/></svg>
       <div class="tool-tooltip">دائرة (O)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('line')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><line x1="5" y1="19" x2="19" y2="5"/></svg>
-      <div class="tool-tooltip">خط (L)</div>
-    </button>
-    <button class="tool-btn" onclick="setTool('polygon')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><polygon points="12 2 22 20 2 20"/></svg>
+    <button class="tool-btn" id="tool-polygon" onclick="setTool('polygon')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><polygon points="12 2 22 20 2 20"/></svg>
       <div class="tool-tooltip">مضلع</div>
     </button>
-    <button class="tool-btn" onclick="setTool('star')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <button class="tool-btn" id="tool-star" onclick="setTool('star')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <div class="tool-tooltip">نجمة</div>
+    </button>
+    <button class="tool-btn" id="tool-bezier" onclick="setTool('bezier')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M3 20 C 7 4 17 4 21 20"/><circle cx="3" cy="20" r="2" fill="currentColor"/><circle cx="21" cy="20" r="2" fill="currentColor"/></svg>
+      <div class="tool-tooltip">منحنى بيزييه</div>
+    </button>
+    <button class="tool-btn" id="tool-arrow" onclick="setTool('arrow')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <div class="tool-tooltip">سهم</div>
     </button>
 
     <div class="tool-sep"></div>
 
-    <!-- Text & Move -->
-    <button class="tool-btn" onclick="setTool('text')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+    <!-- نص وتحريك -->
+    <div style="font-size:0.45rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin:1px 0;opacity:0.7">أخرى</div>
+    <button class="tool-btn" id="tool-text" onclick="setTool('text')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
       <div class="tool-tooltip">نص (T)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('pan')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
-      <div class="tool-tooltip">تحريك (H)</div>
+    <button class="tool-btn" id="tool-crop" onclick="setTool('crop')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+      <div class="tool-tooltip">اقتصاص (C)</div>
     </button>
-    <button class="tool-btn" onclick="setTool('zoom-tool')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <button class="tool-btn" id="tool-pan" onclick="setTool('pan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+      <div class="tool-tooltip">تحريك اللوحة (H)</div>
+    </button>
+    <button class="tool-btn" id="tool-zoom-tool" onclick="setTool('zoom-tool')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <div class="tool-tooltip">تكبير (Z)</div>
+    </button>
+    <button class="tool-btn" id="tool-ruler-tool" onclick="setTool('ruler-tool')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M2 16.5L16.5 2l5.5 5.5L7.5 22z"/><line x1="8" y1="14" x2="11" y2="11"/><line x1="12" y1="10" x2="15" y2="7"/></svg>
+      <div class="tool-tooltip">مسطرة</div>
+    </button>
+    <button class="tool-btn" id="tool-symmetry" onclick="setTool('symmetry')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><line x1="12" y1="2" x2="12" y2="22"/><path d="M4 6l8 4-8 4M20 6l-8 4 8 4"/></svg>
+      <div class="tool-tooltip">رسم متماثل</div>
     </button>
   </div>
 
   <!-- CANVAS AREA -->
   <div class="canvas-area" id="canvasArea">
     <div class="canvas-bg-grid" id="bgGrid"></div>
-    <div class="canvas-wrap-outer">
-      <div class="canvas-checker" id="canvasChecker" style="display:none"></div>
+    <div style="position:relative;display:inline-block">
+      <div class="canvas-checker" id="canvasChecker"></div>
       <canvas id="mainCanvas"></canvas>
     </div>
 
-    <!-- Zoom Controls -->
     <div class="zoom-controls">
-      <button class="zoom-btn" onclick="zoomIn()" title="تكبير">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <button class="zoom-btn" onclick="zoomFit()" title="ملاءمة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-      </button>
-      <button class="zoom-btn" onclick="zoomOut()" title="تصغير">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
+      <button class="zoom-btn" onclick="zoomIn()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <button class="zoom-btn" onclick="zoomFit()" title="ملاءمة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
+      <button class="zoom-btn" onclick="zoomOut()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </div>
 
-    <!-- Canvas Status -->
     <div class="canvas-statusbar">
-      <span id="canvasSizeDisplay">1920 × 1080px</span>
+      <span id="canvasSizeDisplay">1920×1080</span>
       <div class="statusbar-sep"></div>
       <span id="cursorPos">0, 0</span>
       <div class="statusbar-sep"></div>
@@ -495,104 +309,68 @@
       <button class="panel-tab active" id="tab-brush" onclick="switchTab('brush')">فرشاة</button>
       <button class="panel-tab" id="tab-color" onclick="switchTab('color')">ألوان</button>
       <button class="panel-tab" id="tab-layers" onclick="switchTab('layers')">طبقات</button>
-      <button class="panel-tab" id="tab-props" onclick="switchTab('props')">خصائص</button>
+      <button class="panel-tab" id="tab-props" onclick="switchTab('props')">لوحة</button>
     </div>
 
     <!-- BRUSH TAB -->
     <div class="panel-content" id="content-brush">
-      <!-- Safwan Named Brushes -->
       <div class="panel-section">
-        <div class="control-label">فرش صفوان</div>
-        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:0.75rem">
-          <button class="brush-badge active" onclick="selectSafwanBrush(this, 'safwan-ink')">صفوان — قلم حبر</button>
-          <button class="brush-badge" onclick="selectSafwanBrush(this, 'safwan-sketch')">صفوان — سكتش</button>
-          <button class="brush-badge" onclick="selectSafwanBrush(this, 'safwan-paint')">صفوان — رسم زيتي</button>
-          <button class="brush-badge" onclick="selectSafwanBrush(this, 'safwan-charcoal')">صفوان — فحم</button>
-          <button class="brush-badge" onclick="selectSafwanBrush(this, 'safwan-water')">صفوان — ألوان مائية</button>
-        </div>
+        <div class="control-label" style="margin-bottom:0.4rem">فرش صفوان الاحترافية</div>
+        <button class="safwan-brush-btn active" onclick="selectSafwanBrush(this,'ink')"><span class="safwan-brush-icon" style="width:30px;height:2px"></span>قلم حبر صفوان</button>
+        <button class="safwan-brush-btn" onclick="selectSafwanBrush(this,'sketch')"><span class="safwan-brush-icon" style="width:20px;height:2px;opacity:0.6"></span>رصاص سكتش صفوان</button>
+        <button class="safwan-brush-btn" onclick="selectSafwanBrush(this,'paint')"><span class="safwan-brush-icon" style="width:35px;height:5px;border-radius:3px"></span>فرشاة زيت صفوان</button>
+        <button class="safwan-brush-btn" onclick="selectSafwanBrush(this,'charcoal')"><span class="safwan-brush-icon" style="width:28px;height:4px;opacity:0.5;border-radius:2px"></span>فحم صفوان</button>
+        <button class="safwan-brush-btn" onclick="selectSafwanBrush(this,'water')"><span class="safwan-brush-icon" style="width:32px;height:6px;opacity:0.4;border-radius:4px;background:var(--accent2)"></span>مائية صفوان</button>
       </div>
 
       <div class="panel-sep"></div>
 
-      <!-- Brush Type Presets -->
       <div class="panel-section">
-        <div class="control-label">نوع الفرشاة</div>
+        <div class="control-label" style="margin-bottom:0.4rem">أنواع الفرش (45+)</div>
         <div class="brush-presets">
-          <button class="brush-preset-btn active" onclick="setBrushType('round', this)" title="مدوّرة">
-            <div class="brush-preset-preview" style="width:20px;height:20px;"></div>
-            <span class="brush-preset-name">مدوّرة</span>
-          </button>
-          <button class="brush-preset-btn" onclick="setBrushType('soft', this)" title="ناعمة">
-            <div class="brush-preset-preview" style="width:20px;height:20px;background:radial-gradient(circle, var(--text2), transparent)"></div>
-            <span class="brush-preset-name">ناعمة</span>
-          </button>
-          <button class="brush-preset-btn" onclick="setBrushType('square', this)" title="مربعة">
-            <div class="brush-preset-preview" style="width:16px;height:16px;border-radius:2px;"></div>
-            <span class="brush-preset-name">مربعة</span>
-          </button>
-          <button class="brush-preset-btn" onclick="setBrushType('flat', this)" title="مسطحة">
-            <div class="brush-preset-preview" style="width:24px;height:8px;border-radius:2px;"></div>
-            <span class="brush-preset-name">مسطحة</span>
-          </button>
-          <button class="brush-preset-btn" onclick="setBrushType('pencil', this)" title="رصاص">
-            <div class="brush-preset-preview" style="width:4px;height:20px;border-radius:2px;"></div>
-            <span class="brush-preset-name">رصاص</span>
-          </button>
-          <button class="brush-preset-btn" onclick="setBrushType('spray', this)" title="رش">
-            <div class="brush-preset-preview" style="width:18px;height:18px;background:radial-gradient(circle, var(--text2) 20%, transparent 80%);border-radius:50%"></div>
-            <span class="brush-preset-name">رش</span>
-          </button>
+          <button class="brush-preset-btn active" onclick="setBrushType('round',this)"><div class="brush-preset-preview" style="width:18px;height:18px"></div><span class="brush-preset-name">مدوّرة</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('soft',this)"><div class="brush-preset-preview" style="width:18px;height:18px;background:radial-gradient(circle,var(--text2),transparent)"></div><span class="brush-preset-name">ناعمة</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('square',this)"><div class="brush-preset-preview" style="width:15px;height:15px;border-radius:2px"></div><span class="brush-preset-name">مربعة</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('flat',this)"><div class="brush-preset-preview" style="width:22px;height:6px;border-radius:2px"></div><span class="brush-preset-name">مسطحة</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('pencil',this)"><div class="brush-preset-preview" style="width:3px;height:18px;border-radius:2px"></div><span class="brush-preset-name">رصاص</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('spray',this)"><div class="brush-preset-preview" style="width:18px;height:18px;background:radial-gradient(circle,var(--text2) 20%,transparent 80%);border-radius:50%"></div><span class="brush-preset-name">رش</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('ink',this)"><div class="brush-preset-preview" style="width:3px;height:16px;border-radius:1px;transform:rotate(-20deg)"></div><span class="brush-preset-name">حبر</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('charcoal',this)"><div class="brush-preset-preview" style="width:16px;height:8px;border-radius:3px;opacity:0.5"></div><span class="brush-preset-name">فحم</span></button>
+          <button class="brush-preset-btn" onclick="setBrushType('watercolor',this)"><div class="brush-preset-preview" style="width:18px;height:18px;background:radial-gradient(circle,rgba(78,205,196,0.6),transparent);border-radius:50%"></div><span class="brush-preset-name">مائية</span></button>
         </div>
       </div>
 
       <div class="panel-sep"></div>
 
-      <!-- Brush Controls -->
       <div class="panel-section">
-        <div class="control-group">
-          <div class="control-label">الحجم <span class="control-value" id="brushSizeVal">12px</span></div>
-          <input type="range" min="1" max="200" value="12" id="brushSize" oninput="updateBrush()">
-        </div>
-        <div class="control-group">
-          <div class="control-label">التعتيم <span class="control-value" id="brushOpacityVal">100%</span></div>
-          <input type="range" min="1" max="100" value="100" id="brushOpacity" oninput="updateBrush()">
-        </div>
-        <div class="control-group">
-          <div class="control-label">التدفق <span class="control-value" id="brushFlowVal">80%</span></div>
-          <input type="range" min="1" max="100" value="80" id="brushFlow" oninput="updateBrush()">
-        </div>
-        <div class="control-group">
-          <div class="control-label">التنعيم <span class="control-value" id="brushSmoothVal">50%</span></div>
-          <input type="range" min="0" max="100" value="50" id="brushSmooth" oninput="updateBrush()">
-        </div>
-        <div class="control-group">
-          <div class="control-label">الصلابة <span class="control-value" id="brushHardVal">85%</span></div>
-          <input type="range" min="0" max="100" value="85" id="brushHard" oninput="updateBrush()">
-        </div>
+        <div class="control-group"><div class="control-label">الحجم <span class="control-value" id="brushSizeVal">12px</span></div><input type="range" min="1" max="300" value="12" id="brushSize" oninput="updateBrush()"></div>
+        <div class="control-group"><div class="control-label">التعتيم <span class="control-value" id="brushOpacityVal">100%</span></div><input type="range" min="1" max="100" value="100" id="brushOpacity" oninput="updateBrush()"></div>
+        <div class="control-group"><div class="control-label">التدفق <span class="control-value" id="brushFlowVal">80%</span></div><input type="range" min="1" max="100" value="80" id="brushFlow" oninput="updateBrush()"></div>
+        <div class="control-group"><div class="control-label">التنعيم <span class="control-value" id="brushSmoothVal">50%</span></div><input type="range" min="0" max="100" value="50" id="brushSmooth" oninput="updateBrush()"></div>
+        <div class="control-group"><div class="control-label">الصلابة <span class="control-value" id="brushHardVal">85%</span></div><input type="range" min="0" max="100" value="85" id="brushHard" oninput="updateBrush()"></div>
+        <div class="control-group"><div class="control-label">التباعد <span class="control-value" id="brushSpacingVal">5%</span></div><input type="range" min="1" max="100" value="5" id="brushSpacing" oninput="updateBrush()"></div>
+        <div class="control-group"><div class="control-label">الانتشار <span class="control-value" id="brushScatterVal">0%</span></div><input type="range" min="0" max="100" value="0" id="brushScatter" oninput="updateBrush()"></div>
       </div>
     </div>
 
     <!-- COLOR TAB -->
     <div class="panel-content" id="content-color" style="display:none">
-      <!-- Current Colors -->
       <div class="color-picker-wrap">
         <div class="current-colors">
-          <div class="color-swatch-fg" id="fgSwatch" style="background:#1a1a2e" onclick="openColorPicker('fg')"></div>
-          <div class="color-swatch-bg" id="bgSwatch" style="background:#ffffff" onclick="openColorPicker('bg')"></div>
+          <div class="color-swatch-fg" id="fgSwatch" style="background:#000000" onclick="document.getElementById('colorPickerNative').click()"></div>
+          <div class="color-swatch-bg" id="bgSwatch" style="background:#ffffff"></div>
         </div>
-        <div class="color-picker-fields" style="flex:1">
-          <div class="hex-input-wrap">
-            <span>#</span>
-            <input class="hex-input" id="hexInput" value="1a1a2e" maxlength="6" onchange="applyHex()">
-          </div>
-          <div style="display:flex; gap:4px">
-            <input type="color" id="colorPickerNative" value="#1a1a2e" oninput="applyNativeColor()" style="width:100%; height:32px; border-radius:6px; cursor:pointer; border:1px solid var(--border)">
-          </div>
+        <div style="flex:1">
+          <div class="hex-input-wrap"><span>#</span><input class="hex-input" id="hexInput" value="000000" maxlength="6" oninput="applyHex()"></div>
+          <input type="color" id="colorPickerNative" value="#000000" oninput="applyNativeColor()" style="width:100%;height:28px;border-radius:5px;cursor:pointer;border:1px solid var(--border)">
         </div>
       </div>
-
-      <!-- 500+ Color Swatches -->
-      <div class="control-label" style="margin-bottom:0.5rem">الألوان (500+)</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:0.5rem">
+        <div><div style="font-size:0.6rem;font-weight:700;color:var(--text3);margin-bottom:2px">أحمر</div><input type="range" min="0" max="255" value="0" id="sliderR" oninput="applyRGB()" style="accent-color:#ff4444"></div>
+        <div><div style="font-size:0.6rem;font-weight:700;color:var(--text3);margin-bottom:2px">أخضر</div><input type="range" min="0" max="255" value="0" id="sliderG" oninput="applyRGB()" style="accent-color:#44ff44"></div>
+        <div><div style="font-size:0.6rem;font-weight:700;color:var(--text3);margin-bottom:2px">أزرق</div><input type="range" min="0" max="255" value="0" id="sliderB" oninput="applyRGB()" style="accent-color:#4444ff"></div>
+      </div>
+      <div class="control-label" style="margin-bottom:0.35rem">ألوان (1000+)</div>
       <div class="color-swatches" id="colorSwatches"></div>
     </div>
 
@@ -601,21 +379,14 @@
       <div class="layers-header">
         <span class="layers-header-title">الطبقات</span>
         <div class="layers-actions">
-          <button class="icon-btn" onclick="addLayer()" title="طبقة جديدة">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-          <button class="icon-btn" onclick="duplicateLayer()" title="تكرار">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
-          <button class="icon-btn mini-btn danger" onclick="deleteLayer()" title="حذف" style="border:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-          </button>
+          <button class="icon-btn" onclick="addLayer()" title="طبقة جديدة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <button class="icon-btn" onclick="duplicateLayer()" title="تكرار"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          <button class="icon-btn" onclick="deleteLayer()" title="حذف" style="border-color:rgba(255,68,68,0.3);color:#ff4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
         </div>
       </div>
 
-      <!-- Blend Mode -->
       <select class="blend-select" id="blendMode" onchange="applyBlendMode()">
-        <option value="normal">عادي — Normal</option>
+        <option value="source-over">عادي — Normal</option>
         <option value="multiply">ضرب — Multiply</option>
         <option value="screen">شاشة — Screen</option>
         <option value="overlay">تراكب — Overlay</option>
@@ -627,238 +398,193 @@
         <option value="exclusion">استثناء — Exclusion</option>
         <option value="hue">لون — Hue</option>
         <option value="saturation">تشبع — Saturation</option>
+        <option value="color">مزج — Color</option>
         <option value="luminosity">إضاءة — Luminosity</option>
         <option value="darken">تعتيم — Darken</option>
         <option value="lighten">تفتيح — Lighten</option>
-        <option value="hard-mix">مزج قوي — Hard Mix</option>
-        <option value="vivid-light">ضوء حيوي — Vivid Light</option>
-        <option value="pin-light">ضوء دبوس — Pin Light</option>
-        <option value="dissolve">ذوبان — Dissolve</option>
-        <option value="divide">قسمة — Divide</option>
+        <option value="xor">XOR</option>
+        <option value="destination-over">خلف — Destination Over</option>
+        <option value="destination-in">داخل — Destination In</option>
+        <option value="destination-out">خارج — Destination Out</option>
       </select>
 
-      <!-- Layer Opacity -->
-      <div class="layer-opacity-row">
-        <span class="layer-opacity-label">شفافية:</span>
+      <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.65rem">
+        <span style="font-size:0.65rem;color:var(--text3);font-weight:700;flex-shrink:0">الشفافية:</span>
         <input type="range" min="0" max="100" value="100" id="layerOpacity" oninput="updateLayerOpacity()" style="flex:1">
-        <span style="font-size:0.75rem; font-weight:800; color:var(--accent2); width:36px; text-align:center" id="layerOpacityVal">100%</span>
+        <span style="font-size:0.7rem;font-weight:800;color:var(--accent2);width:32px;text-align:center" id="layerOpacityVal">100%</span>
       </div>
 
-      <div class="panel-sep"></div>
-
-      <!-- Layers List -->
       <div class="layers-list" id="layersList"></div>
 
-      <!-- Merge/Flatten -->
       <div class="panel-sep"></div>
       <div class="flex-row">
-        <button class="mini-btn" onclick="mergeLayers()" style="flex:1">دمج الكل</button>
         <button class="mini-btn" onclick="mergeDown()" style="flex:1">دمج لأسفل</button>
+        <button class="mini-btn" onclick="mergeLayers()" style="flex:1">دمج الكل</button>
+        <button class="mini-btn" onclick="flattenImage()" style="flex:1">تسطيح</button>
       </div>
     </div>
 
     <!-- PROPS TAB -->
     <div class="panel-content" id="content-props" style="display:none">
       <div class="props-section">
-        <div class="props-title">لوحة الرسم</div>
-        <div class="props-row">
-          <span class="props-label">العرض</span>
-          <input class="props-input" id="propW" value="1920" type="number" onchange="resizeCanvas()">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:700">px</span>
-        </div>
-        <div class="props-row">
-          <span class="props-label">الارتفاع</span>
-          <input class="props-input" id="propH" value="1080" type="number" onchange="resizeCanvas()">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:700">px</span>
-        </div>
-        <div class="props-row">
-          <span class="props-label">DPI</span>
-          <input class="props-input" id="propDPI" value="72" type="number">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:700">dpi</span>
-        </div>
+        <div class="props-title">قياسات جاهزة</div>
+        <div class="size-presets-grid" id="sizePresetsBtns"></div>
       </div>
-
+      <div class="props-section">
+        <div class="props-title">قياس مخصص</div>
+        <div class="props-row"><span class="props-label">العرض</span><input class="props-input" id="propW" value="1920" type="number" min="1" max="8000"><span style="font-size:0.65rem;color:var(--text3);font-weight:700">px</span></div>
+        <div class="props-row"><span class="props-label">الارتفاع</span><input class="props-input" id="propH" value="1080" type="number" min="1" max="8000"><span style="font-size:0.65rem;color:var(--text3);font-weight:700">px</span></div>
+        <div class="props-row"><span class="props-label">DPI</span><input class="props-input" id="propDPI" value="72" type="number"><span style="font-size:0.65rem;color:var(--text3);font-weight:700">dpi</span></div>
+        <button class="btn-primary" style="width:100%;margin-top:0.5rem;border-radius:8px;font-size:0.78rem" onclick="applyCanvasSize()">تطبيق الحجم</button>
+      </div>
       <div class="props-section">
         <div class="props-title">مرجع الرسم</div>
-        <button class="mini-btn" onclick="importReference()" style="width:100%; margin-bottom:0.5rem">استيراد صورة مرجعية</button>
-        <div class="control-group">
-          <div class="control-label">شفافية المرجع <span class="control-value" id="refOpacityVal">50%</span></div>
-          <input type="range" min="0" max="100" value="50" id="refOpacity" oninput="updateRefOpacity()">
-        </div>
-        <div class="flex-row" style="margin-top:0.5rem">
-          <button class="mini-btn" onclick="toggleRefLock()">قفل المرجع</button>
-          <button class="mini-btn" onclick="removeReference()">حذف المرجع</button>
+        <button class="mini-btn" style="width:100%;margin-bottom:0.4rem" onclick="document.getElementById('refInput').click()">استيراد صورة مرجعية</button>
+        <div class="control-group"><div class="control-label">شفافية المرجع <span class="control-value" id="refOpacityVal">50%</span></div><input type="range" min="0" max="100" value="50" id="refOpacity" oninput="updateRefOpacity()"></div>
+        <div class="flex-row">
+          <button class="mini-btn" onclick="toggleRefLock()" style="flex:1">قفل/فك</button>
+          <button class="mini-btn" onclick="removeRef()" style="flex:1">حذف المرجع</button>
         </div>
       </div>
-
-      <div class="props-section">
-        <div class="props-title">خصائص التحويل</div>
-        <div class="props-row">
-          <span class="props-label">X</span>
-          <input class="props-input" id="propX" value="0" type="number">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:700">px</span>
-        </div>
-        <div class="props-row">
-          <span class="props-label">Y</span>
-          <input class="props-input" id="propY" value="0" type="number">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:700">px</span>
-        </div>
-        <div class="props-row">
-          <span class="props-label">زاوية</span>
-          <input class="props-input" id="propAngle" value="0" type="number">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:700">°</span>
-        </div>
-      </div>
-
       <div class="props-section">
         <div class="props-title">الشبكة والمساعدة</div>
         <div class="flex-row">
-          <button class="mini-btn" onclick="toggleGrid()" style="flex:1">الشبكة</button>
-          <button class="mini-btn" onclick="toggleRuler()" style="flex:1">المسطرة</button>
+          <button class="mini-btn" onclick="toggleGrid()" style="flex:1">شبكة</button>
+          <button class="mini-btn" onclick="toggleChecker()" style="flex:1">شطرنج</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- BOTTOM STATUS BAR -->
-<div class="studio-statusbar">
-  <div class="status-item">
-    <div class="status-dot"></div>
-    <span id="statusTool">فرشاة</span>
+<!-- ANIMATION PANEL (shown only in animation mode) -->
+<div class="anim-panel" id="animPanel" style="display:none">
+  <div class="anim-panel-header">
+    <div class="anim-controls">
+      <button class="anim-btn" onclick="framePrev()" title="السابق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="anim-btn play-btn" id="playBtn" onclick="togglePlay()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="playIcon"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+      <button class="anim-btn" onclick="frameNext()" title="التالي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="anim-btn" onclick="stopPlay()" title="إيقاف"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+    </div>
+    <div class="fps-control">
+      <span>FPS:</span>
+      <input type="number" class="fps-input" id="fpsInput" value="12" min="1" max="60" onchange="updateFPS()">
+    </div>
+    <div style="flex:1"></div>
+    <div style="font-size:0.72rem;color:var(--text3);font-weight:700" id="frameCounter">فريم 1 / 1</div>
+    <div style="display:flex;gap:4px;margin-right:0.5rem">
+      <button class="anim-btn" onclick="addFrame()" title="إضافة فريم" style="width:auto;padding:0 0.6rem;font-size:0.7rem;font-weight:700;color:var(--accent2)">+ فريم</button>
+      <button class="anim-btn" onclick="duplicateFrame()" title="تكرار فريم"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      <button class="anim-btn" onclick="deleteFrame()" title="حذف فريم"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+      <button class="anim-btn" onclick="openSampleProject()" title="مشاريع جاهزة" style="width:auto;padding:0 0.5rem;font-size:0.65rem;font-weight:700;border-color:rgba(255,230,109,0.3);color:var(--accent3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        جاهزة
+      </button>
+    </div>
+    <button class="anim-btn" onclick="exportGIF()" title="تصدير GIF" style="width:auto;padding:0 0.6rem;font-size:0.7rem;font-weight:700;background:rgba(78,205,196,0.15);border-color:var(--accent2);color:var(--accent2)">GIF</button>
+    <button class="anim-btn" onclick="exportVideo()" style="width:auto;padding:0 0.6rem;font-size:0.7rem;font-weight:700;background:rgba(255,107,107,0.15);border-color:var(--accent1);color:var(--accent1)">فيديو</button>
   </div>
-  <div class="status-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
-    <span id="statusLayers">1 طبقة</span>
-  </div>
-  <div class="status-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    <span id="statusHistory">0 خطوة</span>
-  </div>
-  <div style="margin-right:auto"></div>
-  <span style="font-size:0.7rem; color:var(--text3)">صفوان ستوديو v1.0</span>
+  <div class="anim-timeline" id="animTimeline"></div>
 </div>
 
-<!-- SETTINGS OVERLAY -->
-<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOutside(event)">
-  <div class="settings-modal">
-    <button class="close-settings" onclick="closeSettings()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-    <div class="settings-title">الإعدادات</div>
-
-    <div class="settings-group">
-      <div class="settings-group-title">المظهر</div>
-      <div class="settings-row">
-        <span class="settings-label">الوضع الليلي</span>
-        <button class="toggle-switch on" id="darkModeToggle" onclick="toggleTheme()"></button>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">لون التمييز</span>
-        <select class="settings-select" id="accentColor" onchange="changeAccent()">
-          <option value="#FF6B6B">أحمر مرجاني</option>
-          <option value="#4ECDC4">أخضر مائي</option>
-          <option value="#FFE66D">أصفر ذهبي</option>
-          <option value="#A8EDEA">أزرق ناعم</option>
-          <option value="#FED6E3">وردي</option>
-          <option value="#a78bfa">بنفسجي</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="settings-group">
-      <div class="settings-group-title">لوحة الرسم</div>
-      <div class="settings-row">
-        <span class="settings-label">إظهار الشبكة</span>
-        <button class="toggle-switch" id="gridToggle" onclick="toggleGrid(); this.classList.toggle('on')"></button>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">شبكة المنظور</span>
-        <button class="toggle-switch" onclick="togglePerspGrid(); this.classList.toggle('on')"></button>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">خلفية شطرنج (شفافية)</span>
-        <button class="toggle-switch" id="checkerToggle" onclick="toggleChecker()"></button>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">مسطرة القياس</span>
-        <button class="toggle-switch" id="rulerToggle" onclick="toggleRuler(); this.classList.toggle('on')"></button>
-      </div>
-    </div>
-
-    <div class="settings-group">
-      <div class="settings-group-title">الأداء</div>
-      <div class="settings-row">
-        <span class="settings-label">ضغط القلم</span>
-        <button class="toggle-switch on" onclick="this.classList.toggle('on')"></button>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">تسريع GPU</span>
-        <button class="toggle-switch on" onclick="this.classList.toggle('on')"></button>
-      </div>
-    </div>
-
-    <div class="settings-group">
-      <div class="settings-group-title">اختصارات لوحة المفاتيح</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.75rem;">
-        <div style="color:var(--text3)">B — فرشاة</div><div style="color:var(--text2); font-weight:700">E — ممحاة</div>
-        <div style="color:var(--text3)">V — تحديد</div><div style="color:var(--text2); font-weight:700">H — تحريك</div>
-        <div style="color:var(--text3)">T — نص</div><div style="color:var(--text2); font-weight:700">I — قطارة</div>
-        <div style="color:var(--text3)">R — مستطيل</div><div style="color:var(--text2); font-weight:700">O — دائرة</div>
-        <div style="color:var(--text3)">L — لاسو</div><div style="color:var(--text2); font-weight:700">Z — تكبير</div>
-        <div style="color:var(--text3)">Ctrl+Z — تراجع</div><div style="color:var(--text2); font-weight:700">Ctrl+Y — إعادة</div>
-        <div style="color:var(--text3)">Ctrl+S — حفظ</div><div style="color:var(--text2); font-weight:700">Ctrl+E — تصدير</div>
-        <div style="color:var(--text3)">[ — تصغير فرشاة</div><div style="color:var(--text2); font-weight:700">] — تكبير فرشاة</div>
-        <div style="color:var(--text3)">G — شبكة</div><div style="color:var(--text2); font-weight:700">F — شاشة كاملة</div>
-      </div>
-    </div>
-  </div>
+<!-- STATUS BAR -->
+<div class="studio-statusbar">
+  <div class="status-item"><div class="status-dot"></div><span id="statusTool">فرشاة</span></div>
+  <div class="status-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg><span id="statusLayers">1 طبقة</span></div>
+  <div class="status-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg><span id="statusHistory">0 خطوة</span></div>
+  <div style="margin-right:auto"></div>
+  <span id="statusMode" style="font-size:0.65rem;color:var(--accent1);font-weight:700">رسم ثابت</span>
+  <span style="font-size:0.65rem;color:var(--text3)">صفوان ستوديو v2.0</span>
 </div>
 
 <!-- NEW CANVAS DIALOG -->
 <div class="dialog-overlay" id="newCanvasDialog">
   <div class="dialog-box">
-    <div class="dialog-title">لوحة جديدة</div>
-    <div class="size-presets">
-      <button class="size-preset" onclick="applyPreset(1920,1080)">HD 1080p</button>
-      <button class="size-preset" onclick="applyPreset(3840,2160)">4K</button>
-      <button class="size-preset" onclick="applyPreset(2480,3508)">A4</button>
-      <button class="size-preset" onclick="applyPreset(3508,4961)">A3</button>
-      <button class="size-preset" onclick="applyPreset(1080,1080)">مربع</button>
-      <button class="size-preset" onclick="applyPreset(1080,1920)">هاتف</button>
-      <button class="size-preset" onclick="applyPreset(2560,1440)">بانوراما</button>
-      <button class="size-preset" onclick="applyPreset(800,600)">ويب</button>
+    <button class="close-btn" onclick="document.getElementById('newCanvasDialog').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="dialog-title">مشروع جديد</div>
+    <div class="dialog-row"><span class="dialog-label">النوع</span>
+      <select class="dialog-select" id="newMode">
+        <option value="static">رسم ثابت</option>
+        <option value="animation">رسم متحرك (أنيميشن)</option>
+      </select>
     </div>
-    <div class="dialog-row">
-      <span class="dialog-label">العرض</span>
-      <input class="dialog-input" id="newW" value="1920" type="number">
-      <span style="font-size:0.75rem; color:var(--text3); font-weight:700">px</span>
-    </div>
-    <div class="dialog-row">
-      <span class="dialog-label">الارتفاع</span>
-      <input class="dialog-input" id="newH" value="1080" type="number">
-      <span style="font-size:0.75rem; color:var(--text3); font-weight:700">px</span>
-    </div>
-    <div class="dialog-row">
-      <span class="dialog-label">DPI</span>
-      <input class="dialog-input" id="newDPI" value="72" type="number">
-    </div>
-    <div class="dialog-row">
-      <span class="dialog-label">الخلفية</span>
+    <div style="margin:0.75rem 0 0.4rem"><span style="font-size:0.75rem;font-weight:700;color:var(--text3)">قياسات جاهزة:</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:0.75rem" id="dialogPresets"></div>
+    <div class="dialog-row"><span class="dialog-label">العرض</span><input class="dialog-input" id="newW" value="1920" type="number"><span style="font-size:0.72rem;color:var(--text3)">px</span></div>
+    <div class="dialog-row"><span class="dialog-label">الارتفاع</span><input class="dialog-input" id="newH" value="1080" type="number"><span style="font-size:0.72rem;color:var(--text3)">px</span></div>
+    <div class="dialog-row"><span class="dialog-label">DPI</span><input class="dialog-input" id="newDPI" value="72" type="number"></div>
+    <div class="dialog-row"><span class="dialog-label">الخلفية</span>
       <select class="dialog-select" id="newBg">
         <option value="white">أبيض</option>
         <option value="transparent">شفاف</option>
         <option value="black">أسود</option>
+        <option value="custom">مخصص...</option>
       </select>
+      <input type="color" id="newBgColor" value="#ffffff" style="width:36px;height:32px;border-radius:6px;cursor:pointer;border:1px solid var(--border)">
     </div>
     <div class="dialog-actions">
-      <button class="btn-secondary" onclick="closeNewCanvas()">إلغاء</button>
+      <button class="btn-secondary" onclick="document.getElementById('newCanvasDialog').classList.remove('open')">إلغاء</button>
       <button class="btn-primary" onclick="createNewCanvas()">إنشاء</button>
     </div>
   </div>
 </div>
 
-<!-- Hidden file input -->
+<!-- SETTINGS -->
+<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-modal">
+    <button class="close-btn" onclick="closeSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="settings-title">الإعدادات</div>
+    <div class="settings-group">
+      <div class="settings-group-title">المظهر</div>
+      <div class="settings-row"><span class="settings-label">الوضع الليلي</span><button class="toggle-switch on" id="darkToggle" onclick="toggleTheme()"></button></div>
+      <div class="settings-row"><span class="settings-label">لون التمييز</span>
+        <select style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:0.78rem;padding:0.3rem 0.5rem;font-family:var(--font);cursor:pointer" onchange="document.documentElement.style.setProperty('--accent1',this.value);toast('تم تغيير اللون')">
+          <option value="#FF6B6B">أحمر مرجاني</option>
+          <option value="#4ECDC4">أخضر مائي</option>
+          <option value="#FFE66D">ذهبي</option>
+          <option value="#a78bfa">بنفسجي</option>
+          <option value="#34d399">أخضر</option>
+          <option value="#60a5fa">أزرق</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">اللوحة</div>
+      <div class="settings-row"><span class="settings-label">الشبكة المساعدة</span><button class="toggle-switch" id="gridSettingToggle" onclick="toggleGrid();this.classList.toggle('on')"></button></div>
+      <div class="settings-row"><span class="settings-label">خلفية شطرنج</span><button class="toggle-switch" id="checkerSettingToggle" onclick="toggleChecker();this.classList.toggle('on')"></button></div>
+      <div class="settings-row"><span class="settings-label">تنعيم الرسم</span><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="settings-row"><span class="settings-label">ضغط القلم</span><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button></div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">اختصارات لوحة المفاتيح</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 1rem;font-size:0.72rem">
+        <div style="color:var(--text3)">B — فرشاة</div><div style="color:var(--text2);font-weight:700">E — ممحاة</div>
+        <div style="color:var(--text3)">V — تحديد</div><div style="color:var(--text2);font-weight:700">H — تحريك</div>
+        <div style="color:var(--text3)">T — نص</div><div style="color:var(--text2);font-weight:700">I — قطارة</div>
+        <div style="color:var(--text3)">R — مستطيل</div><div style="color:var(--text2);font-weight:700">O — دائرة</div>
+        <div style="color:var(--text3)">F — دلو</div><div style="color:var(--text2);font-weight:700">G — شبكة</div>
+        <div style="color:var(--text3)">[ — تصغير فرشاة</div><div style="color:var(--text2);font-weight:700">] — تكبير فرشاة</div>
+        <div style="color:var(--text3)">Ctrl+Z — تراجع</div><div style="color:var(--text2);font-weight:700">Ctrl+Y — إعادة</div>
+        <div style="color:var(--text3)">Ctrl+S — حفظ</div><div style="color:var(--text2);font-weight:700">Ctrl+E — تصدير</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div class="projects-overlay" id="projectsOverlay" onclick="if(event.target===this)closeProjects()">
+  <div class="projects-modal">
+    <button class="close-btn" onclick="closeProjects()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div style="font-size:1.2rem;font-weight:900;background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.5rem">مشاريعي المحفوظة</div>
+    <div style="font-size:0.78rem;color:var(--text3)">المشاريع محفوظة تلقائياً وتبقى للأبد</div>
+    <div class="projects-grid" id="projectsGrid"></div>
+    <div style="text-align:center;margin-top:1rem">
+      <button class="btn-primary" onclick="closeProjects();showNewCanvas()">+ مشروع جديد</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN INPUTS -->
 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileOpen(event)">
 <input type="file" id="refInput" accept="image/*" style="display:none" onchange="handleRefImport(event)">
 
