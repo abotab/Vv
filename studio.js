@@ -1,1335 +1,2569 @@
-/* studio.js — محرك الاستوديو الكامل لصفوان ستوديو */
+/* ============================================
+   studio.js - الاستوديو الاحترافي الكامل
+   ============================================ */
 
-// ============== الحالة العامة ==============
-const state = {
-  tool: 'brush',
-  brush: 'safwan-pro',
-  color: '#000000',
+'use strict';
+
+// ============================================
+// الحالة العامة
+// ============================================
+const S = {
+  project: null,
+  projectType: 'static',
+  canvasWidth: 1080,
+  canvasHeight: 1080,
+  background: '#ffffff',
+  fps: 24,
+  dpi: 300,
+
+  currentTool: 'brush',
+  previousTool: 'brush',
+
+  fgColor: '#1a1a2e',
   bgColor: '#ffffff',
-  opacity: 1.0,
-  size: 10,
-  smoothing: 50,
+
+  brush: {
+    size: 20, opacity: 1, flow: 1, smooth: 50, hardness: 0.8, spacing: 5,
+    type: 'safwan-round', name: 'فرشاة صفوان الدائرية'
+  },
+
   zoom: 1,
+  panX: 0, panY: 0,
+
   isDrawing: false,
   lastX: 0, lastY: 0,
-  history: [],
-  historyIndex: -1,
-  maxHistory: 50,
+  lastPressure: 0.5,
+  brushPoints: [],
+
+  shapeStart: null,
+  shapeEnd: null,
+
   layers: [],
-  activeLayerIndex: 0,
-  projectType: 'static',
-  canvasWidth: 800,
-  canvasHeight: 600,
+  activeLayerIdx: 0,
+
+  history: [],
+  historyIdx: -1,
+  maxHistory: 50,
+
+  showGrid: false,
+  showRulers: true,
+  snapToGrid: false,
+  gridSize: 40,
+
   frames: [],
   currentFrame: 0,
-  fps: 12,
   isPlaying: false,
-  animTimer: null,
-  isDark: true,
-  gridVisible: false,
-  blendMode: 'source-over',
+  loop: true,
+  playInterval: null,
+
   refImage: null,
   refOpacity: 0.5,
+  refScale: 1,
+  refX: 0, refY: 0,
   refLocked: false,
-  pressureEnabled: true,
-  savedColors: [],
-  colorH: 0, colorS: 1, colorV: 0.5,
-  points: [],
-  projectId: null,
-  startPoint: null,
-  lassoPath: []
+
+  selection: null,
+  clipboard: null,
+
+  mainCanvas: null,
+  mainCtx: null,
+  overlayCanvas: null,
+  overlayCtx: null,
 };
 
-// ============== تهيئة ==============
-window.onload = function () {
-  loadSettings();
-  initCanvases();
-  initColorPicker();
-  initColorPalette();
+// ============================================
+// التهيئة
+// ============================================
+window.addEventListener('DOMContentLoaded', initStudio);
+
+function initStudio() {
+  const theme = localStorage.getItem('safwan-theme') || 'dark';
+  if (theme === 'light') {
+    document.body.classList.add('light-mode');
+    const sw = document.getElementById('darkModeSwitch');
+    if (sw) sw.checked = false;
+  } else {
+    const sw = document.getElementById('darkModeSwitch');
+    if (sw) sw.checked = true;
+  }
+  updateThemeToggle();
+
+  renderProjectsGrid();
+
+  const currentProject = localStorage.getItem('safwan-current-project');
+  if (currentProject) {
+    try {
+      const proj = JSON.parse(currentProject);
+      localStorage.removeItem('safwan-current-project');
+      setTimeout(() => openProject(proj), 200);
+    } catch (e) {}
+  }
+
+  initKeyboardShortcuts();
+}
+
+// ============================================
+// إدارة المشاريع
+// ============================================
+function getProjects() {
+  try { return JSON.parse(localStorage.getItem('safwan-projects') || '[]'); }
+  catch (e) { return []; }
+}
+
+function saveProjects(projects) {
+  localStorage.setItem('safwan-projects', JSON.stringify(projects));
+}
+
+function renderProjectsGrid() {
+  const grid = document.getElementById('projectsGrid');
+  const empty = document.getElementById('psEmpty');
+  if (!grid) return;
+  const projects = getProjects();
+
+  grid.querySelectorAll('.project-card').forEach(c => c.remove());
+
+  if (projects.length === 0) {
+    if (empty) empty.style.display = 'flex';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  projects.forEach(proj => {
+    const card = createProjectCard(proj);
+    grid.appendChild(card);
+  });
+}
+
+function createProjectCard(proj) {
+  const card = document.createElement('div');
+  card.className = 'project-card fade-in';
+  const typeLabel = proj.type === 'animated' ? 'متحرك' : 'ثابت';
+  const typeCls = proj.type === 'animated' ? 'animated' : 'static';
+  const date = new Date(proj.created || Date.now()).toLocaleDateString('ar');
+  const bgStyle = proj.background && proj.background !== 'transparent' ? `background:${proj.background}` : 'background:#eee';
+
+  card.innerHTML = `
+    <div class="pc-thumbnail">
+      <div style="width:100%;height:100%;${bgStyle};display:flex;align-items:center;justify-content:center;">
+        ${proj.thumbnail ? `<img src="${proj.thumbnail}" style="width:100%;height:100%;object-fit:cover">` : `<svg viewBox="0 0 60 60" width="40" height="40" opacity="0.2"><path d="M10,50 Q20,20 30,35 Q40,50 50,10" fill="none" stroke="#888" stroke-width="3" stroke-linecap="round"/></svg>`}
+      </div>
+      <div class="pc-type-badge ${typeCls}">${typeLabel}</div>
+    </div>
+    <div class="pc-actions">
+      <button class="pca-btn" onclick="event.stopPropagation();deleteProjectById('${proj.id}')" title="حذف">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    </div>
+    <div class="pc-info">
+      <div class="pc-name">${proj.name || 'بدون عنوان'}</div>
+      <div class="pc-meta">
+        <span>${proj.width}×${proj.height}</span>
+        <span>${date}</span>
+      </div>
+    </div>
+  `;
+  card.addEventListener('click', () => openProject(proj));
+  return card;
+}
+
+function deleteProjectById(id) {
+  if (!confirm('هل تريد حذف هذا المشروع نهائيًا؟')) return;
+  const projects = getProjects().filter(p => p.id !== id);
+  saveProjects(projects);
+  renderProjectsGrid();
+  showToast('تم حذف المشروع', 'error');
+}
+
+function filterProjects(query) {
+  const projects = getProjects();
+  const filtered = query ? projects.filter(p => (p.name || '').includes(query)) : projects;
+  const grid = document.getElementById('projectsGrid');
+  grid.querySelectorAll('.project-card').forEach(c => c.remove());
+  const empty = document.getElementById('psEmpty');
+  if (filtered.length === 0) { if (empty) empty.style.display = 'flex'; return; }
+  if (empty) empty.style.display = 'none';
+  filtered.forEach(p => grid.appendChild(createProjectCard(p)));
+}
+
+// ============================================
+// فتح مشروع
+// ============================================
+function openProject(proj) {
+  S.project = { ...proj };
+  S.projectType = proj.type || 'static';
+  S.canvasWidth = parseInt(proj.width) || 1080;
+  S.canvasHeight = parseInt(proj.height) || 1080;
+  S.background = proj.background || '#ffffff';
+  S.fps = parseInt(proj.fps) || 24;
+  S.dpi = parseInt(proj.dpi) || 300;
+
+  document.getElementById('projectsScreen').style.display = 'none';
+  const app = document.getElementById('studioApp');
+  app.style.display = 'flex';
+  app.style.flexDirection = 'column';
+
+  // شريط الأنيميشن
+  const animBar = document.getElementById('animationBar');
+  if (animBar) animBar.style.display = S.projectType === 'animated' ? 'flex' : 'none';
+  const exportVideoOpt = document.getElementById('exportVideoOpt');
+  if (exportVideoOpt) exportVideoOpt.style.display = S.projectType === 'animated' ? 'block' : 'none';
+
+  setTimeout(() => {
+    initCanvas();
+    initLayers();
+    if (S.projectType === 'animated') initAnimation(proj);
+    updateProjectName();
+    updateCanvasInfo();
+    initColorPicker();
+    initBrushList();
+    initColorPalette();
+    fitCanvasToView();
+    drawRulers();
+  }, 100);
+}
+
+// ============================================
+// مشروع جديد من الاستوديو
+// ============================================
+const SNP = { width: 1080, height: 1080, bg: '#ffffff', fps: 24, type: 'static' };
+
+function showNewProjectFromStudio() {
+  document.getElementById('studioNewProjectModal').classList.add('active');
+}
+
+function hideStudioNewProject() {
+  document.getElementById('studioNewProjectModal').classList.remove('active');
+}
+
+document.getElementById('studioNewProjectModal')?.addEventListener('click', function(e) {
+  if (e.target === this) hideStudioNewProject();
+});
+
+function switchStudioTab(type) {
+  SNP.type = type;
+  document.querySelectorAll('#studioNewProjectModal .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === type);
+  });
+  const as = document.getElementById('studioAnimSettings');
+  if (as) as.style.display = type === 'animated' ? 'block' : 'none';
+}
+
+function selectStudioSize(btn, w, h) {
+  SNP.width = w; SNP.height = h;
+  document.querySelectorAll('#studioNewProjectModal .size-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cs = document.getElementById('studioCustomSize');
+  if (cs) cs.style.display = 'none';
+}
+
+function toggleStudioCustomSize() {
+  const cs = document.getElementById('studioCustomSize');
+  if (cs) cs.style.display = cs.style.display === 'none' ? 'flex' : 'none';
+}
+
+function selectStudioBg(btn, color) {
+  SNP.bg = color;
+  document.querySelectorAll('#studioNewProjectModal .bg-opt').forEach(b => {
+    b.style.outline = 'none';
+    const sv = b.querySelector('svg'); if (sv) sv.style.opacity = '0';
+  });
+  if (btn) {
+    btn.style.outline = '2px solid #ff6b35';
+    const sv = btn.querySelector('svg'); if (sv) sv.style.opacity = '1';
+  }
+}
+
+function selectStudioFPS(btn, fps) {
+  SNP.fps = fps;
+  document.querySelectorAll('#studioNewProjectModal .fps-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function createStudioProject() {
+  const w = parseInt(document.getElementById('sCustomW')?.value) || SNP.width;
+  const h = parseInt(document.getElementById('sCustomH')?.value) || SNP.height;
+  const proj = {
+    id: Date.now().toString(),
+    name: `مشروع ${new Date().toLocaleDateString('ar')}`,
+    width: w, height: h,
+    background: SNP.bg, fps: SNP.fps,
+    type: SNP.type, created: Date.now()
+  };
+  const projects = getProjects();
+  projects.unshift(proj);
+  saveProjects(projects);
+  hideStudioNewProject();
+  openProject(proj);
+}
+
+function exitToProjects() {
+  autoSaveProject();
+  if (S.isPlaying) { clearInterval(S.playInterval); S.isPlaying = false; }
+  document.getElementById('studioApp').style.display = 'none';
+  document.getElementById('projectsScreen').style.display = 'flex';
+  renderProjectsGrid();
+}
+
+function newFileFromMenu() {
+  closeAllMenus();
+  showNewProjectFromStudio();
+}
+
+// ============================================
+// تهيئة الكانفاس
+// ============================================
+function initCanvas() {
+  const wrapper = document.getElementById('canvasWrapper');
+  wrapper.innerHTML = '';
+  wrapper.style.position = 'relative';
+  wrapper.style.width = S.canvasWidth + 'px';
+  wrapper.style.height = S.canvasHeight + 'px';
+
+  S.mainCanvas = document.createElement('canvas');
+  S.mainCanvas.id = 'mainCanvas';
+  S.mainCanvas.width = S.canvasWidth;
+  S.mainCanvas.height = S.canvasHeight;
+  S.mainCanvas.style.display = 'block';
+  S.mainCtx = S.mainCanvas.getContext('2d', { willReadFrequently: true });
+
+  S.overlayCanvas = document.createElement('canvas');
+  S.overlayCanvas.width = S.canvasWidth;
+  S.overlayCanvas.height = S.canvasHeight;
+  S.overlayCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
+  S.overlayCtx = S.overlayCanvas.getContext('2d', { willReadFrequently: true });
+
+  wrapper.appendChild(S.mainCanvas);
+  wrapper.appendChild(S.overlayCanvas);
+
+  S.mainCanvas.addEventListener('pointerdown', onPointerDown);
+  S.mainCanvas.addEventListener('pointermove', onPointerMove);
+  S.mainCanvas.addEventListener('pointerup', onPointerUp);
+  S.mainCanvas.addEventListener('pointerleave', onPointerUp);
+  S.mainCanvas.addEventListener('wheel', onWheel, { passive: false });
+  S.mainCanvas.addEventListener('contextmenu', e => e.preventDefault());
+  S.mainCanvas.style.touchAction = 'none';
+}
+
+function fillBackground() {
+  if (!S.mainCtx) return;
+  S.mainCtx.save();
+  S.mainCtx.setTransform(1, 0, 0, 1, 0, 0);
+  if (S.background === 'transparent') {
+    const sz = 20;
+    for (let y = 0; y < S.canvasHeight; y += sz)
+      for (let x = 0; x < S.canvasWidth; x += sz) {
+        S.mainCtx.fillStyle = ((Math.floor(x/sz)+Math.floor(y/sz))%2===0) ? '#cccccc' : '#ffffff';
+        S.mainCtx.fillRect(x, y, sz, sz);
+      }
+  } else {
+    S.mainCtx.fillStyle = S.background;
+    S.mainCtx.fillRect(0, 0, S.canvasWidth, S.canvasHeight);
+  }
+  S.mainCtx.restore();
+}
+
+// ============================================
+// الطبقات
+// ============================================
+function initLayers() {
+  S.layers = [];
+  S.history = [];
+  S.historyIdx = -1;
+
+  if (S.project?.layersData && S.project.layersData.length > 0) {
+    const promises = S.project.layersData.map((ld, i) => new Promise(res => {
+      const canvas = document.createElement('canvas');
+      canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (ld.data) {
+        const img = new Image();
+        img.onload = () => { ctx.drawImage(img, 0, 0); res(); };
+        img.onerror = () => res();
+        img.src = ld.data;
+      } else res();
+      S.layers.push({ id: ld.id||Date.now()+i, name: ld.name||`طبقة ${i+1}`, canvas, ctx, opacity: ld.opacity??1, visible: ld.visible!==false, locked: ld.locked||false, blendMode: ld.blendMode||'source-over' });
+    }));
+    Promise.all(promises).then(() => { renderLayers(); renderLayersList(); });
+  } else {
+    addLayer(true);
+  }
+}
+
+function addLayer(silent = false) {
+  const canvas = document.createElement('canvas');
+  canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const layer = { id: Date.now(), name: `طبقة ${S.layers.length + 1}`, canvas, ctx, opacity: 1, visible: true, locked: false, blendMode: 'source-over' };
+  S.layers.splice(S.activeLayerIdx, 0, layer);
+  S.activeLayerIdx = S.layers.indexOf(layer);
   renderLayersList();
-  initEventListeners();
-  updateUI();
-
-  if (state.projectType === 'animated') {
-    document.getElementById('timelineBar').style.display = 'flex';
-    initTimeline();
-  }
-
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'light') {
-    state.isDark = false;
-    document.body.classList.add('light-theme');
-    document.getElementById('moonIcon').style.display = 'none';
-    document.getElementById('sunIcon').style.display = 'block';
-    const dt = document.getElementById('darkModeToggle');
-    if (dt) dt.checked = false;
-  }
-
-  setTimeout(saveHistory, 200);
-};
-
-function loadSettings() {
-  const raw = sessionStorage.getItem('projectSettings');
-  if (raw) {
-    const s = JSON.parse(raw);
-    state.projectType = s.type || 'static';
-    state.bgColor = s.bgColor || '#ffffff';
-    state.canvasWidth = s.width || 800;
-    state.canvasHeight = s.height || 600;
-  }
-  document.getElementById('pdType').textContent = state.projectType === 'animated' ? 'متحرك' : 'ثابت';
-  document.getElementById('pdSize').textContent = `${state.canvasWidth} × ${state.canvasHeight}`;
+  if (!silent) { renderLayers(); showToast('تمت إضافة طبقة جديدة'); }
 }
 
-function initCanvases() {
-  ['bgCanvas', 'layer0', 'overlayCanvas', 'selectionCanvas'].forEach(id => {
-    const c = document.getElementById(id);
-    if (c) { c.width = state.canvasWidth; c.height = state.canvasHeight; }
-  });
-
-  const stack = document.getElementById('canvasStack');
-  if (stack) { stack.style.width = state.canvasWidth + 'px'; stack.style.height = state.canvasHeight + 'px'; }
-
-  drawBackground();
-
-  state.layers = [{
-    id: 0, name: 'الطبقة 1',
-    canvas: document.getElementById('layer0'),
-    visible: true, locked: false, opacity: 1.0, blendMode: 'source-over'
-  }];
-
-  document.getElementById('layer0').style.zIndex = 10;
-  document.getElementById('overlayCanvas').style.zIndex = 200;
-  document.getElementById('selectionCanvas').style.zIndex = 300;
+function deleteLayer() {
+  if (S.layers.length <= 1) { showToast('لا يمكن حذف الطبقة الوحيدة', 'error'); return; }
+  S.layers.splice(S.activeLayerIdx, 1);
+  S.activeLayerIdx = Math.max(0, S.activeLayerIdx - 1);
+  renderLayersList(); renderLayers(); showToast('تم حذف الطبقة');
 }
 
-function drawBackground() {
-  const bg = document.getElementById('bgCanvas');
-  if (!bg) return;
-  const ctx = bg.getContext('2d');
-  if (state.bgColor === 'transparent') {
-    ctx.clearRect(0, 0, bg.width, bg.height);
-  } else {
-    ctx.fillStyle = state.bgColor;
-    ctx.fillRect(0, 0, bg.width, bg.height);
-  }
+function duplicateLayer() {
+  const src = S.layers[S.activeLayerIdx];
+  const canvas = document.createElement('canvas');
+  canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(src.canvas, 0, 0);
+  const layer = { id: Date.now(), name: src.name + ' (نسخة)', canvas, ctx, opacity: src.opacity, visible: src.visible, locked: src.locked, blendMode: src.blendMode };
+  S.layers.splice(S.activeLayerIdx, 0, layer);
+  renderLayersList(); renderLayers(); showToast('تم تكرار الطبقة');
 }
 
-// ============== الرسم ==============
-function getActiveCanvas() { return state.layers[state.activeLayerIndex]?.canvas; }
-function getActiveCtx() { const c = getActiveCanvas(); return c ? c.getContext('2d') : null; }
-
-function initEventListeners() {
-  const stack = document.getElementById('canvasStack');
-  if (!stack) return;
-
-  stack.addEventListener('mousedown', startDraw);
-  stack.addEventListener('mousemove', duringDraw);
-  stack.addEventListener('mouseup', endDraw);
-  stack.addEventListener('mouseleave', endDraw);
-
-  stack.addEventListener('touchstart', e => {
-    e.preventDefault();
-    const t = e.touches[0];
-    startDraw({ clientX: t.clientX, clientY: t.clientY, pressure: t.force || 0.5, buttons: 1 });
-  }, { passive: false });
-
-  stack.addEventListener('touchmove', e => {
-    e.preventDefault();
-    const t = e.touches[0];
-    duringDraw({ clientX: t.clientX, clientY: t.clientY, pressure: t.force || 0.5, buttons: 1 });
-  }, { passive: false });
-
-  stack.addEventListener('touchend', endDraw);
-
-  document.getElementById('canvasContainer').addEventListener('wheel', e => {
-    e.preventDefault();
-    state.zoom = Math.max(0.1, Math.min(32, state.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-    applyZoom();
-  }, { passive: false });
-
-  document.addEventListener('keydown', handleKeyboard);
-
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.tool-group')) {
-      document.querySelectorAll('.tool-group').forEach(g => g.classList.remove('open'));
-    }
-  });
+function mergeLayerDown() {
+  if (S.activeLayerIdx >= S.layers.length - 1) { showToast('لا توجد طبقة أدناه', 'error'); return; }
+  const top = S.layers[S.activeLayerIdx];
+  const bot = S.layers[S.activeLayerIdx + 1];
+  bot.ctx.save();
+  bot.ctx.globalAlpha = top.opacity;
+  bot.ctx.globalCompositeOperation = top.blendMode;
+  bot.ctx.drawImage(top.canvas, 0, 0);
+  bot.ctx.restore();
+  S.layers.splice(S.activeLayerIdx, 1);
+  S.activeLayerIdx = Math.max(0, S.activeLayerIdx - 1);
+  renderLayersList(); renderLayers(); showToast('تم دمج الطبقة');
 }
 
-function getCanvasPos(e) {
-  const wrapper = document.getElementById('canvasWrapper');
-  const rect = wrapper.getBoundingClientRect();
-  return {
-    x: (e.clientX - rect.left) / state.zoom,
-    y: (e.clientY - rect.top) / state.zoom
-  };
-}
-
-function startDraw(e) {
-  if (state.layers[state.activeLayerIndex]?.locked) return;
-  const pos = getCanvasPos(e);
-  state.isDrawing = true;
-  state.lastX = pos.x;
-  state.lastY = pos.y;
-  state.startPoint = { ...pos };
-  state.points = [{ ...pos }];
-  state.lassoPath = [{ ...pos }];
-
-  const ctx = getActiveCtx();
-  if (!ctx) return;
-
-  if (state.tool === 'fill') { floodFill(ctx, Math.round(pos.x), Math.round(pos.y), state.color); saveHistory(); return; }
-  if (state.tool === 'eyedropper') { pickColor(ctx, Math.round(pos.x), Math.round(pos.y)); state.isDrawing = false; return; }
-  if (state.tool === 'text') { addText(pos.x, pos.y); state.isDrawing = false; return; }
-
-  if (['brush','pencil','pen','marker','charcoal','airbrush','eraser','smudge','soft','hard'].includes(state.tool)) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-  }
-}
-
-function duringDraw(e) {
-  if (!state.isDrawing) return;
-  const pos = getCanvasPos(e);
-  const ctx = getActiveCtx();
-  if (!ctx) return;
-
-  const pressure = (e.pressure !== undefined && e.pressure > 0) ? e.pressure : 0.5;
-
-  if (state.tool === 'hand') { panCanvas(pos); return; }
-  if (state.tool === 'move') { moveCanvasContent(pos); state.lastX = pos.x; state.lastY = pos.y; return; }
-  if (state.tool === 'select-rect') { drawSelRect(pos); return; }
-  if (state.tool === 'select-circle') { drawSelCircle(pos); return; }
-  if (state.tool === 'lasso') { state.lassoPath.push(pos); drawLasso(); return; }
-  if (['line','rect','circle','triangle','polygon','star','bezier'].includes(state.tool)) { drawShapePreview(pos); return; }
-  if (state.tool === 'gradient') { drawGradientPreview(pos); return; }
-
-  state.points.push(pos);
-  applyBrushAt(ctx, pos, pressure);
-  state.lastX = pos.x;
-  state.lastY = pos.y;
-}
-
-function endDraw(e) {
-  if (!state.isDrawing) return;
-  state.isDrawing = false;
-
-  const ctx = getActiveCtx();
-  if (!ctx) return;
-
-  const pos = e ? getCanvasPos(e) : { x: state.lastX, y: state.lastY };
-
-  if (state.tool === 'gradient' && state.startPoint) {
-    applyGradient(ctx, state.startPoint, pos);
-  } else if (['line','rect','circle','triangle','polygon','star','bezier'].includes(state.tool) && state.startPoint) {
-    clearOverlay();
-    drawShapeFinal(ctx, state.startPoint, pos);
-  }
-
-  try { ctx.restore(); } catch(e_) {}
-  saveHistory();
-  updateFrameThumbnail();
-  state.points = [];
-  state.startPoint = null;
-  state.lassoPath = [];
-}
-
-// ============== الفرشاة ==============
-function applyBrushAt(ctx, pos, pressure) {
-  const sz = state.pressureEnabled ? state.size * (0.4 + pressure * 0.6) : state.size;
-
-  ctx.save();
-  ctx.globalAlpha = state.opacity;
-  ctx.strokeStyle = state.color;
-  ctx.fillStyle = state.color;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  ctx.lineWidth = sz;
-
-  if (state.tool === 'eraser') {
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.strokeStyle = 'rgba(0,0,0,1)';
-  } else {
-    ctx.globalCompositeOperation = state.blendMode;
-  }
-
-  const x1 = state.lastX, y1 = state.lastY, x2 = pos.x, y2 = pos.y;
-  const smooth = state.smoothing / 100;
-
-  switch (state.brush) {
-    case 'safwan-watercolor':
-    case 'watercolor':
-      for (let i = 0; i < 6; i++) {
-        ctx.globalAlpha = state.opacity * 0.12;
-        const ox = (Math.random()-0.5)*sz*0.6, oy = (Math.random()-0.5)*sz*0.6;
-        ctx.beginPath(); ctx.moveTo(x1+ox, y1+oy); ctx.lineTo(x2+ox, y2+oy); ctx.stroke();
-      }
-      break;
-
-    case 'safwan-sketch':
-    case 'charcoal':
-      ctx.lineWidth = sz * 0.8; ctx.globalAlpha = state.opacity * 0.65;
-      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-      const ang = Math.atan2(y2-y1, x2-x1) + Math.PI/2;
-      ctx.lineWidth = sz * 0.25; ctx.globalAlpha = state.opacity * 0.3;
-      ctx.beginPath();
-      ctx.moveTo(x1+Math.cos(ang)*sz*0.3, y1+Math.sin(ang)*sz*0.3);
-      ctx.lineTo(x2+Math.cos(ang)*sz*0.3, y2+Math.sin(ang)*sz*0.3);
-      ctx.stroke();
-      break;
-
-    case 'splatter':
-    case 'airbrush':
-      const dist = Math.hypot(x2-x1, y2-y1);
-      const steps = Math.max(1, Math.ceil(dist));
-      for (let i = 0; i < steps; i++) {
-        const px = x1+(x2-x1)*(i/steps), py = y1+(y2-y1)*(i/steps);
-        for (let j = 0; j < 10; j++) {
-          const r = Math.random()*sz*1.8, a = Math.random()*Math.PI*2;
-          ctx.globalAlpha = state.opacity * Math.random() * 0.15;
-          ctx.beginPath();
-          ctx.arc(px+Math.cos(a)*r, py+Math.sin(a)*r, Math.random()*sz*0.12+0.5, 0, Math.PI*2);
-          ctx.fill();
-        }
-      }
-      break;
-
-    case 'soft':
-      const g = ctx.createRadialGradient(x2, y2, 0, x2, y2, sz/2);
-      g.addColorStop(0, state.color);
-      g.addColorStop(1, 'transparent');
-      ctx.globalAlpha = state.opacity * 0.35;
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(x2, y2, sz/2, 0, Math.PI*2); ctx.fill();
-      break;
-
-    case 'safwan-glow':
-      ctx.shadowColor = state.color;
-      ctx.shadowBlur = sz * 2.5;
-      ctx.globalAlpha = state.opacity * 0.85;
-      drawSmoothLine(ctx, x1, y1, x2, y2, smooth);
-      ctx.shadowBlur = 0;
-      break;
-
-    case 'safwan-ink':
-    case 'pen':
-      ctx.lineWidth = sz * (0.25 + pressure * 0.75);
-      drawSmoothLine(ctx, x1, y1, x2, y2, smooth);
-      break;
-
-    case 'marker':
-      ctx.lineWidth = sz * 1.2;
-      ctx.globalAlpha = state.opacity * 0.7;
-      ctx.lineCap = 'square';
-      drawSmoothLine(ctx, x1, y1, x2, y2, 0);
-      break;
-
-    case 'oil':
-      for (let i = 0; i < 3; i++) {
-        ctx.globalAlpha = state.opacity * 0.5;
-        ctx.lineWidth = sz * (0.6 + i * 0.2);
-        drawSmoothLine(ctx, x1+(i-1)*2, y1, x2+(i-1)*2, y2, smooth);
-      }
-      break;
-
-    case 'smudge':
-      const d = Math.hypot(x2-x1, y2-y1);
-      if (d < 2) break;
-      const img = ctx.getImageData(
-        Math.min(x1,x2)-sz, Math.min(y1,y2)-sz,
-        Math.abs(x2-x1)+sz*2, Math.abs(y2-y1)+sz*2
-      );
-      ctx.save();
-      ctx.globalAlpha = 0.4;
-      ctx.putImageData(img, Math.min(x1,x2)-sz + (x2-x1)*0.3, Math.min(y1,y2)-sz + (y2-y1)*0.3);
-      ctx.restore();
-      break;
-
-    case 'calligraphy':
-      ctx.lineWidth = sz;
-      ctx.lineCap = 'butt';
-      const angle = Math.atan2(y2-y1, x2-x1);
-      ctx.save();
-      ctx.translate(x2, y2); ctx.rotate(angle + Math.PI/4);
-      ctx.scale(1, 0.3);
-      ctx.beginPath(); ctx.arc(0, 0, sz/2, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-      break;
-
-    default:
-      drawSmoothLine(ctx, x1, y1, x2, y2, smooth);
-  }
-
-  ctx.restore();
-}
-
-function drawSmoothLine(ctx, x1, y1, x2, y2, smooth) {
-  if (smooth > 0 && state.points.length >= 3) {
-    const pts = state.points;
-    const p0 = pts[pts.length-3], p1 = pts[pts.length-2], p2 = pts[pts.length-1];
-    ctx.beginPath();
-    ctx.moveTo(p0.x, p0.y);
-    ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y);
-    ctx.stroke();
-  } else {
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-  }
-}
-
-// ============== الأشكال ==============
-function clearOverlay() {
-  const ov = document.getElementById('overlayCanvas');
-  if (ov) ov.getContext('2d').clearRect(0, 0, ov.width, ov.height);
-}
-
-function drawShapePreview(pos) {
-  clearOverlay();
-  const ov = document.getElementById('overlayCanvas');
-  const ctx = ov.getContext('2d');
-  ctx.save();
-  ctx.globalAlpha = state.opacity;
-  ctx.strokeStyle = state.color;
-  ctx.fillStyle = 'transparent';
-  ctx.lineWidth = state.size;
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  renderShape(ctx, state.startPoint || pos, pos);
-  ctx.restore();
-}
-
-function drawShapeFinal(ctx, start, end) {
-  ctx.save();
-  ctx.globalAlpha = state.opacity;
-  ctx.strokeStyle = state.color;
-  ctx.lineWidth = state.size;
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  ctx.globalCompositeOperation = state.blendMode;
-  renderShape(ctx, start, end);
-  ctx.restore();
-}
-
-function renderShape(ctx, s, e) {
-  const dx = e.x-s.x, dy = e.y-s.y;
-  ctx.beginPath();
-  switch (state.tool) {
-    case 'line':
-      ctx.moveTo(s.x, s.y); ctx.lineTo(e.x, e.y); ctx.stroke(); break;
-    case 'rect':
-      ctx.strokeRect(s.x, s.y, dx, dy); break;
-    case 'circle':
-      ctx.ellipse(s.x+dx/2, s.y+dy/2, Math.abs(dx)/2, Math.abs(dy)/2, 0, 0, Math.PI*2); ctx.stroke(); break;
-    case 'triangle':
-      ctx.moveTo(s.x+dx/2, s.y); ctx.lineTo(e.x, e.y); ctx.lineTo(s.x, e.y); ctx.closePath(); ctx.stroke(); break;
-    case 'polygon':
-      drawPolygon(ctx, s, e, 6); break;
-    case 'star':
-      drawStar(ctx, s, e, 5); break;
-    case 'bezier':
-      const cpx = s.x + (e.x-s.x)*0.5, cpy = s.y;
-      ctx.moveTo(s.x, s.y); ctx.quadraticCurveTo(cpx, cpy, e.x, e.y); ctx.stroke(); break;
-  }
-}
-
-function drawPolygon(ctx, s, e, sides) {
-  const cx=(s.x+e.x)/2, cy=(s.y+e.y)/2;
-  const r=Math.hypot(e.x-cx, e.y-cy);
-  for (let i=0; i<sides; i++) {
-    const a=(i*2*Math.PI/sides)-Math.PI/2;
-    i===0 ? ctx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a)) : ctx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
-  }
-  ctx.closePath(); ctx.stroke();
-}
-
-function drawStar(ctx, s, e, pts) {
-  const cx=(s.x+e.x)/2, cy=(s.y+e.y)/2;
-  const outerR=Math.hypot(e.x-cx, e.y-cy), innerR=outerR*0.4;
-  for (let i=0; i<pts*2; i++) {
-    const a=(i*Math.PI/pts)-Math.PI/2;
-    const r=i%2===0?outerR:innerR;
-    i===0 ? ctx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a)) : ctx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
-  }
-  ctx.closePath(); ctx.stroke();
-}
-
-// ============== التحديد ==============
-function drawSelRect(pos) {
-  const s = state.startPoint; if (!s) return;
-  const sel = document.getElementById('selectionCanvas');
-  const ctx = sel.getContext('2d');
-  ctx.clearRect(0, 0, sel.width, sel.height);
-  ctx.save();
-  ctx.strokeStyle = '#FF6B35'; ctx.lineWidth = 1/state.zoom;
-  ctx.setLineDash([5/state.zoom, 3/state.zoom]);
-  ctx.strokeRect(s.x, s.y, pos.x-s.x, pos.y-s.y);
-  ctx.restore();
-}
-
-function drawSelCircle(pos) {
-  const s = state.startPoint; if (!s) return;
-  const sel = document.getElementById('selectionCanvas');
-  const ctx = sel.getContext('2d');
-  ctx.clearRect(0, 0, sel.width, sel.height);
-  ctx.save();
-  ctx.strokeStyle = '#FF6B35'; ctx.lineWidth = 1/state.zoom;
-  ctx.setLineDash([5/state.zoom, 3/state.zoom]);
-  ctx.beginPath();
-  ctx.ellipse(s.x+(pos.x-s.x)/2, s.y+(pos.y-s.y)/2, Math.abs(pos.x-s.x)/2, Math.abs(pos.y-s.y)/2, 0, 0, Math.PI*2);
-  ctx.stroke(); ctx.restore();
-}
-
-function drawLasso() {
-  const sel = document.getElementById('selectionCanvas');
-  const ctx = sel.getContext('2d');
-  ctx.clearRect(0, 0, sel.width, sel.height);
-  if (state.lassoPath.length < 2) return;
-  ctx.save();
-  ctx.strokeStyle = '#FF6B35'; ctx.lineWidth = 1/state.zoom;
-  ctx.setLineDash([3/state.zoom, 2/state.zoom]);
-  ctx.beginPath();
-  ctx.moveTo(state.lassoPath[0].x, state.lassoPath[0].y);
-  state.lassoPath.forEach(p => ctx.lineTo(p.x, p.y));
-  ctx.stroke(); ctx.restore();
-}
-
-// ============== أدوات إضافية ==============
-function floodFill(ctx, sx, sy, fillColor) {
-  const imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-  const d = imgData.data, w = imgData.width, h = imgData.height;
-  const i = (sy*w+sx)*4;
-  const tr=d[i], tg=d[i+1], tb=d[i+2], ta=d[i+3];
-  const fc = hexToRgb(fillColor);
-  if (!fc || (tr===fc.r && tg===fc.g && tb===fc.b)) return;
-  const stack = [[sx,sy]];
-  while (stack.length) {
-    const [x,y] = stack.pop();
-    if (x<0||x>=w||y<0||y>=h) continue;
-    const idx=(y*w+x)*4;
-    if (Math.abs(d[idx]-tr)>40||Math.abs(d[idx+1]-tg)>40||Math.abs(d[idx+2]-tb)>40) continue;
-    if (d[idx]===fc.r&&d[idx+1]===fc.g&&d[idx+2]===fc.b&&d[idx+3]===255) continue;
-    d[idx]=fc.r; d[idx+1]=fc.g; d[idx+2]=fc.b; d[idx+3]=255;
-    stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
-  }
-  ctx.putImageData(imgData, 0, 0);
-}
-
-function pickColor(ctx, x, y) {
-  const p = ctx.getImageData(x, y, 1, 1).data;
-  const hex = '#'+[p[0],p[1],p[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
-  setColor(hex);
-}
-
-function addText(x, y) {
-  const text = prompt('أدخل النص:');
-  if (!text) return;
-  const ctx = getActiveCtx(); if (!ctx) return;
-  ctx.save();
-  ctx.fillStyle = state.color;
-  ctx.font = `${Math.max(12, state.size*2)}px Tajawal, Cairo, sans-serif`;
-  ctx.globalAlpha = state.opacity;
-  ctx.fillText(text, x, y);
-  ctx.restore();
-  saveHistory();
-}
-
-function drawGradientPreview(pos) {
-  clearOverlay();
-  const ov = document.getElementById('overlayCanvas');
-  const ctx = ov.getContext('2d');
-  const s = state.startPoint; if (!s) return;
-  const grad = ctx.createLinearGradient(s.x, s.y, pos.x, pos.y);
-  grad.addColorStop(0, state.color);
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, ov.width, ov.height);
-}
-
-function applyGradient(ctx, start, end) {
-  clearOverlay();
-  const grad = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
-  grad.addColorStop(0, state.color);
-  grad.addColorStop(1, document.getElementById('bgColorSwatch').style.background || '#ffffff');
-  ctx.save();
-  ctx.globalAlpha = state.opacity;
-  ctx.globalCompositeOperation = state.blendMode;
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.restore();
-}
-
-function moveCanvasContent(pos) {
-  const ctx = getActiveCtx(); if (!ctx) return;
-  const dx = pos.x - state.lastX, dy = pos.y - state.lastY;
-  const img = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.putImageData(img, dx, dy);
-}
-
-function panCanvas(pos) {
-  const dx = pos.x - state.lastX, dy = pos.y - state.lastY;
-  const container = document.getElementById('canvasContainer');
-  container.scrollLeft -= dx;
-  container.scrollTop -= dy;
-}
-
-// ============== التاريخ ==============
-function saveHistory() {
-  state.history = state.history.slice(0, state.historyIndex+1);
-  const snapshot = state.layers.map(l => ({
-    id: l.id,
-    imageData: l.canvas.getContext('2d').getImageData(0, 0, l.canvas.width, l.canvas.height)
-  }));
-  state.history.push(snapshot);
-  state.historyIndex++;
-  if (state.history.length > state.maxHistory) { state.history.shift(); state.historyIndex--; }
-}
-
-function undoAction() {
-  if (state.historyIndex <= 0) return;
-  state.historyIndex--;
-  restoreSnapshot(state.history[state.historyIndex]);
-}
-
-function redoAction() {
-  if (state.historyIndex >= state.history.length-1) return;
-  state.historyIndex++;
-  restoreSnapshot(state.history[state.historyIndex]);
-}
-
-function restoreSnapshot(snap) {
-  if (!snap) return;
-  snap.forEach(item => {
-    const layer = state.layers.find(l => l.id === item.id);
-    if (layer) layer.canvas.getContext('2d').putImageData(item.imageData, 0, 0);
-  });
-}
-
-// ============== التكبير ==============
-function applyZoom() {
-  const wrapper = document.getElementById('canvasWrapper');
-  if (wrapper) { wrapper.style.transform = `scale(${state.zoom})`; wrapper.style.transformOrigin = 'center center'; }
-  document.getElementById('zoomDisplay').textContent = Math.round(state.zoom*100)+'%';
-}
-
-function zoomIn() { state.zoom = Math.min(32, state.zoom*1.25); applyZoom(); }
-function zoomOut() { state.zoom = Math.max(0.1, state.zoom*0.8); applyZoom(); }
-function resetZoom() { state.zoom = 1; applyZoom(); }
-
-// ============== الأدوات ==============
-function selectTool(tool) {
-  state.tool = tool;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll(`[data-tool="${tool}"]`).forEach(b => b.classList.add('active'));
-  const cursors = {
-    brush:'crosshair', pencil:'crosshair', pen:'crosshair', marker:'crosshair',
-    charcoal:'crosshair', airbrush:'crosshair', oil:'crosshair', soft:'crosshair',
-    eraser:'cell', fill:'copy', eyedropper:'crosshair', move:'move', hand:'grab',
-    text:'text', 'select-rect':'crosshair', 'select-circle':'crosshair',
-    lasso:'crosshair', 'magic-wand':'crosshair', smudge:'crosshair',
-    blur:'crosshair', sharpen:'crosshair', clone:'crosshair',
-    gradient:'crosshair', line:'crosshair', rect:'crosshair', circle:'crosshair',
-    triangle:'crosshair', polygon:'crosshair', star:'crosshair', bezier:'crosshair'
-  };
-  const activeCanvas = getActiveCanvas();
-  if (activeCanvas) activeCanvas.style.cursor = cursors[tool] || 'crosshair';
-  document.querySelectorAll('.tool-group').forEach(g => g.classList.remove('open'));
-}
-
-function toggleToolGroup(id) {
-  const g = document.getElementById(id);
-  const wasOpen = g.classList.contains('open');
-  document.querySelectorAll('.tool-group').forEach(x => x.classList.remove('open'));
-  if (!wasOpen) g.classList.add('open');
-}
-
-function selectBrush(brush, btn) {
-  state.brush = brush;
-  document.querySelectorAll('.brush-btn, .brush-list-btn').forEach(b => b.classList.remove('selected','active'));
-  if (btn) { btn.classList.add('selected'); btn.classList.add('active'); }
-  if (!['eraser','fill','eyedropper','select-rect','select-circle','lasso','magic-wand','move','hand','text','gradient'].includes(state.tool)) {
-    selectTool('brush');
-  }
-}
-
-// ============== الألوان ==============
-function setColor(hex) {
-  state.color = hex;
-  const fgEl = document.getElementById('fgColor');
-  const hexEl = document.getElementById('hexInput');
-  if (fgEl) fgEl.style.background = hex;
-  if (hexEl) hexEl.value = hex.replace('#','');
-  const rgb = hexToRgb(hex);
-  if (rgb) {
-    const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-    state.colorH = hsv.h; state.colorS = hsv.s; state.colorV = hsv.v;
-    drawColorWheel(); drawColorStrip();
-  }
-}
-
-function setHexColor(hex) { if (hex.length===6) setColor('#'+hex); }
-
-function swapColors() {
-  const fg = state.color; state.color = state.bgColor; state.bgColor = fg;
-  const fgEl = document.getElementById('fgColor');
-  const bgEl = document.getElementById('bgColorSwatch');
-  const hexEl = document.getElementById('hexInput');
-  if (fgEl) fgEl.style.background = state.color;
-  if (bgEl) bgEl.style.background = state.bgColor;
-  if (hexEl) hexEl.value = state.color.replace('#','');
-}
-
-function openColorPicker(type) {}
-
-function saveCurrentColor() {
-  if (state.savedColors.includes(state.color)) return;
-  state.savedColors.unshift(state.color);
-  if (state.savedColors.length > 24) state.savedColors.pop();
-  renderSavedColors();
-}
-
-function renderSavedColors() {
-  const el = document.getElementById('savedColorsList'); if (!el) return;
-  el.innerHTML = state.savedColors.map(c =>
-    `<div class="sc-color" style="background:${c}" onclick="setColor('${c}')" title="${c}"></div>`
-  ).join('');
-}
-
-// ============== دائرة الألوان ==============
-function initColorPicker() {
-  drawColorWheel(); drawColorStrip();
-  const wheel = document.getElementById('colorWheelCanvas');
-  const strip = document.getElementById('colorStrip');
-  if (wheel) {
-    const pick = e => {
-      const r = wheel.getBoundingClientRect();
-      pickFromWheel(wheel, e.clientX-r.left, e.clientY-r.top);
-    };
-    wheel.addEventListener('click', pick);
-    wheel.addEventListener('mousemove', e => { if (e.buttons) pick(e); });
-  }
-  if (strip) {
-    const pick = e => {
-      const r = strip.getBoundingClientRect();
-      pickFromStrip((e.clientX-r.left)/r.width);
-    };
-    strip.addEventListener('click', pick);
-    strip.addEventListener('mousemove', e => { if (e.buttons) pick(e); });
-  }
-  state.savedColors = ['#FF6B35','#FFD700','#FF4500','#4488FF','#44FF88','#FF4488','#9B59B6','#1ABC9C','#E67E22','#ECF0F1','#2C3E50','#000000','#FFFFFF'];
-  renderSavedColors();
-}
-
-function drawColorWheel() {
-  const canvas = document.getElementById('colorWheelCanvas'); if (!canvas) return;
+function flattenLayers() {
+  if (!confirm('دمج جميع الطبقات في طبقة واحدة؟')) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
   const ctx = canvas.getContext('2d');
-  const cx = canvas.width/2, cy = canvas.height/2, R = Math.min(cx,cy)-2;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  for (let a=0; a<360; a++) {
-    const rad = (a-90)*Math.PI/180;
-    const g = ctx.createLinearGradient(cx, cy, cx+R*Math.cos(rad), cy+R*Math.sin(rad));
-    g.addColorStop(0, `hsla(${a},0%,50%,1)`);
-    g.addColorStop(0.5, `hsla(${a},100%,50%,1)`);
-    g.addColorStop(1, `hsla(${a},100%,15%,1)`);
-    ctx.beginPath(); ctx.moveTo(cx,cy);
-    ctx.arc(cx, cy, R, (a-91)*Math.PI/180, (a-89)*Math.PI/180);
-    ctx.fillStyle = g; ctx.fill();
+  if (S.background !== 'transparent') { ctx.fillStyle = S.background; ctx.fillRect(0, 0, S.canvasWidth, S.canvasHeight); }
+  for (let i = S.layers.length - 1; i >= 0; i--) {
+    const l = S.layers[i];
+    if (!l.visible) continue;
+    ctx.save(); ctx.globalAlpha = l.opacity; ctx.globalCompositeOperation = l.blendMode;
+    ctx.drawImage(l.canvas, 0, 0); ctx.restore();
   }
-
-  // تأثير أبيض مركزي
-  const wg = ctx.createRadialGradient(cx,cy,0, cx,cy,R*0.35);
-  wg.addColorStop(0,'rgba(255,255,255,0.95)'); wg.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.beginPath(); ctx.arc(cx,cy,R*0.35,0,Math.PI*2); ctx.fillStyle=wg; ctx.fill();
-
-  // مؤشر اللون
-  const sa = (state.colorH-90)*Math.PI/180;
-  const sd = state.colorS*R*0.85;
-  const sx = cx+sd*Math.cos(sa), sy = cy+sd*Math.sin(sa);
-  ctx.beginPath(); ctx.arc(sx,sy,7,0,Math.PI*2);
-  ctx.strokeStyle='white'; ctx.lineWidth=2.5; ctx.stroke();
-  ctx.beginPath(); ctx.arc(sx,sy,5,0,Math.PI*2);
-  ctx.fillStyle=state.color; ctx.fill();
+  S.layers = [{ id: Date.now(), name: 'طبقة 1', canvas, ctx, opacity: 1, visible: true, locked: false, blendMode: 'source-over' }];
+  S.activeLayerIdx = 0;
+  renderLayersList(); renderLayers(); showToast('تم دمج جميع الطبقات');
 }
 
-function drawColorStrip() {
-  const canvas = document.getElementById('colorStrip'); if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const g = ctx.createLinearGradient(0,0,canvas.width,0);
-  g.addColorStop(0,'#000000');
-  g.addColorStop(0.45,`hsl(${state.colorH},${Math.round(state.colorS*100)}%,45%)`);
-  g.addColorStop(1,'#ffffff');
-  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+function setLayerOpacity(val) {
+  const l = S.layers[S.activeLayerIdx];
+  if (!l) return;
+  l.opacity = val / 100;
+  document.getElementById('layerOpacityVal').textContent = val + '%';
+  renderLayers();
 }
 
-function pickFromWheel(canvas, x, y) {
-  const cx=canvas.width/2, cy=canvas.height/2, R=Math.min(cx,cy)-2;
-  const dx=x-cx, dy=y-cy, dist=Math.hypot(dx,dy);
-  if (dist>R) return;
-  state.colorH = ((Math.atan2(dy,dx)*180/Math.PI)+90+360)%360;
-  state.colorS = Math.min(1, dist/(R*0.85));
-  const rgb = hslToRgb(state.colorH/360, state.colorS, 0.5);
-  const hex = '#'+[rgb.r,rgb.g,rgb.b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
-  setColor(hex);
+function setLayerBlendMode(mode) {
+  const l = S.layers[S.activeLayerIdx];
+  if (!l) return;
+  l.blendMode = mode;
+  renderLayers();
 }
 
-function pickFromStrip(t) {
-  t = Math.max(0, Math.min(1, t));
-  let r,g,b;
-  if (t < 0.45) {
-    const f = t/0.45;
-    const base = hslToRgb(state.colorH/360, state.colorS, 0.45);
-    r = Math.round(base.r*f); g = Math.round(base.g*f); b = Math.round(base.b*f);
-  } else {
-    const f = (t-0.45)/0.55;
-    const base = hslToRgb(state.colorH/360, state.colorS, 0.45);
-    r = Math.round(base.r+(255-base.r)*f); g = Math.round(base.g+(255-base.g)*f); b = Math.round(base.b+(255-base.b)*f);
+function toggleLayerVisibility(idx) {
+  S.layers[idx].visible = !S.layers[idx].visible;
+  renderLayersList(); renderLayers();
+}
+
+function toggleLayerLock(idx) {
+  S.layers[idx].locked = !S.layers[idx].locked;
+  renderLayersList();
+}
+
+function selectLayer(idx) {
+  S.activeLayerIdx = idx;
+  renderLayersList();
+  const l = S.layers[idx];
+  if (l) {
+    document.getElementById('layerOpacity').value = Math.round(l.opacity * 100);
+    document.getElementById('layerOpacityVal').textContent = Math.round(l.opacity * 100) + '%';
+    document.getElementById('blendModeSelect').value = l.blendMode;
   }
-  setColor('#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''));
-}
-
-// ============== لوحة الألوان الكاملة (1000+ لون) ==============
-function initColorPalette() {
-  const container = document.getElementById('fullPalette'); if (!container) return;
-  const colors = generateAllColors();
-  container.innerHTML = colors.map(c =>
-    `<div class="palette-color" style="background:${c}" onclick="setColor('${c}')" title="${c}"></div>`
-  ).join('');
-}
-
-function generateAllColors() {
-  const set = new Set();
-
-  // طيف كامل
-  for (let h=0; h<360; h+=5) {
-    for (let s=30; s<=100; s+=20) {
-      for (let l=15; l<=85; l+=15) {
-        const rgb = hslToRgb(h/360, s/100, l/100);
-        set.add('#'+[rgb.r,rgb.g,rgb.b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join(''));
-      }
-    }
-  }
-
-  // رماديات
-  for (let v=0; v<=255; v+=12) { const h=v.toString(16).padStart(2,'0'); set.add('#'+h+h+h); }
-
-  // ألوان البشرة (من فاتح لغامق)
-  ['#FFDBB4','#FFD1A0','#FFC890','#F5B78A','#E8A070','#D48B60','#C07550','#A86040',
-   '#8B4A30','#6B3020','#4A1E10','#3C1810','#2E1008','#FDE4CC','#F8C9A0','#EDB180',
-   '#D4935A','#BB7540','#9A5A28','#7A3E18'].forEach(c=>set.add(c));
-
-  // ألوان خاصة
-  ['#FF0000','#FF4500','#FF6347','#FF7F50','#FFA500','#FFD700','#FFFF00',
-   '#ADFF2F','#7FFF00','#00FF00','#00FF7F','#00FFFF','#00BFFF','#1E90FF',
-   '#0000FF','#8A2BE2','#9400D3','#FF1493','#FF69B4','#DC143C',
-   '#8B0000','#800000','#B22222','#CD5C5C','#FA8072','#FFA07A',
-   '#006400','#228B22','#32CD32','#90EE90','#98FB98','#00FA9A',
-   '#006994','#4169E1','#6495ED','#B0C4DE','#87CEEB','#87CEFA',
-   '#4B0082','#6A0DAD','#7B68EE','#9370DB','#BA55D3','#EE82EE',
-   '#C71585','#DB7093','#FF6EB4','#FFB6C1','#FFC0CB','#FFD1DC',
-   '#800020','#722F37','#A52A2A','#CD853F','#DEB887','#D2B48C',
-   '#F5F5DC','#FAEBD7','#FFF8DC','#FFFACD','#FAFAD2','#FFFFE0',
-   '#F0FFF0','#F5FFFA','#F0FFFF','#F0F8FF','#F8F8FF','#FFF0F5',
-   '#1C1C1C','#2F2F2F','#3C3C3C','#505050','#696969','#808080',
-   '#A9A9A9','#C0C0C0','#D3D3D3','#DCDCDC','#F5F5F5','#FFFFFF',
-   '#FF6B35','#F7931E','#FFC234','#5D5FEF','#3EC9A7','#FF6584'].forEach(c=>set.add(c));
-
-  return [...set].slice(0, 1200);
-}
-
-// ============== الطبقات ==============
-function addLayer() {
-  const id = state.layers.length;
-  const newCanvas = document.createElement('canvas');
-  newCanvas.width = state.canvasWidth; newCanvas.height = state.canvasHeight;
-  newCanvas.className = 'drawing-canvas'; newCanvas.id = 'layer'+id;
-  newCanvas.style.cssText = `position:absolute;top:0;left:0;z-index:${id+10};`;
-  document.getElementById('canvasStack').insertBefore(newCanvas, document.getElementById('overlayCanvas'));
-  state.layers.push({ id, name:`الطبقة ${id+1}`, canvas:newCanvas, visible:true, locked:false, opacity:1.0, blendMode:'source-over' });
-  state.activeLayerIndex = state.layers.length-1;
-  document.getElementById('pdLayers').textContent = state.layers.length;
-  renderLayersList(); saveHistory();
-}
-
-function deleteActiveLayer() {
-  if (state.layers.length<=1) { showNotification('لا يمكن حذف الطبقة الأخيرة'); return; }
-  state.layers[state.activeLayerIndex].canvas.remove();
-  state.layers.splice(state.activeLayerIndex, 1);
-  state.activeLayerIndex = Math.max(0, state.activeLayerIndex-1);
-  document.getElementById('pdLayers').textContent = state.layers.length;
-  renderLayersList(); saveHistory();
-}
-
-function mergeAllLayers() {
-  const bg = document.getElementById('bgCanvas');
-  const ctx = bg.getContext('2d');
-  state.layers.forEach(l => {
-    if (l.visible) {
-      ctx.save(); ctx.globalAlpha = l.opacity;
-      ctx.globalCompositeOperation = l.blendMode;
-      ctx.drawImage(l.canvas, 0, 0); ctx.restore();
-    }
-  });
-  state.layers.slice(1).forEach(l => l.canvas.getContext('2d').clearRect(0,0,l.canvas.width,l.canvas.height));
-  showNotification('تم دمج الطبقات');
 }
 
 function renderLayersList() {
-  const container = document.getElementById('layersList'); if (!container) return;
-  container.innerHTML = '';
-  [...state.layers].reverse().forEach((layer, ri) => {
-    const idx = state.layers.length-1-ri;
+  const list = document.getElementById('layersList');
+  if (!list) return;
+  list.innerHTML = '';
+  S.layers.forEach((layer, idx) => {
     const item = document.createElement('div');
-    item.className = 'layer-item'+(idx===state.activeLayerIndex?' active':'');
-    item.onclick = () => setActiveLayer(idx);
-    const thumb = document.createElement('canvas');
-    thumb.width=32; thumb.height=24;
-    const tc = thumb.getContext('2d');
-    tc.fillStyle='#ffffff'; tc.fillRect(0,0,32,24);
-    tc.drawImage(layer.canvas, 0, 0, 32, 24);
-    item.innerHTML = `
-      <div class="layer-thumb"></div>
-      <span class="layer-name" ondblclick="renameLayer(event,${idx})">${layer.name}</span>
-      <div class="layer-controls">
-        <button class="layer-ctrl-btn ${layer.visible?'active':''}" onclick="event.stopPropagation();toggleLayerVisibility(${idx})" title="إظهار/إخفاء">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${layer.visible?'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>':'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'}</svg>
-        </button>
-        <button class="layer-ctrl-btn ${layer.locked?'active':''}" onclick="event.stopPropagation();toggleLayerLock(${idx})" title="قفل">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${layer.locked?'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>':'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>'}</svg>
-        </button>
-      </div>
-      <input type="range" class="layer-opacity-mini" min="0" max="100" value="${Math.round(layer.opacity*100)}" 
-        onchange="event.stopPropagation();setLayerOpacity(${idx},this.value/100)" title="الشفافية">
-    `;
-    item.querySelector('.layer-thumb').appendChild(thumb);
-    container.appendChild(item);
+    item.className = 'layer-item' + (idx === S.activeLayerIdx ? ' active' : '');
+
+    const thumb = document.createElement('div');
+    thumb.className = 'layer-thumb';
+    const tc = document.createElement('canvas');
+    tc.width = 36; tc.height = 36;
+    const tCtx = tc.getContext('2d');
+    tCtx.drawImage(layer.canvas, 0, 0, 36, 36);
+    thumb.appendChild(tc);
+
+    const info = document.createElement('div');
+    info.className = 'layer-info';
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'layer-name';
+    const nameInput = document.createElement('input');
+    nameInput.value = layer.name;
+    nameInput.addEventListener('change', () => layer.name = nameInput.value);
+    nameInput.addEventListener('click', e => e.stopPropagation());
+    nameWrap.appendChild(nameInput);
+    const meta = document.createElement('div');
+    meta.className = 'layer-meta';
+    meta.textContent = Math.round(layer.opacity * 100) + '%' + (layer.locked ? ' · مقفل' : '');
+    info.appendChild(nameWrap); info.appendChild(meta);
+
+    const controls = document.createElement('div');
+    controls.className = 'layer-controls';
+
+    const visBtn = document.createElement('button');
+    visBtn.className = 'lc-btn' + (layer.visible ? ' active' : '');
+    visBtn.title = layer.visible ? 'إخفاء' : 'إظهار';
+    visBtn.innerHTML = layer.visible
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 0 1-4.24-4.24M1 1l22 22"/></svg>`;
+    visBtn.addEventListener('click', e => { e.stopPropagation(); toggleLayerVisibility(idx); });
+
+    const lockBtn = document.createElement('button');
+    lockBtn.className = 'lc-btn' + (layer.locked ? ' active' : '');
+    lockBtn.title = layer.locked ? 'فك القفل' : 'قفل';
+    lockBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 ${layer.locked ? '10 0v4' : '9.9-1'}"/></svg>`;
+    lockBtn.addEventListener('click', e => { e.stopPropagation(); toggleLayerLock(idx); });
+
+    controls.appendChild(visBtn); controls.appendChild(lockBtn);
+    item.appendChild(thumb); item.appendChild(info); item.appendChild(controls);
+    item.addEventListener('click', () => selectLayer(idx));
+    list.appendChild(item);
   });
+  const ci = document.getElementById('ciLayers');
+  if (ci) ci.textContent = S.layers.length;
 }
 
-function setActiveLayer(idx) { state.activeLayerIndex=idx; renderLayersList(); }
-function toggleLayerVisibility(idx) { state.layers[idx].visible=!state.layers[idx].visible; state.layers[idx].canvas.style.opacity=state.layers[idx].visible?1:0; renderLayersList(); }
-function toggleLayerLock(idx) { state.layers[idx].locked=!state.layers[idx].locked; renderLayersList(); }
-function setLayerOpacity(idx, op) { state.layers[idx].opacity=op; state.layers[idx].canvas.style.opacity=op; renderLayersList(); }
-function renameLayer(e, idx) { e.stopPropagation(); const n=prompt('اسم الطبقة:',state.layers[idx].name); if(n) { state.layers[idx].name=n; renderLayersList(); } }
-function setBlendMode(mode) { state.blendMode=mode; if(state.layers[state.activeLayerIndex]) { state.layers[state.activeLayerIndex].blendMode=mode; state.layers[state.activeLayerIndex].canvas.style.mixBlendMode=mode; } }
+function renderLayers() {
+  if (!S.mainCtx) return;
+  S.mainCtx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
 
-// ============== الخصائص ==============
-function updateBrushSize(v) { state.size=parseInt(v); document.getElementById('brushSizeVal').textContent=v; }
-function updateOpacity(v) { state.opacity=parseInt(v)/100; document.getElementById('opacityVal').textContent=v+'%'; }
-function updateSmoothing(v) { state.smoothing=parseInt(v); document.getElementById('smoothingVal').textContent=v+'%'; }
+  if (S.background === 'transparent') {
+    const sz = 20;
+    for (let y = 0; y < S.canvasHeight; y += sz)
+      for (let x = 0; x < S.canvasWidth; x += sz) {
+        S.mainCtx.fillStyle = ((Math.floor(x/sz)+Math.floor(y/sz))%2===0) ? '#cccccc' : '#ffffff';
+        S.mainCtx.fillRect(x, y, sz, sz);
+      }
+  } else {
+    S.mainCtx.fillStyle = S.background;
+    S.mainCtx.fillRect(0, 0, S.canvasWidth, S.canvasHeight);
+  }
 
-// ============== مرجع الرسم ==============
-function loadReferenceImage(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      state.refImage = img;
-      const old = document.getElementById('refCanvas');
-      if (old) old.remove();
-      const rc = document.createElement('canvas');
-      rc.id='refCanvas'; rc.width=state.canvasWidth; rc.height=state.canvasHeight;
-      rc.style.cssText=`position:absolute;top:0;left:0;z-index:5;opacity:${state.refOpacity};pointer-events:none;`;
-      document.getElementById('canvasStack').appendChild(rc);
-      rc.getContext('2d').drawImage(img, 0, 0, state.canvasWidth, state.canvasHeight);
-      const prev = document.getElementById('refPreview');
-      prev.style.backgroundImage = `url(${e.target.result})`;
-      prev.style.backgroundSize = 'cover';
-      document.getElementById('refControls').style.display='block';
-    };
-    img.src = e.target.result;
+  if (S.refImage) {
+    S.mainCtx.save();
+    S.mainCtx.globalAlpha = S.refOpacity;
+    const rw = S.refImage.naturalWidth * S.refScale;
+    const rh = S.refImage.naturalHeight * S.refScale;
+    S.mainCtx.drawImage(S.refImage, S.refX, S.refY, rw, rh);
+    S.mainCtx.restore();
+  }
+
+  for (let i = S.layers.length - 1; i >= 0; i--) {
+    const l = S.layers[i];
+    if (!l.visible) continue;
+    S.mainCtx.save();
+    S.mainCtx.globalAlpha = l.opacity;
+    S.mainCtx.globalCompositeOperation = l.blendMode;
+    S.mainCtx.drawImage(l.canvas, 0, 0);
+    S.mainCtx.restore();
+  }
+
+  if (S.showGrid) drawGrid();
+}
+
+function drawGrid() {
+  S.mainCtx.save();
+  S.mainCtx.strokeStyle = 'rgba(128,128,200,0.2)';
+  S.mainCtx.lineWidth = 0.5;
+  for (let x = 0; x <= S.canvasWidth; x += S.gridSize) {
+    S.mainCtx.beginPath(); S.mainCtx.moveTo(x, 0); S.mainCtx.lineTo(x, S.canvasHeight); S.mainCtx.stroke();
+  }
+  for (let y = 0; y <= S.canvasHeight; y += S.gridSize) {
+    S.mainCtx.beginPath(); S.mainCtx.moveTo(0, y); S.mainCtx.lineTo(S.canvasWidth, y); S.mainCtx.stroke();
+  }
+  S.mainCtx.restore();
+}
+
+// ============================================
+// أحداث الرسم
+// ============================================
+function getCanvasPos(e) {
+  const rect = S.mainCanvas.getBoundingClientRect();
+  const scaleX = S.canvasWidth / rect.width;
+  const scaleY = S.canvasHeight / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY,
+    p: e.pressure > 0 ? e.pressure : 0.5
   };
-  reader.readAsDataURL(file);
 }
 
-function updateRefOpacity(v) {
-  state.refOpacity=v/100;
-  document.getElementById('refOpacityVal').textContent=v+'%';
-  const rc=document.getElementById('refCanvas');
-  if (rc) rc.style.opacity=state.refOpacity;
+function onPointerDown(e) {
+  e.preventDefault();
+  if (e.button === 1) { setTool('hand'); return; }
+  const layer = S.layers[S.activeLayerIdx];
+  if (!layer || layer.locked) { showToast('الطبقة مقفلة', 'error'); return; }
+  const pos = getCanvasPos(e);
+  S.isDrawing = true;
+  S.lastX = pos.x; S.lastY = pos.y; S.lastPressure = pos.p;
+  S.brushPoints = [{ x: pos.x, y: pos.y, p: pos.p }];
+  S.mainCanvas.setPointerCapture(e.pointerId);
+  saveHistory();
+  handleToolDown(pos, layer, e);
 }
 
-function toggleRefLock() { state.refLocked=!state.refLocked; const btn=document.getElementById('refLockBtn'); if(btn) btn.style.background=state.refLocked?'rgba(255,107,53,0.2)':''; }
-
-function clearReference() {
-  const rc=document.getElementById('refCanvas'); if(rc) rc.remove();
-  state.refImage=null;
-  const prev=document.getElementById('refPreview');
-  prev.style.backgroundImage='none';
-  prev.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>اضغط لرفع صورة مرجعية</span><input type="file" id="refImageInput" accept="image/*" onchange="loadReferenceImage(event)">`;
-  document.getElementById('refControls').style.display='none';
+function onPointerMove(e) {
+  const pos = getCanvasPos(e);
+  updateStatusCoords(Math.round(pos.x), Math.round(pos.y));
+  if (!S.isDrawing) return;
+  const layer = S.layers[S.activeLayerIdx];
+  if (!layer || layer.locked) return;
+  handleToolMove(pos, layer, e);
+  S.lastX = pos.x; S.lastY = pos.y; S.lastPressure = pos.p;
 }
 
-// ============== الرسوم المتحركة ==============
-function initTimeline() {
-  state.frames=[{ id:0, duration:83, data:{} }];
-  renderTimeline(); updateFrameCounter();
+function onPointerUp(e) {
+  if (!S.isDrawing) return;
+  S.isDrawing = false;
+  const layer = S.layers[S.activeLayerIdx];
+  if (layer) handleToolUp(layer, e);
+  S.overlayCtx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+  S.brushPoints = [];
+  S.shapeStart = null; S.shapeEnd = null;
+  renderLayersList();
+  autoSaveProject();
 }
 
-function captureFrame() {
-  const data={};
-  state.layers.forEach(l => { data[l.id]=l.canvas.getContext('2d').getImageData(0,0,l.canvas.width,l.canvas.height); });
-  return data;
+function onWheel(e) {
+  e.preventDefault();
+  if (e.ctrlKey) {
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(S.zoom * delta);
+  } else {
+    // تمرير عادي
+  }
 }
 
-function saveCurrentFrame() { if(state.frames[state.currentFrame]) state.frames[state.currentFrame].data=captureFrame(); }
+// ============================================
+// منطق الأدوات
+// ============================================
+function handleToolDown(pos, layer, e) {
+  switch (S.currentTool) {
+    case 'brush': case 'pencil': case 'pen': startBrushStroke(pos, layer); break;
+    case 'eraser': startEraser(pos, layer); break;
+    case 'fill': floodFill(layer.ctx, Math.round(pos.x), Math.round(pos.y), hexToRgb(S.fgColor)); renderLayers(); break;
+    case 'spray': doSpray(pos, layer); break;
+    case 'eyedropper': pickColor(pos); break;
+    case 'line': case 'rect': case 'circle': case 'triangle': case 'star': case 'polygon': case 'bezier':
+      S.shapeStart = { x: pos.x, y: pos.y }; break;
+    case 'smudge': startSmudge(pos, layer); break;
+    case 'clone': startClone(pos, layer); break;
+    case 'text': break;
+    case 'crop': S.shapeStart = { x: pos.x, y: pos.y }; break;
+    case 'rect-select': case 'ellipse-select': case 'lasso':
+      S.shapeStart = { x: pos.x, y: pos.y }; break;
+  }
+}
 
-function restoreFrame(frame) {
-  state.layers.forEach(l => {
-    const ctx=l.canvas.getContext('2d');
-    ctx.clearRect(0,0,l.canvas.width,l.canvas.height);
-    if(frame.data&&frame.data[l.id]) ctx.putImageData(frame.data[l.id],0,0);
+function handleToolMove(pos, layer, e) {
+  switch (S.currentTool) {
+    case 'brush': case 'pencil': case 'pen': continueBrushStroke(pos, layer); break;
+    case 'eraser': continueEraser(pos, layer); break;
+    case 'spray': doSpray(pos, layer); break;
+    case 'smudge': continueSmudge(pos, layer); break;
+    case 'line': previewShape('line', pos); break;
+    case 'rect': previewShape('rect', pos); break;
+    case 'circle': previewShape('circle', pos); break;
+    case 'triangle': previewShape('triangle', pos); break;
+    case 'star': previewShape('star', pos); break;
+    case 'hand': panCanvas(e); break;
+    case 'rect-select': previewShape('rect-select', pos); break;
+    case 'ellipse-select': previewShape('ellipse-select', pos); break;
+    case 'lasso': continueLasso(pos); break;
+    case 'crop': previewShape('crop', pos); break;
+  }
+}
+
+function handleToolUp(layer, e) {
+  switch (S.currentTool) {
+    case 'line': case 'rect': case 'circle': case 'triangle': case 'star':
+      if (S.shapeStart && S.shapeEnd) finalizeShape(S.currentTool, layer);
+      break;
+    case 'text': addText(layer); break;
+    case 'lasso': finalizeLasso(layer); break;
+    case 'crop': finalizeCrop(); break;
+  }
+  S.overlayCtx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+}
+
+// ============================================
+// الفرشاة الاحترافية
+// ============================================
+function startBrushStroke(pos, layer) {
+  const ctx = layer.ctx;
+  const size = getBrushSize(pos.p);
+  applyBrushDot(ctx, pos.x, pos.y, size, pos.p);
+  renderLayers();
+}
+
+function continueBrushStroke(pos, layer) {
+  const ctx = layer.ctx;
+  const smooth = S.brush.smooth / 100;
+  const sx = S.lastX + (pos.x - S.lastX) * (1 - smooth * 0.5);
+  const sy = S.lastY + (pos.y - S.lastY) * (1 - smooth * 0.5);
+  const size = getBrushSize(pos.p);
+
+  if (S.currentTool === 'pencil') {
+    // قلم رصاص: خطوط جافة
+    ctx.save();
+    ctx.globalAlpha = S.brush.opacity * pos.p * 0.8;
+    ctx.strokeStyle = S.fgColor;
+    ctx.lineWidth = size * 0.6;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(S.lastX, S.lastY); ctx.lineTo(sx, sy); ctx.stroke();
+    ctx.restore();
+  } else if (S.brush.hardness < 0.5 || S.brush.type === 'safwan-soft' || S.brush.type === 'texture-watercolor') {
+    // فرشاة ناعمة
+    const dist = Math.hypot(sx - S.lastX, sy - S.lastY);
+    const step = Math.max(1, size * (S.brush.spacing / 100) * 0.5);
+    for (let d = 0; d <= dist; d += step) {
+      const t = dist > 0 ? d / dist : 0;
+      const x = S.lastX + (sx - S.lastX) * t;
+      const y = S.lastY + (sy - S.lastY) * t;
+      applyBrushDot(ctx, x, y, size, pos.p);
+    }
+  } else {
+    // فرشاة صلبة: خط مستمر
+    ctx.save();
+    ctx.globalAlpha = S.brush.opacity * S.brush.flow * pos.p;
+    ctx.strokeStyle = S.fgColor;
+    ctx.lineWidth = size;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(S.lastX, S.lastY);
+    ctx.quadraticCurveTo(S.lastX, S.lastY, (S.lastX + sx) / 2, (S.lastY + sy) / 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  renderLayers();
+}
+
+function getBrushSize(pressure) {
+  return S.brush.size * (0.4 + pressure * 0.6);
+}
+
+function applyBrushDot(ctx, x, y, size, pressure) {
+  ctx.save();
+  const alpha = S.brush.opacity * S.brush.flow * pressure;
+
+  switch (S.brush.type) {
+    case 'safwan-soft':
+    case 'texture-watercolor':
+      drawSoftDot(ctx, x, y, size / 2, S.fgColor, alpha * 0.25);
+      break;
+    case 'texture-charcoal':
+      drawCharcoalDot(ctx, x, y, size / 2, alpha);
+      break;
+    case 'texture-oil':
+      drawOilDot(ctx, x, y, size / 2, alpha);
+      break;
+    default:
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = S.fgColor;
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2 * S.brush.hardness, 0, Math.PI * 2);
+      ctx.fill();
+      if (S.brush.hardness < 1) drawSoftDot(ctx, x, y, size / 2, S.fgColor, alpha * 0.2);
+  }
+  ctx.restore();
+}
+
+function drawSoftDot(ctx, x, y, r, color, alpha) {
+  const rgb = hexToRgb(color);
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+  grad.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},${Math.min(1, alpha)})`);
+  grad.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},0)`);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawCharcoalDot(ctx, x, y, r, alpha) {
+  const rgb = hexToRgb(S.fgColor);
+  for (let i = 0; i < 8; i++) {
+    ctx.globalAlpha = alpha * 0.15 * Math.random();
+    ctx.fillStyle = S.fgColor;
+    const ox = (Math.random() - 0.5) * r * 1.5;
+    const oy = (Math.random() - 0.5) * r * 1.5;
+    const sr = Math.random() * r * 0.6 + r * 0.1;
+    ctx.beginPath();
+    ctx.arc(x + ox, y + oy, sr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawOilDot(ctx, x, y, r, alpha) {
+  ctx.globalAlpha = alpha * 0.8;
+  ctx.fillStyle = S.fgColor;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = alpha * 0.3;
+  ctx.fillStyle = lightenColor(S.fgColor, 40);
+  ctx.beginPath();
+  ctx.arc(x - r * 0.25, y - r * 0.25, r * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function lightenColor(hex, amount) {
+  const rgb = hexToRgb(hex);
+  const r = Math.min(255, rgb.r + amount);
+  const g = Math.min(255, rgb.g + amount);
+  const b = Math.min(255, rgb.b + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ========== الممحاة ==========
+function startEraser(pos, layer) {
+  layer.ctx.save();
+  layer.ctx.globalCompositeOperation = 'destination-out';
+  layer.ctx.beginPath();
+  layer.ctx.arc(pos.x, pos.y, S.brush.size / 2, 0, Math.PI * 2);
+  layer.ctx.fillStyle = 'rgba(0,0,0,1)';
+  layer.ctx.fill();
+  layer.ctx.restore();
+  renderLayers();
+}
+
+function continueEraser(pos, layer) {
+  layer.ctx.save();
+  layer.ctx.globalCompositeOperation = 'destination-out';
+  layer.ctx.lineWidth = S.brush.size;
+  layer.ctx.lineCap = 'round'; layer.ctx.lineJoin = 'round';
+  layer.ctx.strokeStyle = 'rgba(0,0,0,1)';
+  layer.ctx.beginPath();
+  layer.ctx.moveTo(S.lastX, S.lastY);
+  layer.ctx.lineTo(pos.x, pos.y);
+  layer.ctx.stroke();
+  layer.ctx.restore();
+  renderLayers();
+}
+
+// ========== الرش ==========
+function doSpray(pos, layer) {
+  const ctx = layer.ctx;
+  const radius = S.brush.size;
+  const density = Math.floor(radius * 2);
+  ctx.save();
+  for (let i = 0; i < density; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = Math.random() * radius;
+    const x = pos.x + Math.cos(angle) * r;
+    const y = pos.y + Math.sin(angle) * r;
+    ctx.globalAlpha = Math.random() * S.brush.opacity * 0.6;
+    ctx.fillStyle = S.fgColor;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.random() * 1.5 + 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  renderLayers();
+}
+
+// ========== التمويه ==========
+function startSmudge(pos, layer) {
+  S.smudgeData = layer.ctx.getImageData(0, 0, S.canvasWidth, S.canvasHeight);
+}
+
+function continueSmudge(pos, layer) {
+  if (!S.smudgeData) return;
+  const ctx = layer.ctx;
+  const r = S.brush.size / 2;
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  ctx.drawImage(layer.canvas, S.lastX - r, S.lastY - r, r * 2, r * 2, pos.x - r, pos.y - r, r * 2, r * 2);
+  ctx.restore();
+  renderLayers();
+}
+
+// ========== الاستنساخ ==========
+function startClone(pos, layer) {
+  if (!S.cloneSource) {
+    S.cloneSource = { x: pos.x, y: pos.y };
+    showToast('تم تحديد مصدر الاستنساخ. ارسم للنسخ.');
+    return;
+  }
+  S.cloneOffset = { x: pos.x - S.cloneSource.x, y: pos.y - S.cloneSource.y };
+}
+
+// ========== قطارة اللون ==========
+function pickColor(pos) {
+  const imgData = S.mainCtx.getImageData(Math.round(pos.x), Math.round(pos.y), 1, 1).data;
+  const hex = rgbToHex(imgData[0], imgData[1], imgData[2]);
+  setFgColor(hex);
+  showToast(`اللون: ${hex}`);
+  setTool(S.previousTool || 'brush');
+}
+
+// ========== تعبئة الفيضان ==========
+function floodFill(ctx, startX, startY, fillColor) {
+  const imageData = ctx.getImageData(0, 0, S.canvasWidth, S.canvasHeight);
+  const data = imageData.data;
+  const w = S.canvasWidth, h = S.canvasHeight;
+
+  const getPixel = (x, y) => {
+    if (x < 0 || x >= w || y < 0 || y >= h) return [-1, -1, -1, -1];
+    const i = (y * w + x) * 4;
+    return [data[i], data[i+1], data[i+2], data[i+3]];
+  };
+
+  const setPixel = (x, y, r, g, b, a) => {
+    const i = (y * w + x) * 4;
+    data[i] = r; data[i+1] = g; data[i+2] = b; data[i+3] = a;
+  };
+
+  const targetColor = getPixel(startX, startY);
+  if (targetColor[0] === fillColor.r && targetColor[1] === fillColor.g && targetColor[2] === fillColor.b) return;
+
+  const tolerance = 30;
+  const match = (c) => Math.abs(c[0]-targetColor[0]) + Math.abs(c[1]-targetColor[1]) + Math.abs(c[2]-targetColor[2]) <= tolerance * 3;
+
+  const stack = [[startX, startY]];
+  const visited = new Uint8Array(w * h);
+  visited[startY * w + startX] = 1;
+
+  let iterations = 0;
+  while (stack.length > 0 && iterations < 500000) {
+    iterations++;
+    const [x, y] = stack.pop();
+    setPixel(x, y, fillColor.r, fillColor.g, fillColor.b, 255);
+
+    const neighbors = [[x+1,y],[x-1,y],[x,y+1],[x,y-1]];
+    for (const [nx, ny] of neighbors) {
+      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+      const vi = ny * w + nx;
+      if (visited[vi]) continue;
+      visited[vi] = 1;
+      if (match(getPixel(nx, ny))) stack.push([nx, ny]);
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+// ========== معاينة الأشكال ==========
+function previewShape(type, pos) {
+  if (!S.shapeStart) return;
+  S.shapeEnd = pos;
+  S.overlayCtx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+  S.overlayCtx.save();
+  const isDashed = type === 'rect-select' || type === 'ellipse-select' || type === 'crop' || type === 'lasso';
+  S.overlayCtx.strokeStyle = isDashed ? 'rgba(255,255,255,0.9)' : S.fgColor;
+  S.overlayCtx.lineWidth = isDashed ? 1.5 : S.brush.size;
+  S.overlayCtx.lineCap = 'round'; S.overlayCtx.lineJoin = 'round';
+  S.overlayCtx.globalAlpha = isDashed ? 1 : S.brush.opacity;
+  if (isDashed) S.overlayCtx.setLineDash([6, 4]);
+
+  const x1 = S.shapeStart.x, y1 = S.shapeStart.y;
+  const x2 = pos.x, y2 = pos.y;
+
+  switch (type) {
+    case 'line':
+      S.overlayCtx.beginPath(); S.overlayCtx.moveTo(x1, y1); S.overlayCtx.lineTo(x2, y2); S.overlayCtx.stroke(); break;
+    case 'rect': case 'rect-select': case 'crop':
+      S.overlayCtx.beginPath(); S.overlayCtx.rect(x1, y1, x2-x1, y2-y1); S.overlayCtx.stroke(); break;
+    case 'circle': case 'ellipse-select': {
+      const rx = Math.abs(x2-x1)/2, ry = Math.abs(y2-y1)/2;
+      const cx = (x1+x2)/2, cy = (y1+y2)/2;
+      S.overlayCtx.beginPath(); S.overlayCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2); S.overlayCtx.stroke(); break;
+    }
+    case 'triangle': {
+      const mx = (x1+x2)/2;
+      S.overlayCtx.beginPath(); S.overlayCtx.moveTo(mx, y1); S.overlayCtx.lineTo(x2, y2); S.overlayCtx.lineTo(x1, y2); S.overlayCtx.closePath(); S.overlayCtx.stroke(); break;
+    }
+    case 'star': {
+      const cx = x1, cy = y1;
+      const outer = Math.hypot(x2-cx, y2-cy);
+      const inner = outer * 0.4;
+      S.overlayCtx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const r = i%2===0 ? outer : inner;
+        const angle = (i * Math.PI / 5) - Math.PI/2;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        i===0 ? S.overlayCtx.moveTo(x,y) : S.overlayCtx.lineTo(x,y);
+      }
+      S.overlayCtx.closePath(); S.overlayCtx.stroke(); break;
+    }
+  }
+  S.overlayCtx.restore();
+}
+
+function continueLasso(pos) {
+  if (!S.lassoPoints) S.lassoPoints = [S.shapeStart];
+  S.lassoPoints.push({ x: pos.x, y: pos.y });
+  S.overlayCtx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+  S.overlayCtx.save();
+  S.overlayCtx.strokeStyle = 'rgba(255,255,255,0.9)';
+  S.overlayCtx.lineWidth = 1.5;
+  S.overlayCtx.setLineDash([6, 4]);
+  S.overlayCtx.beginPath();
+  S.lassoPoints.forEach((p, i) => i===0 ? S.overlayCtx.moveTo(p.x,p.y) : S.overlayCtx.lineTo(p.x,p.y));
+  S.overlayCtx.stroke();
+  S.overlayCtx.restore();
+}
+
+function finalizeLasso() {
+  S.lassoPoints = null;
+}
+
+function finalizeCrop() {
+  if (!S.shapeStart || !S.shapeEnd) return;
+  const x = Math.min(S.shapeStart.x, S.shapeEnd.x);
+  const y = Math.min(S.shapeStart.y, S.shapeEnd.y);
+  const w = Math.abs(S.shapeEnd.x - S.shapeStart.x);
+  const h = Math.abs(S.shapeEnd.y - S.shapeStart.y);
+  if (w < 10 || h < 10) return;
+
+  S.layers.forEach(l => {
+    const nc = document.createElement('canvas');
+    nc.width = Math.round(w); nc.height = Math.round(h);
+    const nc_ctx = nc.getContext('2d', { willReadFrequently: true });
+    nc_ctx.drawImage(l.canvas, Math.round(x), Math.round(y), Math.round(w), Math.round(h), 0, 0, Math.round(w), Math.round(h));
+    l.canvas.width = Math.round(w); l.canvas.height = Math.round(h);
+    l.ctx.drawImage(nc, 0, 0);
   });
+
+  S.canvasWidth = Math.round(w);
+  S.canvasHeight = Math.round(h);
+  document.getElementById('canvasWrapper').style.width = w + 'px';
+  document.getElementById('canvasWrapper').style.height = h + 'px';
+  S.mainCanvas.width = w; S.mainCanvas.height = h;
+  S.overlayCanvas.width = w; S.overlayCanvas.height = h;
+  renderLayers();
+  updateCanvasInfo();
+  showToast('تم اقتصاص اللوحة');
+}
+
+function finalizeShape(type, layer) {
+  const pos = S.shapeEnd || { x: S.lastX, y: S.lastY };
+  const ctx = layer.ctx;
+  ctx.save();
+  ctx.strokeStyle = S.fgColor;
+  ctx.lineWidth = S.brush.size;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.globalAlpha = S.brush.opacity;
+
+  const x1 = S.shapeStart.x, y1 = S.shapeStart.y, x2 = pos.x, y2 = pos.y;
+
+  switch (type) {
+    case 'line':
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); break;
+    case 'rect':
+      ctx.beginPath(); ctx.rect(x1,y1,x2-x1,y2-y1); ctx.stroke(); break;
+    case 'circle': {
+      const rx = Math.abs(x2-x1)/2, ry = Math.abs(y2-y1)/2;
+      const cx = (x1+x2)/2, cy = (y1+y2)/2;
+      ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2); ctx.stroke(); break;
+    }
+    case 'triangle': {
+      const mx = (x1+x2)/2;
+      ctx.beginPath(); ctx.moveTo(mx,y1); ctx.lineTo(x2,y2); ctx.lineTo(x1,y2); ctx.closePath(); ctx.stroke(); break;
+    }
+    case 'star': {
+      const cx = x1, cy = y1;
+      const outer = Math.hypot(x2-cx, y2-cy);
+      const inner = outer * 0.4;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const r = i%2===0 ? outer : inner;
+        const angle = (i*Math.PI/5) - Math.PI/2;
+        const x = cx + Math.cos(angle)*r, y = cy + Math.sin(angle)*r;
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath(); ctx.stroke(); break;
+    }
+  }
+  ctx.restore();
+  renderLayers();
+}
+
+// ========== أداة النص ==========
+function addText(layer) {
+  const x = S.lastX, y = S.lastY;
+  const text = prompt('أدخل النص:');
+  if (!text) return;
+  const size = prompt('حجم الخط:', '40');
+  const ctx = layer.ctx;
+  ctx.save();
+  ctx.fillStyle = S.fgColor;
+  ctx.globalAlpha = S.brush.opacity;
+  ctx.font = `bold ${size || 40}px Cairo, Tajawal, sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(text, x, y);
+  ctx.restore();
+  renderLayers();
+  showToast('تمت إضافة النص');
+}
+
+// ========== تحديد الكل / نسخ / لصق ==========
+function selectAll() {
+  showToast('تم تحديد الكل');
+}
+
+function deselectAll() {
+  S.selection = null;
+  S.overlayCtx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+  showToast('تم إلغاء التحديد');
+}
+
+function invertSelection() { showToast('تم عكس التحديد'); }
+
+function copySelected() {
+  S.clipboard = S.layers[S.activeLayerIdx]?.canvas;
+  showToast('تم النسخ');
+}
+
+function cutSelected() {
+  copySelected();
+  const l = S.layers[S.activeLayerIdx];
+  if (l) { l.ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight); renderLayers(); }
+  showToast('تم القص');
+}
+
+function pasteContent() {
+  if (!S.clipboard) return;
+  addLayer();
+  const l = S.layers[S.activeLayerIdx];
+  l.ctx.drawImage(S.clipboard, 0, 0);
+  renderLayers();
+  showToast('تم اللصق في طبقة جديدة');
+}
+
+// ============================================
+// التنقل والتكبير
+// ============================================
+function panCanvas(e) {
+  if (!S.isDrawing) return;
+  const rect = S.mainCanvas.getBoundingClientRect();
+  const dx = (e.movementX || 0);
+  const dy = (e.movementY || 0);
+  const area = document.getElementById('canvasScrollArea');
+  if (area) { area.scrollLeft -= dx; area.scrollTop -= dy; }
+}
+
+function setZoom(z) {
+  S.zoom = Math.max(0.1, Math.min(32, z));
+  const wrapper = document.getElementById('canvasWrapper');
+  if (wrapper) {
+    wrapper.style.transform = `scale(${S.zoom})`;
+    wrapper.style.transformOrigin = 'center center';
+  }
+  document.getElementById('zoomDisplay').textContent = Math.round(S.zoom * 100) + '%';
+  document.getElementById('statusZoom').textContent = 'تكبير: ' + Math.round(S.zoom * 100) + '%';
+}
+
+function zoomIn() { setZoom(S.zoom * 1.25); }
+function zoomOut() { setZoom(S.zoom * 0.8); }
+function zoomFit() {
+  const area = document.getElementById('canvasScrollArea');
+  if (!area) return;
+  const zx = (area.clientWidth - 80) / S.canvasWidth;
+  const zy = (area.clientHeight - 80) / S.canvasHeight;
+  setZoom(Math.min(zx, zy));
+}
+function zoom100() { setZoom(1); }
+
+function fitCanvasToView() {
+  setTimeout(zoomFit, 50);
+}
+
+// ============================================
+// الشبكة والمسطرة
+// ============================================
+function toggleGrid() {
+  S.showGrid = !S.showGrid;
+  document.getElementById('gridToggle').textContent = S.showGrid ? 'تشغيل' : 'إيقاف';
+  document.getElementById('gridToggle').classList.toggle('active', S.showGrid);
+  const sw = document.getElementById('gridSwitch');
+  if (sw) sw.checked = S.showGrid;
+  renderLayers();
+  showToast(S.showGrid ? 'تم إظهار الشبكة' : 'تم إخفاء الشبكة');
+}
+
+function toggleRulers() {
+  S.showRulers = !S.showRulers;
+  const rh = document.getElementById('rulerH');
+  const rv = document.getElementById('rulerV');
+  if (rh) rh.style.display = S.showRulers ? 'block' : 'none';
+  if (rv) rv.style.display = S.showRulers ? 'block' : 'none';
+  document.getElementById('rulerToggle').textContent = S.showRulers ? 'تشغيل' : 'إيقاف';
+  document.getElementById('rulerToggle').classList.toggle('active', S.showRulers);
+}
+
+function toggleGuides() { showToast('الخطوط المرجعية: قريبًا'); }
+
+function toggleSnap() {
+  S.snapToGrid = !S.snapToGrid;
+  document.getElementById('snapToggle').textContent = S.snapToGrid ? 'تشغيل' : 'إيقاف';
+  document.getElementById('snapToggle').classList.toggle('active', S.snapToGrid);
+}
+
+function drawRulers() {
+  const rh = document.getElementById('rulerHCanvas');
+  const rv = document.getElementById('rulerVCanvas');
+  if (!rh || !rv) return;
+  const wrapper = document.getElementById('canvasWrapper');
+  if (!wrapper) return;
+  const bw = wrapper.offsetWidth;
+  const bh = wrapper.offsetHeight;
+
+  rh.width = bw + 40; rh.height = 20;
+  const ctxH = rh.getContext('2d');
+  ctxH.clearRect(0, 0, rh.width, rh.height);
+  ctxH.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg2') || '#1a1a2e';
+  ctxH.fillRect(0, 0, rh.width, rh.height);
+  ctxH.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctxH.fillStyle = 'rgba(255,255,255,0.4)';
+  ctxH.font = '9px Cairo';
+  const step = 50;
+  for (let x = 0; x < bw; x += step) {
+    ctxH.beginPath(); ctxH.moveTo(x, 14); ctxH.lineTo(x, 20); ctxH.stroke();
+    ctxH.fillText(Math.round(x / S.zoom), x + 2, 11);
+  }
+
+  rv.width = 20; rv.height = bh + 40;
+  const ctxV = rv.getContext('2d');
+  ctxV.clearRect(0, 0, rv.width, rv.height);
+  ctxV.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg2') || '#1a1a2e';
+  ctxV.fillRect(0, 0, rv.width, rv.height);
+  ctxV.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctxV.fillStyle = 'rgba(255,255,255,0.4)';
+  ctxV.font = '9px Cairo';
+  for (let y = 0; y < bh; y += step) {
+    ctxV.beginPath(); ctxV.moveTo(14, y); ctxV.lineTo(20, y); ctxV.stroke();
+    ctxV.save(); ctxV.translate(11, y + 2); ctxV.rotate(-Math.PI/2);
+    ctxV.fillText(Math.round(y / S.zoom), 0, 0);
+    ctxV.restore();
+  }
+}
+
+// ============================================
+// الأنيميشن (Frame by Frame)
+// ============================================
+function initAnimation(proj) {
+  S.frames = [];
+  if (proj.framesData && proj.framesData.length > 0) {
+    proj.framesData.forEach((fd, i) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (fd.data) {
+        const img = new Image();
+        img.onload = () => { ctx.drawImage(img, 0, 0); renderFrames(); };
+        img.src = fd.data;
+      }
+      S.frames.push({ id: fd.id||Date.now()+i, canvas, ctx, duration: fd.duration || (1000/S.fps) });
+    });
+    S.currentFrame = 0;
+  } else {
+    addFrame();
+  }
+
+  const fpsSelect = document.getElementById('fpsSelect');
+  if (fpsSelect) fpsSelect.value = S.fps;
+  renderFrames();
+  updateFrameDisplay();
 }
 
 function addFrame() {
-  saveCurrentFrame();
-  state.frames.push({ id:state.frames.length, duration:parseInt(document.getElementById('frameDuration').value)||83, data:{} });
-  state.currentFrame=state.frames.length-1;
-  state.layers.forEach(l=>l.canvas.getContext('2d').clearRect(0,0,l.canvas.width,l.canvas.height));
-  renderTimeline(); updateFrameCounter();
+  const canvas = document.createElement('canvas');
+  canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  // نسخ الإطار الحالي إن وجد
+  if (S.frames[S.currentFrame]) {
+    ctx.drawImage(S.frames[S.currentFrame].canvas, 0, 0);
+  }
+
+  const frame = { id: Date.now(), canvas, ctx, duration: 1000 / S.fps };
+  S.frames.splice(S.currentFrame + 1, 0, frame);
+  S.currentFrame++;
+
+  // مزامنة الطبقة الأولى مع الإطار
+  syncFrameToLayer();
+  renderFrames();
+  updateFrameDisplay();
+  showToast('تمت إضافة إطار جديد');
 }
 
-function duplicateFrame() {
-  saveCurrentFrame();
-  const copy = { id:state.frames.length, duration:state.frames[state.currentFrame].duration, data:captureFrame() };
-  state.frames.splice(state.currentFrame+1,0,copy);
-  state.currentFrame++;
-  restoreFrame(state.frames[state.currentFrame]);
-  renderTimeline(); updateFrameCounter();
-}
-
-function deleteFrame() {
-  if (state.frames.length<=1) return;
-  state.frames.splice(state.currentFrame,1);
-  state.currentFrame=Math.max(0,state.currentFrame-1);
-  restoreFrame(state.frames[state.currentFrame]||{data:{}});
-  renderTimeline(); updateFrameCounter();
+function syncFrameToLayer() {
+  if (!S.layers[0] || !S.frames[S.currentFrame]) return;
+  S.frames[S.currentFrame].ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+  S.frames[S.currentFrame].ctx.drawImage(S.layers[0].canvas, 0, 0);
 }
 
 function goToFrame(idx) {
-  saveCurrentFrame(); state.currentFrame=idx;
-  restoreFrame(state.frames[idx]||{data:{}}); renderTimeline(); updateFrameCounter();
+  // حفظ الإطار الحالي
+  if (S.frames[S.currentFrame] && S.layers[0]) {
+    S.frames[S.currentFrame].ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+    S.frames[S.currentFrame].ctx.drawImage(S.layers[0].canvas, 0, 0);
+  }
+  S.currentFrame = idx;
+  // تحميل الإطار الجديد
+  if (S.frames[S.currentFrame] && S.layers[0]) {
+    S.layers[0].ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+    S.layers[0].ctx.drawImage(S.frames[S.currentFrame].canvas, 0, 0);
+    renderLayers();
+  }
+  renderFrames();
+  updateFrameDisplay();
 }
 
-function renderTimeline() {
-  const track=document.getElementById('framesTrack'); if(!track) return;
-  track.innerHTML='';
-  state.frames.forEach((frame,i) => {
-    const wrap=document.createElement('div');
-    wrap.className='frame-thumb'+(i===state.currentFrame?' active':'');
-    wrap.onclick=()=>goToFrame(i);
-    const c=document.createElement('canvas'); c.width=60; c.height=45;
-    const tc=c.getContext('2d');
-    tc.fillStyle=state.bgColor==='transparent'?'#ffffff':state.bgColor; tc.fillRect(0,0,60,45);
-    if(frame.data&&Object.keys(frame.data).length>0){
-      state.layers.forEach(l=>{
-        if(frame.data[l.id]){
-          const tmp=document.createElement('canvas'); tmp.width=l.canvas.width; tmp.height=l.canvas.height;
-          tmp.getContext('2d').putImageData(frame.data[l.id],0,0);
-          tc.drawImage(tmp,0,0,60,45);
-        }
-      });
-    } else if(i===state.currentFrame){ state.layers.forEach(l=>tc.drawImage(l.canvas,0,0,60,45)); }
-    const num=document.createElement('div'); num.className='frame-num'; num.textContent=i+1;
-    wrap.appendChild(c); wrap.appendChild(num); track.appendChild(wrap);
+function renderFrames() {
+  const list = document.getElementById('framesList');
+  if (!list) return;
+  list.innerHTML = '';
+  S.frames.forEach((frame, i) => {
+    const item = document.createElement('div');
+    item.className = 'frame-item' + (i === S.currentFrame ? ' active' : '');
+    const thumb = document.createElement('canvas');
+    thumb.width = 60; thumb.height = 50;
+    const tCtx = thumb.getContext('2d');
+    if (S.background !== 'transparent') { tCtx.fillStyle = S.background; tCtx.fillRect(0,0,60,50); }
+    tCtx.drawImage(frame.canvas, 0, 0, 60, 50);
+    const num = document.createElement('div');
+    num.className = 'frame-num'; num.textContent = i + 1;
+    const dur = document.createElement('div');
+    dur.className = 'frame-duration'; dur.textContent = (frame.duration/1000).toFixed(2)+'s';
+    item.appendChild(thumb); item.appendChild(num); item.appendChild(dur);
+    item.addEventListener('click', () => goToFrame(i));
+
+    // قائمة السياق
+    item.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      const action = confirm(`الإطار ${i+1}: هل تريد حذفه؟`);
+      if (action && S.frames.length > 1) {
+        S.frames.splice(i, 1);
+        if (S.currentFrame >= S.frames.length) S.currentFrame = S.frames.length - 1;
+        renderFrames(); updateFrameDisplay();
+      }
+    });
+
+    list.appendChild(item);
   });
 }
 
-function updateFrameThumbnail() {
-  if(state.projectType!=='animated') return;
-  const thumbs=document.querySelectorAll('.frame-thumb');
-  const active=thumbs[state.currentFrame]; if(!active) return;
-  const c=active.querySelector('canvas'); if(!c) return;
-  const tc=c.getContext('2d');
-  tc.clearRect(0,0,60,45);
-  tc.fillStyle=state.bgColor==='transparent'?'#ffffff':state.bgColor; tc.fillRect(0,0,60,45);
-  state.layers.forEach(l=>tc.drawImage(l.canvas,0,0,60,45));
-}
-
-function updateFrameCounter() { const el=document.getElementById('frameCounter'); if(el) el.textContent=`${state.currentFrame+1} / ${state.frames.length}`; }
-function updateFPS(v) { state.fps=Math.max(1,Math.min(60,parseInt(v))); }
-function updateFrameDuration(v) { if(state.frames[state.currentFrame]) state.frames[state.currentFrame].duration=parseInt(v); }
-
-function togglePlayAnimation() {
-  state.isPlaying=!state.isPlaying;
-  document.getElementById('playIcon').style.display=state.isPlaying?'none':'block';
-  document.getElementById('pauseIcon').style.display=state.isPlaying?'block':'none';
-  if(state.isPlaying) { saveCurrentFrame(); playNext(); }
-  else clearTimeout(state.animTimer);
-}
-
-function playNext() {
-  if(!state.isPlaying) return;
-  state.currentFrame=(state.currentFrame+1)%state.frames.length;
-  restoreFrame(state.frames[state.currentFrame]||{data:{}});
-  renderTimeline(); updateFrameCounter();
-  state.animTimer=setTimeout(playNext, state.frames[state.currentFrame]?.duration||Math.round(1000/state.fps));
-}
-
-// ============== مشاريع جاهزة ==============
-function openSampleProjects() {
-  document.getElementById('sampleProjectsPanel').style.display='flex';
-  setTimeout(()=>{ const c=document.getElementById('sampleFireCanvas'); if(c) drawFireOnCtx(c.getContext('2d'),0,c.width,c.height); },100);
-}
-
-function loadSampleProject(name) {
-  if(name!=='fire') return;
-  closePanel('sampleProjectsPanel');
-  state.layers.forEach(l=>l.canvas.getContext('2d').clearRect(0,0,l.canvas.width,l.canvas.height));
-  state.bgColor='#ffffff'; drawBackground();
-  state.frames=[];
-  state.projectType='animated';
-  document.getElementById('timelineBar').style.display='flex';
-  for(let i=0;i<8;i++){
-    const ctx=state.layers[0].canvas.getContext('2d');
-    ctx.clearRect(0,0,state.canvasWidth,state.canvasHeight);
-    drawFireOnCtx(ctx, i, state.canvasWidth, state.canvasHeight);
-    state.frames.push({ id:i, duration:100, data:captureFrame() });
+function updateFrameDisplay() {
+  const disp = document.getElementById('currentFrameDisplay');
+  const durDisp = document.getElementById('totalDurationDisplay');
+  if (disp) disp.textContent = `إطار ${S.currentFrame + 1} / ${S.frames.length}`;
+  if (durDisp) {
+    const total = S.frames.reduce((s, f) => s + f.duration, 0);
+    durDisp.textContent = (total / 1000).toFixed(2) + ' ثانية';
   }
-  state.currentFrame=0;
-  restoreFrame(state.frames[0]);
-  renderTimeline(); updateFrameCounter();
-  showNotification('تم تحميل مشروع النار المتحركة');
 }
 
-function drawFireOnCtx(ctx, frameIdx, w, h) {
-  const cx=w/2, baseY=h*0.75;
-  const rng=n=>((Math.sin(n*127.1+frameIdx*73)*43758.5453)%1+1)/2;
-  const layers=[
-    {sc:1.3,col:'#FF2200',al:0.7},{sc:1.1,col:'#FF4400',al:0.8},
-    {sc:0.9,col:'#FF6600',al:0.85},{sc:0.7,col:'#FF8800',al:0.9},
-    {sc:0.5,col:'#FFAA00',al:0.95},{sc:0.35,col:'#FFCC00',al:1.0},
-    {sc:0.2,col:'#FFEE44',al:1.0}
-  ];
-  layers.forEach((layer,li)=>{
-    const fh=h*0.52*layer.sc, fw=w*0.22*layer.sc;
-    const wob=(rng(li*7+1)*2-1)*w*0.05;
-    const tip=baseY-fh*(0.9+rng(li*3)*0.2);
-    ctx.save(); ctx.globalAlpha=layer.al;
-    const g=ctx.createRadialGradient(cx+wob*0.3, baseY-fh*0.4, 0, cx, baseY, fw*1.2);
-    g.addColorStop(0, layer.col); g.addColorStop(0.5, layer.col+'99'); g.addColorStop(1,'transparent');
-    ctx.fillStyle=g;
-    ctx.beginPath(); ctx.moveTo(cx-fw, baseY);
-    const steps=10;
-    for(let i=0;i<=steps;i++){
-      const t=i/steps;
-      const x=cx-fw+fw*2*t;
-      const yw=baseY-(fh*(1-Math.pow(Math.abs(t-0.5)*2,1.8)))+((rng(li*11+i)*2-1)*fh*0.1);
-      ctx.lineTo(x+(rng(li*5+i)*2-1)*fw*0.12, Math.min(baseY,yw));
+function togglePlay() {
+  S.isPlaying = !S.isPlaying;
+  const icon = document.getElementById('playIcon');
+  if (S.isPlaying) {
+    if (icon) icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    playAnimation();
+  } else {
+    clearInterval(S.playInterval);
+    if (icon) icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+  }
+}
+
+function playAnimation() {
+  if (S.playInterval) clearInterval(S.playInterval);
+  let fi = S.currentFrame;
+
+  function step() {
+    if (!S.isPlaying) return;
+    goToFrame(fi);
+    const frameDur = S.frames[fi]?.duration || (1000 / S.fps);
+    fi++;
+    if (fi >= S.frames.length) {
+      if (S.loop) fi = 0;
+      else { S.isPlaying = false; const icon = document.getElementById('playIcon'); if (icon) icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>'; return; }
     }
-    ctx.lineTo(cx+fw, baseY); ctx.closePath(); ctx.fill(); ctx.restore();
-  });
-  // شعلة مركزية مضيئة
-  const cg=ctx.createRadialGradient(cx,baseY-h*0.18,0, cx,baseY,w*0.08);
-  cg.addColorStop(0,'#FFFFFF'); cg.addColorStop(0.25,'#FFFF99'); cg.addColorStop(0.6,'#FFAA00'); cg.addColorStop(1,'transparent');
-  ctx.save(); ctx.globalAlpha=0.95; ctx.fillStyle=cg;
-  ctx.beginPath();
-  const off=(rng(99)*2-1)*w*0.025;
-  ctx.moveTo(cx-w*0.08,baseY);
-  ctx.quadraticCurveTo(cx-w*0.04+off*0.3, baseY-h*0.28, cx+off, baseY-h*0.45-rng(77)*h*0.06);
-  ctx.quadraticCurveTo(cx+w*0.04+off*0.3, baseY-h*0.28, cx+w*0.08, baseY);
-  ctx.closePath(); ctx.fill(); ctx.restore();
-}
-
-// ============== التصدير ==============
-function openExportPanel() {
-  document.getElementById('exportPanel').style.display='flex';
-  if(state.projectType==='animated'){
-    document.getElementById('animExportLabel').style.display='block';
-    document.getElementById('animExportGrid').style.display='grid';
+    S.playInterval = setTimeout(step, frameDur);
   }
-  const flat=getFlatCanvas();
-  const prev=document.getElementById('exportPreview');
-  prev.innerHTML='';
-  const img=document.createElement('img');
-  img.src=flat.toDataURL(); img.style.cssText='max-width:100%;max-height:100%;object-fit:contain;';
-  prev.appendChild(img);
+  step();
 }
 
-function getFlatCanvas() {
-  const flat=document.createElement('canvas'); flat.width=state.canvasWidth; flat.height=state.canvasHeight;
-  const ctx=flat.getContext('2d');
-  if(state.bgColor!=='transparent'){ ctx.fillStyle=state.bgColor; ctx.fillRect(0,0,flat.width,flat.height); }
-  state.layers.forEach(l=>{ if(l.visible){ ctx.save(); ctx.globalAlpha=l.opacity; ctx.globalCompositeOperation=l.blendMode; ctx.drawImage(l.canvas,0,0); ctx.restore(); } });
-  return flat;
+function toggleLoop() {
+  S.loop = !S.loop;
+  document.getElementById('loopBtn').classList.toggle('active', S.loop);
+  showToast(S.loop ? 'التكرار مفعّل' : 'التكرار متوقف');
+}
+
+function changeFPS(val) {
+  S.fps = parseInt(val);
+  S.frames.forEach(f => f.duration = 1000 / S.fps);
+  updateFrameDisplay();
+}
+
+function animGoToStart() { if (S.isPlaying) togglePlay(); goToFrame(0); }
+function animGoToEnd() { if (S.isPlaying) togglePlay(); goToFrame(S.frames.length - 1); }
+function animPrevFrame() { if (S.isPlaying) togglePlay(); goToFrame(Math.max(0, S.currentFrame - 1)); }
+function animNextFrame() { if (S.isPlaying) togglePlay(); goToFrame(Math.min(S.frames.length - 1, S.currentFrame + 1)); }
+
+// ============================================
+// مشروع النار الجاهز
+// ============================================
+function loadFireTemplate() {
+  const proj = {
+    id: 'fire-template-' + Date.now(),
+    name: 'نار متحركة',
+    width: 400, height: 400,
+    background: '#1a0a00',
+    fps: 12, type: 'animated',
+    created: Date.now()
+  };
+  const projects = getProjects();
+  projects.unshift(proj);
+  saveProjects(projects);
+  openProject(proj);
+  // رسم الإطارات بعد التهيئة
+  setTimeout(() => drawFireFrames(), 500);
+}
+
+function drawFireFrames() {
+  // إنشاء 8 إطارات لنار متحركة
+  S.frames = [];
+  for (let f = 0; f < 8; f++) {
+    const canvas = document.createElement('canvas');
+    canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+    const ctx = canvas.getContext('2d');
+
+    // خلفية داكنة
+    ctx.fillStyle = '#1a0a00';
+    ctx.fillRect(0, 0, S.canvasWidth, S.canvasHeight);
+
+    const frame = { id: Date.now() + f, canvas, ctx, duration: 1000 / 12 };
+    drawFireFrame(ctx, f, 8);
+    S.frames.push(frame);
+  }
+
+  // تحديث الطبقة الأولى لتظهر الإطار الأول
+  if (S.layers[0]) {
+    S.layers[0].ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+    S.layers[0].ctx.drawImage(S.frames[0].canvas, 0, 0);
+    renderLayers();
+  }
+
+  S.currentFrame = 0;
+  renderFrames();
+  updateFrameDisplay();
+  showToast('تم تحميل مشروع النار المتحركة!');
+}
+
+function drawFireFrame(ctx, frameIdx, totalFrames) {
+  const w = S.canvasWidth, h = S.canvasHeight;
+  const t = frameIdx / totalFrames;
+  const cx = w / 2;
+  const baseY = h * 0.85;
+
+  // طبقات اللهب - من الأسفل للأعلى
+  const layers = [
+    { color: '#ff6600', height: 0.45, wobble: 0.08, alpha: 0.9 },
+    { color: '#ff3300', height: 0.35, wobble: 0.1, alpha: 0.85 },
+    { color: '#ff8800', height: 0.3, wobble: 0.06, alpha: 0.8 },
+    { color: '#ffcc00', height: 0.18, wobble: 0.05, alpha: 0.7 },
+    { color: '#ffffff', height: 0.08, wobble: 0.03, alpha: 0.5 },
+  ];
+
+  layers.forEach(({ color, height, wobble, alpha }) => {
+    const flameH = h * height;
+    const wobbleX = Math.sin(t * Math.PI * 2 + Math.random() * 0.3) * w * wobble;
+    const grad = ctx.createRadialGradient(cx + wobbleX * 0.5, baseY - flameH * 0.5, 0, cx + wobbleX * 0.5, baseY - flameH * 0.5, flameH * 0.7);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.18, baseY);
+
+    // اللهب بمنحنيات بيزييه
+    const jitter = (Math.random() - 0.5) * w * 0.05;
+    ctx.bezierCurveTo(
+      cx - w * 0.12 + wobbleX, baseY - flameH * 0.4,
+      cx + w * 0.05 + wobbleX + jitter, baseY - flameH * 0.8,
+      cx + wobbleX * 0.8, baseY - flameH
+    );
+    ctx.bezierCurveTo(
+      cx - w * 0.05 + wobbleX, baseY - flameH * 0.8,
+      cx + w * 0.12 - wobbleX, baseY - flameH * 0.4,
+      cx + w * 0.18, baseY
+    );
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // الجمر في الأسفل
+  for (let i = 0; i < 12; i++) {
+    const ox = (Math.random() - 0.5) * w * 0.3;
+    const oy = Math.random() * h * 0.08;
+    const r = Math.random() * 4 + 2;
+    const emberAlpha = 0.5 + Math.random() * 0.5;
+    const grad = ctx.createRadialGradient(cx + ox, baseY - oy, 0, cx + ox, baseY - oy, r * 3);
+    grad.addColorStop(0, `rgba(255,200,50,${emberAlpha})`);
+    grad.addColorStop(1, 'rgba(255,50,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx + ox, baseY - oy, r * 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // جزيئات ضوء في الأعلى
+  for (let i = 0; i < 6; i++) {
+    const sparkX = cx + (Math.random() - 0.5) * w * 0.2;
+    const sparkY = baseY - h * (0.35 + Math.random() * 0.2) + (frameIdx * h * 0.02);
+    ctx.save();
+    ctx.globalAlpha = 0.4 + Math.random() * 0.4;
+    ctx.fillStyle = '#ffee88';
+    ctx.beginPath();
+    ctx.arc(sparkX, sparkY, Math.random() * 2 + 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ============================================
+// الصورة المرجعية
+// ============================================
+function importReferenceImage() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        S.refImage = img;
+        S.refScale = Math.min(1, S.canvasWidth / img.naturalWidth, S.canvasHeight / img.naturalHeight);
+        S.refX = 0; S.refY = 0;
+        document.getElementById('refControls').style.display = 'flex';
+        renderLayers();
+        showToast('تمت إضافة الصورة المرجعية');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function setRefOpacity(val) {
+  S.refOpacity = val / 100;
+  document.getElementById('refOpacityVal').textContent = val + '%';
+  renderLayers();
+}
+
+function setRefScale(val) {
+  S.refScale = val / 100;
+  document.getElementById('refScaleVal').textContent = val + '%';
+  renderLayers();
+}
+
+function lockRefLayer() {
+  S.refLocked = !S.refLocked;
+  showToast(S.refLocked ? 'تم قفل طبقة المرجع' : 'تم فك قفل طبقة المرجع');
+}
+
+function removeRefImage() {
+  S.refImage = null;
+  document.getElementById('refControls').style.display = 'none';
+  renderLayers();
+  showToast('تمت إزالة الصورة المرجعية');
+}
+
+// ============================================
+// الحفظ والتصدير
+// ============================================
+function saveProject() {
+  if (!S.project) return;
+  // حفظ بيانات الطبقات
+  const layersData = S.layers.map(l => ({
+    id: l.id, name: l.name,
+    data: l.canvas.toDataURL('image/png'),
+    opacity: l.opacity, visible: l.visible,
+    locked: l.locked, blendMode: l.blendMode
+  }));
+
+  // thumbnail
+  const thumb = document.createElement('canvas');
+  thumb.width = 240; thumb.height = 160;
+  const tCtx = thumb.getContext('2d');
+  tCtx.drawImage(S.mainCanvas, 0, 0, 240, 160);
+
+  const updatedProject = {
+    ...S.project,
+    layersData,
+    thumbnail: thumb.toDataURL('image/jpeg', 0.6),
+    saved: Date.now()
+  };
+
+  if (S.projectType === 'animated') {
+    syncFrameToLayer();
+    updatedProject.framesData = S.frames.map(f => ({
+      id: f.id, data: f.canvas.toDataURL('image/png'), duration: f.duration
+    }));
+  }
+
+  const projects = getProjects();
+  const idx = projects.findIndex(p => p.id === S.project.id);
+  if (idx >= 0) projects[idx] = updatedProject;
+  else projects.unshift(updatedProject);
+  saveProjects(projects);
+  S.project = updatedProject;
+  showToast('تم الحفظ بنجاح');
+}
+
+function autoSaveProject() {
+  if (!S.project) return;
+  // حفظ خفيف (بدون إشعار)
+  try {
+    const layersData = S.layers.map(l => ({ id: l.id, name: l.name, data: l.canvas.toDataURL('image/png'), opacity: l.opacity, visible: l.visible, locked: l.locked, blendMode: l.blendMode }));
+    const thumb = document.createElement('canvas');
+    thumb.width = 120; thumb.height = 80;
+    const tCtx = thumb.getContext('2d');
+    tCtx.drawImage(S.mainCanvas, 0, 0, 120, 80);
+    const updatedProject = { ...S.project, layersData, thumbnail: thumb.toDataURL('image/jpeg', 0.5), saved: Date.now() };
+    if (S.projectType === 'animated') {
+      syncFrameToLayer();
+      updatedProject.framesData = S.frames.map(f => ({ id: f.id, data: f.canvas.toDataURL('image/png'), duration: f.duration }));
+    }
+    const projects = getProjects();
+    const idx = projects.findIndex(p => p.id === S.project.id);
+    if (idx >= 0) projects[idx] = updatedProject;
+    else projects.unshift(updatedProject);
+    saveProjects(projects);
+    S.project = updatedProject;
+  } catch (e) {}
 }
 
 function exportAs(format) {
-  const flat=getFlatCanvas();
-  const quality=parseInt(document.getElementById('jpegQuality')?.value||90)/100;
-  const link=document.createElement('a');
-  if(format==='png') { link.href=flat.toDataURL('image/png'); link.download='safwan-studio.png'; }
-  else if(format==='jpeg') { link.href=flat.toDataURL('image/jpeg',quality); link.download='safwan-studio.jpg'; }
-  else if(format==='webp') { link.href=flat.toDataURL('image/webp',0.92); link.download='safwan-studio.webp'; }
-  link.click(); closePanel('exportPanel');
+  closeAllMenus();
+  const canvas = document.createElement('canvas');
+  canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+  const ctx = canvas.getContext('2d');
+
+  if (format !== 'png' || S.background !== 'transparent') {
+    ctx.fillStyle = S.background === 'transparent' ? '#ffffff' : S.background;
+    ctx.fillRect(0, 0, S.canvasWidth, S.canvasHeight);
+  }
+
+  for (let i = S.layers.length - 1; i >= 0; i--) {
+    const l = S.layers[i];
+    if (!l.visible) continue;
+    ctx.save(); ctx.globalAlpha = l.opacity; ctx.globalCompositeOperation = l.blendMode;
+    ctx.drawImage(l.canvas, 0, 0); ctx.restore();
+  }
+
+  const mimeMap = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+  const ext = format === 'jpg' ? 'jpeg' : format;
+  const quality = format === 'png' ? 1 : 0.92;
+  const url = canvas.toDataURL(mimeMap[format] || 'image/png', quality);
+  downloadFile(url, `${S.project?.name || 'رسم'}.${ext}`);
+  showToast(`تم التصدير بصيغة ${format.toUpperCase()}`);
 }
 
-function exportAnimation(format) {
-  if(state.projectType!=='animated'||state.frames.length===0) return;
-  saveCurrentFrame();
-  showNotification('جارٍ التصدير كإطارات منفصلة...');
-  state.frames.forEach((frame,i)=>{
-    const tmp=document.createElement('canvas'); tmp.width=state.canvasWidth; tmp.height=state.canvasHeight;
-    const ctx=tmp.getContext('2d');
-    if(state.bgColor!=='transparent'){ ctx.fillStyle=state.bgColor; ctx.fillRect(0,0,tmp.width,tmp.height); }
-    state.layers.forEach(l=>{
-      if(frame.data&&frame.data[l.id]){
-        const t2=document.createElement('canvas'); t2.width=l.canvas.width; t2.height=l.canvas.height;
-        t2.getContext('2d').putImageData(frame.data[l.id],0,0); ctx.drawImage(t2,0,0);
-      }
+function quickExport() { exportAs('png'); }
+
+function exportLayersAsPNG() {
+  closeAllMenus();
+  S.layers.forEach((l, i) => {
+    const url = l.canvas.toDataURL('image/png');
+    downloadFile(url, `${l.name}-${i+1}.png`);
+  });
+  showToast('تم تصدير جميع الطبقات');
+}
+
+function exportVideo() {
+  closeAllMenus();
+  if (S.frames.length === 0) { showToast('لا توجد إطارات للتصدير', 'error'); return; }
+
+  // تصدير كـ GIF بالجزء 1: إنشاء مجموعة صور
+  showToast('جاري إنشاء الملفات...');
+
+  S.frames.forEach((frame, i) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = S.canvasWidth; canvas.height = S.canvasHeight;
+    const ctx = canvas.getContext('2d');
+    if (S.background !== 'transparent') { ctx.fillStyle = S.background; ctx.fillRect(0, 0, S.canvasWidth, S.canvasHeight); }
+    ctx.drawImage(frame.canvas, 0, 0);
+    const url = canvas.toDataURL('image/png');
+    setTimeout(() => downloadFile(url, `frame-${String(i+1).padStart(3,'0')}.png`), i * 100);
+  });
+
+  setTimeout(() => showToast(`تم تصدير ${S.frames.length} إطار. يمكنك دمجها في برنامج تحرير فيديو.`), 500);
+}
+
+function downloadFile(url, name) {
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+}
+
+// ============================================
+// تبديل الأداة
+// ============================================
+function setTool(tool) {
+  if (S.currentTool !== tool) S.previousTool = S.currentTool;
+  S.currentTool = tool;
+
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.id === 'tool-' + tool) btn.classList.add('active');
+  });
+
+  const cursors = {
+    brush: 'crosshair', pencil: 'crosshair', pen: 'crosshair',
+    eraser: 'cell', fill: 'cell', eyedropper: 'crosshair',
+    text: 'text', hand: 'grab', zoom-tool: 'zoom-in',
+    select: 'default', rect: 'crosshair', circle: 'crosshair',
+    line: 'crosshair', triangle: 'crosshair', star: 'crosshair',
+    spray: 'crosshair', smudge: 'crosshair', clone: 'crosshair',
+    crop: 'crosshair',
+  };
+  if (S.mainCanvas) S.mainCanvas.style.cursor = cursors[tool] || 'crosshair';
+  document.getElementById('statusTool').textContent = 'الأداة: ' + getToolName(tool);
+}
+
+function getToolName(tool) {
+  const names = {
+    brush: 'فرشاة', pencil: 'قلم رصاص', pen: 'قلم بيزييه', eraser: 'ممحاة',
+    fill: 'تعبئة', spray: 'رش', eyedropper: 'قطارة', text: 'نص',
+    hand: 'تنقل', 'zoom-tool': 'تكبير', select: 'تحديد', line: 'خط',
+    rect: 'مستطيل', circle: 'دائرة', triangle: 'مثلث', star: 'نجمة',
+    smudge: 'تمويه', clone: 'استنساخ', crop: 'اقتصاص',
+    'rect-select': 'تحديد مستطيل', 'ellipse-select': 'تحديد دائري',
+    lasso: 'لاسو', 'magic-wand': 'عصا سحرية',
+  };
+  return names[tool] || tool;
+}
+
+// ============================================
+// إعدادات الفرشاة
+// ============================================
+function updateBrushSize(val) {
+  S.brush.size = parseInt(val);
+  document.getElementById('brushSizeVal').textContent = val;
+}
+function updateBrushOpacity(val) {
+  S.brush.opacity = val / 100;
+  document.getElementById('brushOpacityVal').textContent = val + '%';
+}
+function updateBrushFlow(val) {
+  S.brush.flow = val / 100;
+  document.getElementById('brushFlowVal').textContent = val + '%';
+}
+function updateBrushSmooth(val) {
+  S.brush.smooth = parseInt(val);
+  document.getElementById('brushSmoothVal').textContent = val;
+}
+function updateBrushHardness(val) {
+  S.brush.hardness = val / 100;
+  document.getElementById('brushHardnessVal').textContent = val + '%';
+}
+function updateBrushSpacing(val) {
+  S.brush.spacing = parseInt(val);
+  document.getElementById('brushSpacingVal').textContent = val + '%';
+}
+
+// ============================================
+// قائمة الفرش
+// ============================================
+const BRUSHES = [
+  // فرش صفوان
+  { id: 'safwan-round', name: 'فرشاة صفوان الدائرية', cat: 'safwan', desc: 'ناعمة ومتعددة الاستخدامات' },
+  { id: 'safwan-soft', name: 'فرشاة صفوان الناعمة', cat: 'safwan', desc: 'حواف ناعمة ومتدرجة' },
+  { id: 'safwan-ink', name: 'قلم صفوان الحبر', cat: 'safwan', desc: 'خطوط حادة وواضحة' },
+  { id: 'safwan-calligraphy', name: 'خط صفوان الخطي', cat: 'safwan', desc: 'مثالية للخط العربي' },
+  { id: 'safwan-sketch', name: 'فرشاة صفوان السكتش', cat: 'safwan', desc: 'للرسم التلقائي السريع' },
+  // فرش أساسية
+  { id: 'basic-round', name: 'دائري صلب', cat: 'basic', desc: 'فرشاة صلبة أساسية' },
+  { id: 'basic-flat', name: 'مسطح', cat: 'basic', desc: 'فرشاة مسطحة' },
+  { id: 'basic-fan', name: 'مروحي', cat: 'basic', desc: 'فرشاة مروحية' },
+  { id: 'basic-pencil', name: 'قلم رصاص', cat: 'basic', desc: 'مثل قلم الرصاص الحقيقي' },
+  { id: 'basic-marker', name: 'ماركر', cat: 'basic', desc: 'ماركر ثابت وقوي' },
+  { id: 'basic-pen', name: 'قلم حبر', cat: 'basic', desc: 'خطوط دقيقة وحادة' },
+  // فرش نسيج
+  { id: 'texture-watercolor', name: 'ألوان مائية', cat: 'texture', desc: 'تأثير ألوان مائية' },
+  { id: 'texture-oil', name: 'زيتي', cat: 'texture', desc: 'تأثير الألوان الزيتية' },
+  { id: 'texture-charcoal', name: 'فحم', cat: 'texture', desc: 'تأثير الفحم الطبيعي' },
+  { id: 'texture-chalk', name: 'طباشير', cat: 'texture', desc: 'مظهر الطباشير على السبورة' },
+  { id: 'texture-sponge', name: 'إسفنج', cat: 'texture', desc: 'نسيج إسفنجي ناعم' },
+  { id: 'texture-grain', name: 'حبوب', cat: 'texture', desc: 'ملمس حبيبي' },
+  // فرش خاصة
+  { id: 'special-glow', name: 'توهج', cat: 'special', desc: 'تأثير إضاءة متوهجة' },
+  { id: 'special-star', name: 'نجوم', cat: 'special', desc: 'تأثير نثر نجوم' },
+  { id: 'special-smoke', name: 'دخان', cat: 'special', desc: 'تأثير دخان ناعم' },
+  { id: 'special-fire', name: 'نار', cat: 'special', desc: 'تأثير ألسنة النار' },
+  { id: 'special-splatter', name: 'رذاذ', cat: 'special', desc: 'تأثير رذاذ الطلاء' },
+];
+
+let currentBrushCat = 'safwan';
+
+function initBrushList() {
+  filterBrushes(currentBrushCat, document.querySelector('.bc-btn.active'));
+}
+
+function filterBrushes(cat, btn) {
+  currentBrushCat = cat;
+  document.querySelectorAll('.bc-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const list = document.getElementById('brushList');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const filtered = BRUSHES.filter(b => b.cat === cat);
+  filtered.forEach(b => {
+    const item = document.createElement('div');
+    item.className = 'brush-item' + (b.id === S.brush.type ? ' active' : '');
+    item.innerHTML = `
+      <div class="brush-preview"><canvas width="40" height="24"></canvas></div>
+      <div>
+        <div class="brush-name">${b.name}</div>
+        <div class="brush-sub">${b.desc}</div>
+      </div>
+    `;
+    // رسم معاينة الفرشاة
+    const previewCanvas = item.querySelector('canvas');
+    drawBrushPreview(previewCanvas.getContext('2d'), b.id);
+
+    item.addEventListener('click', () => {
+      S.brush.type = b.id;
+      S.brush.name = b.name;
+      document.querySelectorAll('.brush-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      setTool('brush');
     });
-    setTimeout(()=>{
-      const link=document.createElement('a');
-      link.href=tmp.toDataURL('image/png');
-      link.download=`safwan-frame-${String(i+1).padStart(3,'0')}.png`;
-      link.click();
-    }, i*100);
+    list.appendChild(item);
   });
 }
 
-// ============== حفظ المشروع ==============
-function saveProject() {
-  if(state.projectType==='animated') saveCurrentFrame();
-  const flat=getFlatCanvas();
-  const projectData={
-    id: state.projectId||Date.now(),
-    title: document.getElementById('projectTitleDisplay')?.textContent||'مشروع جديد',
-    type: state.projectType,
-    bgColor: state.bgColor,
-    width: state.canvasWidth, height: state.canvasHeight,
-    date: new Date().toISOString(),
-    thumbnail: flat.toDataURL('image/jpeg',0.3),
-    layerData: state.layers.map(l=>({ id:l.id, name:l.name, visible:l.visible, locked:l.locked, opacity:l.opacity, imageData:l.canvas.toDataURL() }))
-  };
-  state.projectId=projectData.id;
-  try {
-    const projects=JSON.parse(localStorage.getItem('safwanProjects')||'[]');
-    const idx=projects.findIndex(p=>p.id===projectData.id);
-    if(idx>=0) projects[idx]=projectData; else projects.unshift(projectData);
-    localStorage.setItem('safwanProjects', JSON.stringify(projects.slice(0,10)));
-    showNotification('تم الحفظ بنجاح');
-  } catch(e) { showNotification('فشل الحفظ — المساحة ممتلئة'); }
+function drawBrushPreview(ctx, type) {
+  ctx.clearRect(0, 0, 40, 24);
+  const isDark = !document.body.classList.contains('light-mode');
+  ctx.strokeStyle = isDark ? '#fff' : '#333';
+  ctx.fillStyle = isDark ? '#fff' : '#333';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+
+  switch (type) {
+    case 'safwan-round': case 'basic-round':
+      ctx.beginPath(); ctx.moveTo(4, 20); ctx.bezierCurveTo(12, 8, 28, 8, 36, 4); ctx.stroke(); break;
+    case 'safwan-soft': case 'texture-watercolor':
+      ctx.globalAlpha = 0.5;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath(); ctx.arc(8+i*6, 12+Math.sin(i)*4, 4+i*0.5, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    case 'safwan-ink': case 'basic-pen':
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(4, 20); ctx.lineTo(36, 4); ctx.stroke(); break;
+    case 'texture-charcoal':
+      ctx.globalAlpha = 0.6;
+      for (let i = 0; i < 20; i++) {
+        ctx.beginPath(); ctx.arc(4+Math.random()*32, 8+Math.random()*10, 1, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    default:
+      ctx.beginPath(); ctx.moveTo(4, 18); ctx.bezierCurveTo(12, 14, 28, 10, 36, 6); ctx.stroke();
+  }
 }
 
-// ============== واجهة المستخدم ==============
-function toggleSection(id) {
-  const el=document.getElementById(id); if(!el) return;
-  const hidden=el.style.display==='none'||el.style.display==='';
-  el.style.display=hidden?(id==='fullPalette'?'grid':id==='proBrushes'?'flex':'flex'):'none';
-  const hdr=el.previousElementSibling; if(hdr) hdr.classList.toggle('open',hidden);
+// ============================================
+// لوحة الألوان - 1000+ لون
+// ============================================
+function initColorPalette() {
+  const grid = document.getElementById('paletteGrid');
+  if (!grid) return;
+  generatePalette('all');
 }
 
-function toggleTheme() {
-  state.isDark=!state.isDark;
-  document.body.classList.toggle('light-theme',!state.isDark);
-  document.getElementById('moonIcon').style.display=state.isDark?'block':'none';
-  document.getElementById('sunIcon').style.display=state.isDark?'none':'block';
-  const dt=document.getElementById('darkModeToggle'); if(dt) dt.checked=!state.isDark;
-  localStorage.setItem('theme',state.isDark?'dark':'light');
+function filterPalette(cat, btn) {
+  document.querySelectorAll('.pf-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  generatePalette(cat);
 }
 
-function toggleGrid() {
-  state.gridVisible=!state.gridVisible;
-  let g=document.getElementById('gridOverlay');
-  if(state.gridVisible){
-    if(!g){ g=document.createElement('div'); g.id='gridOverlay';
-      g.style.cssText=`position:absolute;inset:0;z-index:400;pointer-events:none;
-        background-image:linear-gradient(rgba(128,128,128,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(128,128,128,0.2) 1px,transparent 1px);
-        background-size:20px 20px;`;
-      document.getElementById('canvasWrapper')?.appendChild(g); }
-    g.style.display='block';
-  } else if(g) g.style.display='none';
+function generatePalette(cat) {
+  const grid = document.getElementById('paletteGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const colors = getPaletteColors(cat);
+  colors.forEach(color => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch';
+    sw.style.background = color;
+    sw.title = color;
+    sw.addEventListener('click', () => {
+      setFgColor(color);
+      addRecentColor(color);
+    });
+    grid.appendChild(sw);
+  });
 }
 
-function toggleRuler() {}
-function toggleThumbnail() {}
-function togglePressure() { state.pressureEnabled=!state.pressureEnabled; }
-function openSettings() { document.getElementById('settingsPanel').style.display='flex'; }
-function closePanel(id) { const el=document.getElementById(id); if(el) el.style.display='none'; }
+function getPaletteColors(cat) {
+  const allColors = [];
 
-function goHome() {
-  if(confirm('العودة للصفحة الرئيسية؟ سيتم حفظ مشروعك تلقائياً.')){ saveProject(); window.location.href='index.html'; }
-}
+  if (cat === 'skin' || cat === 'all') {
+    // ألوان البشرة (100+)
+    const skinTones = [
+      '#FDDBB4','#F5CBA7','#EAB890','#D4956A','#C68642','#B5722A','#A0522D','#8B4513',
+      '#7B3F00','#6B2F00','#FFE0BD','#FFCD94','#EAC086','#C98B5A','#A0694A','#8B5A2B',
+      '#FFF0D9','#FFE0C4','#F0C9A0','#D4A574','#C19A6B','#A67C52','#8B6914','#6B4423',
+      '#FFDFC4','#FFCBA4','#E8B88A','#D4956A','#B87333','#9B5523','#7B3F00','#5C2E00',
+      '#FFE8D6','#FFD5B5','#F5C089','#E8A870','#D4884A','#B5622A','#96431A','#7A2F10',
+      '#FFF5E6','#FFE8CC','#FFDAB3','#FFCC99','#FFB97A','#E8965A','#C97840','#A05528',
+      '#FFF8F0','#FFEEDD','#FFE4CC','#FFCCA6','#F0B07A','#D48B5A','#B06830','#8B4410',
+    ];
+    allColors.push(...skinTones);
+  }
 
-function editTitle() {
-  const el=document.getElementById('projectTitleDisplay');
-  const n=prompt('اسم المشروع:',el?.textContent||'');
-  if(n&&el) el.textContent=n;
-}
-
-function updateUI() {
-  document.getElementById('pdSize').textContent=`${state.canvasWidth} × ${state.canvasHeight}`;
-  document.getElementById('pdLayers').textContent=state.layers.length;
-  document.getElementById('pdType').textContent=state.projectType==='animated'?'متحرك':'ثابت';
-}
-
-function showNotification(msg) {
-  const n=document.createElement('div');
-  n.style.cssText=`position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-    background:linear-gradient(135deg,#FF6B35,#FFD700);color:white;
-    padding:10px 28px;border-radius:30px;font-weight:700;font-size:13px;
-    z-index:9999;box-shadow:0 4px 20px rgba(255,107,53,0.45);
-    font-family:Tajawal,sans-serif;pointer-events:none;
-    animation:fadeInUp 0.3s ease;`;
-  n.textContent=msg; document.body.appendChild(n);
-  setTimeout(()=>n.remove(), 2600);
-}
-
-// ============== اختصارات لوحة المفاتيح ==============
-function handleKeyboard(e) {
-  const ctrl=e.ctrlKey||e.metaKey;
-  if(ctrl&&e.key==='z'){ e.preventDefault(); undoAction(); return; }
-  if(ctrl&&(e.key==='y'||e.key==='Y')){ e.preventDefault(); redoAction(); return; }
-  if(ctrl&&e.key==='s'){ e.preventDefault(); saveProject(); return; }
-  if(ctrl&&e.key==='e'){ e.preventDefault(); openExportPanel(); return; }
-  if(ctrl&&e.key==='+'){ e.preventDefault(); zoomIn(); return; }
-  if(ctrl&&e.key==='-'){ e.preventDefault(); zoomOut(); return; }
-  if(e.key==='0'&&ctrl){ e.preventDefault(); resetZoom(); return; }
-  if(e.key==='Delete'||e.key==='Backspace'){
-    if(document.activeElement===document.body){
-      const ctx=getActiveCtx(); if(ctx) ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height); saveHistory();
+  if (cat === 'warm' || cat === 'all') {
+    // ألوان دافئة
+    for (let h = 0; h <= 60; h += 4) {
+      for (let s = 60; s <= 100; s += 20) {
+        for (let l = 25; l <= 75; l += 15) {
+          allColors.push(`hsl(${h},${s}%,${l}%)`);
+        }
+      }
     }
-    return;
   }
-  // اختصارات الأدوات
-  if(!ctrl&&!e.shiftKey&&!e.altKey){
-    const keys={'b':'brush','e':'eraser','f':'fill','i':'eyedropper','m':'move','h':'hand','t':'text','r':'rect','c':'circle','l':'line','v':'move'};
-    if(keys[e.key]) selectTool(keys[e.key]);
+
+  if (cat === 'cool' || cat === 'all') {
+    // ألوان باردة
+    for (let h = 180; h <= 280; h += 5) {
+      for (let s = 50; s <= 100; s += 20) {
+        for (let l = 20; l <= 80; l += 15) {
+          allColors.push(`hsl(${h},${s}%,${l}%)`);
+        }
+      }
+    }
+  }
+
+  if (cat === 'nature' || cat === 'all') {
+    // ألوان طبيعة
+    const nature = [
+      '#2D5016','#3A6B1F','#4E8B2A','#62A835','#76C840','#8DE050',
+      '#1B4332','#2D6A4F','#40916C','#52B788','#74C69D','#95D5B2',
+      '#5C3D11','#7D5A27','#9E7840','#BF9660','#D4A96A','#E8C17A',
+      '#1A1A2E','#16213E','#0F3460','#533483','#E94560','#0F4C75',
+      '#355C7D','#6C5B7B','#C06C84','#F67280','#F8B195',
+    ];
+    allColors.push(...nature);
+  }
+
+  if (cat === 'all') {
+    // ألوان إضافية لتجاوز 1000
+    for (let h = 0; h <= 360; h += 5) {
+      for (let s = 30; s <= 100; s += 25) {
+        for (let l = 20; l <= 80; l += 20) {
+          allColors.push(`hsl(${h},${s}%,${l}%)`);
+        }
+      }
+    }
+    // درجات الرمادي
+    for (let i = 0; i <= 255; i += 15) {
+      allColors.push(`rgb(${i},${i},${i})`);
+    }
+    // ألوان نيون
+    const neons = ['#FF00FF','#00FFFF','#00FF00','#FF0000','#0000FF','#FFFF00','#FF8000','#FF0080','#00FF80','#8000FF','#0080FF','#80FF00'];
+    allColors.push(...neons);
+  }
+
+  return allColors.slice(0, 1200);
+}
+
+function addRecentColor(color) {
+  const recentGrid = document.getElementById('recentColors');
+  if (!recentGrid) return;
+  const existing = recentGrid.querySelector(`[data-color="${color}"]`);
+  if (existing) existing.remove();
+  const sw = document.createElement('div');
+  sw.className = 'color-swatch';
+  sw.style.background = color;
+  sw.dataset.color = color;
+  sw.title = color;
+  sw.style.width = '18px'; sw.style.height = '18px';
+  sw.addEventListener('click', () => setFgColor(color));
+  recentGrid.insertBefore(sw, recentGrid.firstChild);
+  while (recentGrid.children.length > 20) recentGrid.removeChild(recentGrid.lastChild);
+}
+
+// ============================================
+// منتقي الألوان
+// ============================================
+let currentColorTarget = 'fg';
+let colorPickerHue = 20;
+let colorPickerSat = 0.7;
+let colorPickerLum = 0.6;
+let colorPickerAlpha = 1;
+
+function initColorPicker() {
+  drawSpectrumCanvas();
+  drawHueCanvas();
+  drawAlphaCanvas();
+  updateColorDisplay();
+
+  // أحداث spectrum
+  const spectrum = document.getElementById('colorSpectrum');
+  if (spectrum) {
+    let dragging = false;
+    spectrum.addEventListener('mousedown', e => { dragging = true; pickFromSpectrum(e); });
+    document.addEventListener('mousemove', e => { if (dragging) pickFromSpectrum(e); });
+    document.addEventListener('mouseup', () => dragging = false);
+  }
+
+  // أحداث hue
+  const hueCanvas = document.getElementById('hueCanvas');
+  if (hueCanvas) {
+    let dragging = false;
+    hueCanvas.addEventListener('mousedown', e => { dragging = true; pickFromHue(e); });
+    document.addEventListener('mousemove', e => { if (dragging) pickFromHue(e); });
+    document.addEventListener('mouseup', () => dragging = false);
+  }
+
+  // alpha
+  const alphaCanvas = document.getElementById('alphaCanvas');
+  if (alphaCanvas) {
+    let dragging = false;
+    alphaCanvas.addEventListener('mousedown', e => { dragging = true; pickFromAlpha(e); });
+    document.addEventListener('mousemove', e => { if (dragging) pickFromAlpha(e); });
+    document.addEventListener('mouseup', () => dragging = false);
   }
 }
 
-// ============== أدوات المساعدة ==============
+function drawSpectrumCanvas() {
+  const canvas = document.getElementById('spectrumCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+
+  // تدرج أفقي من أبيض للون الأساسي
+  const hslColor = `hsl(${colorPickerHue}, 100%, 50%)`;
+  const gradH = ctx.createLinearGradient(0, 0, w, 0);
+  gradH.addColorStop(0, '#fff');
+  gradH.addColorStop(1, hslColor);
+  ctx.fillStyle = gradH;
+  ctx.fillRect(0, 0, w, h);
+
+  // تدرج رأسي من شفاف لأسود
+  const gradV = ctx.createLinearGradient(0, 0, 0, h);
+  gradV.addColorStop(0, 'rgba(0,0,0,0)');
+  gradV.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.fillStyle = gradV;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function pickFromSpectrum(e) {
+  const canvas = document.getElementById('spectrumCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.max(0, Math.min(canvas.width, (e.clientX - rect.left) * (canvas.width / rect.width)));
+  const y = Math.max(0, Math.min(canvas.height, (e.clientY - rect.top) * (canvas.height / rect.height)));
+  colorPickerSat = x / canvas.width;
+  colorPickerLum = 1 - y / canvas.height;
+  updateSpectrumCursor(x / canvas.width * 100, y / canvas.height * 100);
+  applyPickedColor();
+}
+
+function drawHueCanvas() {
+  const canvas = document.getElementById('hueCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, 0);
+  for (let i = 0; i <= 360; i += 10) grad.addColorStop(i/360, `hsl(${i},100%,50%)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function pickFromHue(e) {
+  const canvas = document.getElementById('hueCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.max(0, Math.min(canvas.width, (e.clientX - rect.left) * (canvas.width / rect.width)));
+  colorPickerHue = (x / canvas.width) * 360;
+  drawSpectrumCanvas();
+  drawAlphaCanvas();
+  const cursor = document.getElementById('hueCursor');
+  if (cursor) cursor.style.left = (x / canvas.width * 100) + '%';
+  applyPickedColor();
+}
+
+function drawAlphaCanvas() {
+  const canvas = document.getElementById('alphaCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  // خلفية شطرنج
+  const sz = 6;
+  for (let x = 0; x < canvas.width; x += sz)
+    for (let y = 0; y < canvas.height; y += sz) {
+      ctx.fillStyle = ((Math.floor(x/sz)+Math.floor(y/sz))%2===0) ? '#ccc' : '#fff';
+      ctx.fillRect(x, y, sz, sz);
+    }
+  const color = hslToHex(colorPickerHue, colorPickerSat, colorPickerLum * 0.5 + 0.5 * (1 - colorPickerSat));
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, 0);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, color);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function pickFromAlpha(e) {
+  const canvas = document.getElementById('alphaCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.max(0, Math.min(canvas.width, (e.clientX - rect.left) * (canvas.width / rect.width)));
+  colorPickerAlpha = x / canvas.width;
+  const cursor = document.getElementById('alphaCursor');
+  if (cursor) cursor.style.left = (x / canvas.width * 100) + '%';
+  applyPickedColor();
+}
+
+function updateSpectrumCursor(xPct, yPct) {
+  const cursor = document.getElementById('spectrumCursor');
+  if (cursor) { cursor.style.left = xPct + '%'; cursor.style.top = yPct + '%'; }
+}
+
+function applyPickedColor() {
+  // تحويل HSV → RGB → HEX
+  const h = colorPickerHue;
+  const s = colorPickerSat;
+  const v = colorPickerLum;
+
+  const c = v * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = v - c;
+  let r = 0, g = 0, b = 0;
+
+  if (h < 60) { r=c; g=x; b=0; }
+  else if (h < 120) { r=x; g=c; b=0; }
+  else if (h < 180) { r=0; g=c; b=x; }
+  else if (h < 240) { r=0; g=x; b=c; }
+  else if (h < 300) { r=x; g=0; b=c; }
+  else { r=c; g=0; b=x; }
+
+  r = Math.round((r+m)*255);
+  g = Math.round((g+m)*255);
+  b = Math.round((b+m)*255);
+
+  const hex = rgbToHex(r, g, b);
+  setFgColor(hex);
+  updateColorInputs(r, g, b, hex);
+}
+
+function updateColorDisplay() {
+  const fg = document.getElementById('colorFG');
+  const bg = document.getElementById('colorBG');
+  if (fg) fg.style.background = S.fgColor;
+  if (bg) bg.style.background = S.bgColor;
+}
+
+function updateColorInputs(r, g, b, hex) {
+  const hi = document.getElementById('hexInput');
+  const ri = document.getElementById('rInput');
+  const gi = document.getElementById('gInput');
+  const bi = document.getElementById('bInput');
+  if (hi) hi.value = hex;
+  if (ri) ri.value = r;
+  if (gi) gi.value = g;
+  if (bi) bi.value = b;
+}
+
+function updateFromHex(hex) {
+  if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
+  const rgb = hexToRgb(hex);
+  setFgColor(hex);
+  updateColorInputs(rgb.r, rgb.g, rgb.b, hex);
+}
+
+function updateFromRGB() {
+  const r = parseInt(document.getElementById('rInput').value) || 0;
+  const g = parseInt(document.getElementById('gInput').value) || 0;
+  const b = parseInt(document.getElementById('bInput').value) || 0;
+  const hex = rgbToHex(r, g, b);
+  setFgColor(hex);
+  document.getElementById('hexInput').value = hex;
+}
+
+function openColorPicker(target) {
+  currentColorTarget = target;
+}
+
+function setFgColor(color) {
+  S.fgColor = color;
+  const fg = document.getElementById('colorFG');
+  if (fg) fg.style.background = color;
+  const hi = document.getElementById('hexInput');
+  if (hi) hi.value = color;
+  addRecentColor(color);
+}
+
+function swapColors() {
+  const tmp = S.fgColor;
+  S.fgColor = S.bgColor;
+  S.bgColor = tmp;
+  updateColorDisplay();
+}
+
+function resetColors() {
+  S.fgColor = '#000000';
+  S.bgColor = '#ffffff';
+  updateColorDisplay();
+}
+
+function hslToHex(h, s, l) {
+  l = l * 0.5 + 0.5 * (1 - s);
+  const a = s * Math.min(l, 1-l);
+  const f = n => {
+    const k = (n + h/30) % 12;
+    const color = l - a * Math.max(Math.min(k-3, 9-k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+// ============================================
+// التاريخ (Undo/Redo)
+// ============================================
+function saveHistory() {
+  if (S.historyIdx < S.history.length - 1) S.history.splice(S.historyIdx + 1);
+  const state = S.layers.map(l => ({ id: l.id, data: l.canvas.toDataURL('image/png'), opacity: l.opacity, visible: l.visible, locked: l.locked, blendMode: l.blendMode, name: l.name }));
+  S.history.push(state);
+  if (S.history.length > S.maxHistory) S.history.shift();
+  else S.historyIdx++;
+}
+
+function historyUndo() {
+  if (S.historyIdx <= 0) { showToast('لا يمكن التراجع أكثر', 'error'); return; }
+  S.historyIdx--;
+  restoreHistory(S.history[S.historyIdx]);
+  showToast('تم التراجع');
+}
+
+function historyRedo() {
+  if (S.historyIdx >= S.history.length - 1) { showToast('لا يمكن الإعادة', 'error'); return; }
+  S.historyIdx++;
+  restoreHistory(S.history[S.historyIdx]);
+  showToast('تمت الإعادة');
+}
+
+function restoreHistory(state) {
+  if (!state) return;
+  state.forEach((layerState, i) => {
+    if (i >= S.layers.length) return;
+    const img = new Image();
+    img.onload = () => {
+      S.layers[i].ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+      S.layers[i].ctx.drawImage(img, 0, 0);
+      S.layers[i].opacity = layerState.opacity;
+      S.layers[i].visible = layerState.visible;
+      renderLayers(); renderLayersList();
+    };
+    img.src = layerState.data;
+  });
+}
+
+// ============================================
+// عمليات الكانفاس
+// ============================================
+function flipCanvasH() {
+  S.layers.forEach(l => {
+    const tmp = document.createElement('canvas');
+    tmp.width = S.canvasWidth; tmp.height = S.canvasHeight;
+    const ctx = tmp.getContext('2d');
+    ctx.scale(-1, 1); ctx.translate(-S.canvasWidth, 0);
+    ctx.drawImage(l.canvas, 0, 0);
+    l.ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+    l.ctx.drawImage(tmp, 0, 0);
+  });
+  renderLayers();
+  showToast('تم القلب الأفقي');
+}
+
+function flipCanvasV() {
+  S.layers.forEach(l => {
+    const tmp = document.createElement('canvas');
+    tmp.width = S.canvasWidth; tmp.height = S.canvasHeight;
+    const ctx = tmp.getContext('2d');
+    ctx.scale(1, -1); ctx.translate(0, -S.canvasHeight);
+    ctx.drawImage(l.canvas, 0, 0);
+    l.ctx.clearRect(0, 0, S.canvasWidth, S.canvasHeight);
+    l.ctx.drawImage(tmp, 0, 0);
+  });
+  renderLayers();
+  showToast('تم القلب الرأسي');
+}
+
+function rotateCanvas90() {
+  const newW = S.canvasHeight, newH = S.canvasWidth;
+  S.layers.forEach(l => {
+    const tmp = document.createElement('canvas');
+    tmp.width = newW; tmp.height = newH;
+    const ctx = tmp.getContext('2d');
+    ctx.translate(newW / 2, newH / 2); ctx.rotate(Math.PI / 2);
+    ctx.drawImage(l.canvas, -S.canvasWidth / 2, -S.canvasHeight / 2);
+    l.canvas.width = newW; l.canvas.height = newH;
+    l.ctx.drawImage(tmp, 0, 0);
+  });
+  [S.canvasWidth, S.canvasHeight] = [newW, newH];
+  S.mainCanvas.width = newW; S.mainCanvas.height = newH;
+  S.overlayCanvas.width = newW; S.overlayCanvas.height = newH;
+  document.getElementById('canvasWrapper').style.width = newW + 'px';
+  document.getElementById('canvasWrapper').style.height = newH + 'px';
+  renderLayers(); updateCanvasInfo();
+  showToast('تم التدوير 90 درجة');
+}
+
+function resizeCanvas() {
+  const w = parseInt(prompt('العرض الجديد:', S.canvasWidth));
+  const h = parseInt(prompt('الارتفاع الجديد:', S.canvasHeight));
+  if (!w || !h || w < 1 || h < 1) return;
+
+  S.layers.forEach(l => {
+    const tmp = document.createElement('canvas');
+    tmp.width = w; tmp.height = h;
+    const ctx = tmp.getContext('2d');
+    ctx.drawImage(l.canvas, 0, 0, w, h);
+    l.canvas.width = w; l.canvas.height = h;
+    l.ctx.drawImage(tmp, 0, 0);
+  });
+
+  S.canvasWidth = w; S.canvasHeight = h;
+  S.mainCanvas.width = w; S.mainCanvas.height = h;
+  S.overlayCanvas.width = w; S.overlayCanvas.height = h;
+  document.getElementById('canvasWrapper').style.width = w + 'px';
+  document.getElementById('canvasWrapper').style.height = h + 'px';
+  renderLayers(); updateCanvasInfo();
+  showToast(`تم تغيير الحجم إلى ${w}×${h}`);
+}
+
+// ============================================
+// الثيم والإعدادات
+// ============================================
+function toggleTheme() {
+  document.body.classList.toggle('light-mode');
+  const isLight = document.body.classList.contains('light-mode');
+  localStorage.setItem('safwan-theme', isLight ? 'light' : 'dark');
+  updateThemeToggle();
+  // إعادة رسم الفرش
+  setTimeout(initBrushList, 100);
+}
+
+function updateThemeToggle() {
+  const isLight = document.body.classList.contains('light-mode');
+  const sw = document.getElementById('darkModeSwitch');
+  if (sw) sw.checked = !isLight;
+  const btn = document.getElementById('studioThemeBtn');
+  if (btn) {
+    btn.innerHTML = isLight
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+  }
+}
+
+function showSettings() {
+  document.getElementById('settingsModal').classList.add('active');
+}
+
+function showShortcuts() {
+  closeAllMenus();
+  document.getElementById('shortcutsModal').classList.add('active');
+}
+
+function showCanvasSettings() {
+  closeAllMenus();
+  const bg = prompt('لون الخلفية:', S.background);
+  if (bg) {
+    S.background = bg;
+    renderLayers();
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id)?.classList.remove('active');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+});
+
+// ============================================
+// القوائم المنسدلة
+// ============================================
+function toggleMenu(el) {
+  const isOpen = el.classList.contains('open');
+  closeAllMenus();
+  if (!isOpen) el.classList.add('open');
+}
+
+function closeAllMenus() {
+  document.querySelectorAll('.menu-item.open').forEach(m => m.classList.remove('open'));
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.menu-item')) closeAllMenus();
+});
+
+// ============================================
+// مجموعات الأدوات
+// ============================================
+function toggleToolGroup(header) {
+  const items = header.nextElementSibling;
+  const isActive = items.classList.contains('active');
+  items.classList.toggle('active', !isActive);
+  header.classList.toggle('collapsed', isActive);
+}
+
+// ============================================
+// التبويبات الجانبية
+// ============================================
+function switchSideTab(tab) {
+  document.querySelectorAll('.stab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+// ============================================
+// شريط الحالة والمعلومات
+// ============================================
+function updateStatusCoords(x, y) {
+  const el = document.getElementById('statusCoords');
+  if (el) el.textContent = `X: ${x}, Y: ${y}`;
+}
+
+function updateProjectName() {
+  const el = document.getElementById('projectNameDisplay');
+  if (el) el.textContent = S.project?.name || 'بدون عنوان';
+}
+
+function updateCanvasInfo() {
+  const ciW = document.getElementById('ciW');
+  const ciH = document.getElementById('ciH');
+  const ciDPI = document.getElementById('ciDPI');
+  if (ciW) ciW.textContent = S.canvasWidth + 'px';
+  if (ciH) ciH.textContent = S.canvasHeight + 'px';
+  if (ciDPI) ciDPI.textContent = S.dpi;
+  document.getElementById('statusSize').textContent = `اللوحة: ${S.canvasWidth}×${S.canvasHeight}`;
+}
+
+// ============================================
+// التوست (إشعارات)
+// ============================================
+let toastTimeout;
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  clearTimeout(toastTimeout);
+  toast.textContent = msg;
+  toast.className = `toast show ${type}`;
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ============================================
+// وضع الشاشة الكاملة
+// ============================================
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.();
+  } else {
+    document.exitFullscreen?.();
+  }
+}
+
+function toggleSidebarLeft() {
+  const sidebar = document.getElementById('toolsSidebar');
+  if (sidebar) sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+}
+
+// ============================================
+// مساعد التحويل اللوني
+// ============================================
 function hexToRgb(hex) {
-  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null;
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? { r: parseInt(result[1],16), g: parseInt(result[2],16), b: parseInt(result[3],16) } : { r: 0, g: 0, b: 0 };
 }
 
-function rgbToHsv(r,g,b) {
-  r/=255; g/=255; b/=255;
-  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
-  let h=0;
-  if(d!==0){
-    if(max===r) h=((g-b)/d)%6;
-    else if(max===g) h=(b-r)/d+2;
-    else h=(r-g)/d+4;
-    h=Math.round(h*60); if(h<0) h+=360;
-  }
-  return { h, s:max===0?0:d/max, v:max };
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2,'0')).join('');
 }
 
-function hslToRgb(h,s,l) {
-  let r,g,b;
-  if(s===0){ r=g=b=l; }
-  else {
-    const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
-    const hue2rgb=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; };
-    r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3);
-  }
-  return { r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) };
-}
+// ============================================
+// اختصارات لوحة المفاتيح
+// ============================================
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const isApp = document.getElementById('studioApp')?.style.display !== 'none';
+    if (!isApp) return;
 
-// CSS للإشعار
-const style = document.createElement('style');
-style.textContent = `@keyframes fadeInUp { from { opacity:0; transform:translate(-50%,20px); } to { opacity:1; transform:translate(-50%,0); } }`;
-document.head.appendChild(style);
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key.toLowerCase()) {
+        case 'z': e.preventDefault(); e.shiftKey ? historyRedo() : historyUndo(); break;
+        case 'y': e.preventDefault(); historyRedo(); break;
+        case 's': e.preventDefault(); saveProject(); break;
+        case 'c': e.preventDefault(); copySelected(); break;
+        case 'v': e.preventDefault(); pasteContent(); break;
+        case 'x': e.preventDefault(); cutSelected(); break;
+        case 'a': e.preventDefault(); selectAll(); break;
+        case 'd': e.preventDefault(); deselectAll(); break;
+        case 'e': e.preventDefault(); exportAs('png'); break;
+        case '+': case '=': e.preventDefault(); zoomIn(); break;
+        case '-': e.preventDefault(); zoomOut(); break;
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'b': setTool('brush'); break;
+      case 'e': setTool('eraser'); break;
+      case 'v': setTool('select'); break;
+      case 'g': setTool('fill'); break;
+      case 'i': setTool('eyedropper'); break;
+      case 't': setTool('text'); break;
+      case 'h': setTool('hand'); break;
+      case 'p': setTool('pencil'); break;
+      case 'r': setTool('rect'); break;
+      case 'c': setTool('circle'); break;
+      case 'l': setTool('line'); break;
+      case 'x': swapColors(); break;
+      case 'F11': e.preventDefault(); toggleFullscreen(); break;
+      case ' ':
+        if (S.projectType === 'animated') { e.preventDefault(); togglePlay(); }
+        break;
+      case '[':
+        S.brush.size = Math.max(1, S.brush.size - 2);
+        document.getElementById('brushSize').value = S.brush.size;
+        document.getElementById('brushSizeVal').textContent = S.brush.size;
+        break;
+      case ']':
+        S.brush.size = Math.min(500, S.brush.size + 2);
+        document.getElementById('brushSize').value = S.brush.size;
+        document.getElementById('brushSizeVal').textContent = S.brush.size;
+        break;
+      case '+': case '=': zoomIn(); break;
+      case '-': zoomOut(); break;
+    }
+  });
+}
