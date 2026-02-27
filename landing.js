@@ -1,46 +1,244 @@
-// THEME
-let isDark = true;
-function toggleTheme() {
-  isDark = !isDark;
-  document.body.classList.toggle('light-mode', !isDark);
-  const btn = document.getElementById('themeBtn');
-  if (btn) btn.innerHTML = isDark
-    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
-    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>';
+/* ============================================================
+   صفوان ستوديو — landing.js
+   ============================================================ */
+
+'use strict';
+
+// ---- Theme ----
+const THEME_KEY = 'safwan_theme';
+
+function applyTheme(theme) {
+  document.body.classList.toggle('light-mode', theme === 'light');
+  localStorage.setItem(THEME_KEY, theme);
 }
 
-// PARTICLES
-const canvas = document.getElementById('particles-canvas');
-if (canvas) {
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-  const colors = ['#FF6B6B','#4ECDC4','#FFE66D','#A8EDEA','#FED6E3'];
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  applyTheme(saved || preferred);
+}
 
-  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
-  function mkParticle() {
-    return { x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-      vx: (Math.random()-.5)*.4, vy: (Math.random()-.5)*.4,
-      r: Math.random()*1.8+.4, color: colors[Math.floor(Math.random()*colors.length)],
-      a: Math.random()*.5+.1 };
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+
+  // Theme toggle
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const isLight = document.body.classList.contains('light-mode');
+      applyTheme(isLight ? 'dark' : 'light');
+    });
   }
-  function init() { particles = Array.from({length:55}, mkParticle); }
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for (let i=0;i<particles.length;i++) {
-      const p = particles[i];
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
-      if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
-      for(let j=i+1;j<particles.length;j++) {
-        const q=particles[j], dx=p.x-q.x, dy=p.y-q.y, d=Math.sqrt(dx*dx+dy*dy);
-        if(d<110){ctx.beginPath();ctx.strokeStyle=p.color;ctx.globalAlpha=(1-d/110)*.08;ctx.lineWidth=.5;ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}
+
+  // Particle / animated BG canvas
+  initParticleBg();
+
+  // Intersection observer for scroll animations
+  initScrollAnimations();
+
+  // Start button → open new project modal
+  const startBtn = document.getElementById('startBtn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      const modal = document.getElementById('newProjectModal');
+      if (modal) { modal.style.display = 'flex'; }
+    });
+  }
+
+  // CTA buttons that go directly to studio
+  document.querySelectorAll('[onclick*="studio.html"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // If startBtn specifically, we handle via modal
+      if (btn.id === 'startBtn') return;
+    });
+  });
+
+  // Close modal on overlay click
+  const modal = document.getElementById('newProjectModal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) { modal.style.display = 'none'; }
+    });
+  }
+
+  // Modal: size presets
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const w = btn.dataset.w;
+      const h = btn.dataset.h;
+      if (w) document.getElementById('canvasWidth').value = w;
+      if (h) document.getElementById('canvasHeight').value = h;
+    });
+  });
+
+  // Modal: bg options
+  document.querySelectorAll('.bg-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.bg-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+    });
+  });
+
+  // Modal: create project → go to studio
+  const createBtn = document.getElementById('createProjectBtn');
+  if (createBtn) {
+    createBtn.addEventListener('click', () => {
+      const name = document.getElementById('projectName').value || 'بدون عنوان';
+      const w = document.getElementById('canvasWidth').value || 1920;
+      const h = document.getElementById('canvasHeight').value || 1080;
+      const dpi = document.getElementById('canvasDPI').value || 300;
+      const bg = document.querySelector('.bg-opt.active')?.dataset.bg || 'white';
+      const params = new URLSearchParams({ name, w, h, dpi, bg });
+      window.location.href = `studio.html?${params.toString()}`;
+    });
+  }
+
+  // Category cards hover reveal
+  document.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      const label = card.querySelector('.cat-label');
+      if (label) {
+        label.style.opacity = '1';
+        label.style.transform = 'translateY(0)';
       }
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=p.color; ctx.globalAlpha=p.a; ctx.fill();
-    }
-    ctx.globalAlpha=1;
-    requestAnimationFrame(draw);
+    });
+    card.addEventListener('mouseleave', () => {
+      const label = card.querySelector('.cat-label');
+      if (label) {
+        label.style.opacity = '0';
+        label.style.transform = 'translateY(8px)';
+      }
+    });
+  });
+
+  // Feature cards tilt on hover
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `translateY(-6px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+});
+
+// ---- Particle Background ----
+function initParticleBg() {
+  const container = document.getElementById('bgCanvas');
+  if (!container) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'absolute';
+  canvas.style.inset = '0';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  container.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const particles = [];
+
+  function resize() {
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
   }
+
   window.addEventListener('resize', resize);
-  resize(); init(); draw();
+  resize();
+
+  const colors = ['#ff6b35', '#ffd166', '#06d6a0', '#e63946', '#a855f7', '#118ab2'];
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2.5 + 0.5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.5 + 0.1,
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Draw connections
+    ctx.strokeStyle = 'rgba(255,107,53,0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.globalAlpha = (1 - dist / 120) * 0.15;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// ---- Scroll Animations ----
+function initScrollAnimations() {
+  const observerOptions = {
+    threshold: 0.15,
+    rootMargin: '0px 0px -60px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Add fade-up class to sections
+  const targets = document.querySelectorAll(
+    '.feature-card, .category-card, .section-header, .cta-content'
+  );
+
+  targets.forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = `opacity .6s ease ${i * 0.08}s, transform .6s ease ${i * 0.08}s`;
+    observer.observe(el);
+  });
+
+  // Once in view
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `.in-view { opacity: 1 !important; transform: translateY(0) !important; }`;
+  document.head.appendChild(styleEl);
 }
