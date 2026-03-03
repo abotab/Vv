@@ -1,249 +1,382 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>صفوان استوديو — منصة الرسم الاحترافية</title>
-  <meta name="description" content="صفوان استوديو - منصة رسم رقمي احترافية للرسم الثابت والمتحرك">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>صفوان ستوديو</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
-<body>
+<body class="landing-body">
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <a class="navbar-logo" href="#" onclick="Navigation.showPage('landing');return false">
-      <div class="logo-icon-nav">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
+  <!-- Canvas Background -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Noise Overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="landing-nav">
+    <div class="nav-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#FF6B35"/>
+              <stop offset="50%" style="stop-color:#F7C59F"/>
+              <stop offset="100%" style="stop-color:#EFEFD0"/>
+            </linearGradient>
+          </defs>
+          <circle cx="30" cy="30" r="28" stroke="url(#logoGrad)" stroke-width="2" fill="none" opacity="0.6"/>
+          <path d="M18 38 Q22 20 30 18 Q38 16 40 28 Q42 36 34 40 Q26 44 20 36" stroke="url(#logoGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M24 32 Q28 26 33 28 Q37 30 35 35" stroke="url(#logoGrad)" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <circle cx="38" cy="22" r="3" fill="#FF6B35" opacity="0.9"/>
+          <circle cx="22" cy="40" r="2" fill="#F7C59F" opacity="0.7"/>
         </svg>
       </div>
-      <span class="logo-text-nav">صفوان استوديو</span>
-    </a>
-    <div class="navbar-actions">
-      <button class="btn-theme-toggle" title="الوضع الليلي"></button>
-      <button class="studio-btn settings-open-btn" style="padding:0 14px;height:36px;border-radius:20px;border:1px solid var(--border-color);font-family:'Cairo',sans-serif;cursor:pointer;background:transparent;color:var(--text-primary)">
-        الإعدادات
-      </button>
-      <a href="#" class="btn-cta-nav" onclick="Navigation.showPage('projects');return false">مشاريعي</a>
+      <span class="logo-text">صفوان ستوديو</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">المميزات</a>
+      <a href="#gallery" class="nav-link">الأعمال</a>
+      <a href="studio.html" class="nav-cta">ابدأ الرسم</a>
     </div>
   </nav>
 
-  <!-- LANDING PAGE -->
-  <div id="landing-page" style="display:block">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
 
-    <section class="hero">
-      <div class="hero-bg">
-        <div class="hero-gradient"></div>
-        <div class="hero-particles"></div>
+      <div class="hero-badge animate__animated animate__fadeInDown">
+        <span class="badge-dot"></span>
+        <span>ستوديو الرسم الرقمي الاحترافي</span>
       </div>
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="hero-badge-dot"></span>
-          منصة الرسم الرقمي الاحترافية
-        </div>
-        <div class="hero-logo">
-          <div class="logo-main">
-            <div class="logo-icon">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-                <path d="M8 36C14 22 22 8 22 8C22 8 30 22 36 36" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M14 28C17 23 20 19 24 22C28 25 32 32 36 36" fill="rgba(255,255,255,0.25)"/>
-                <circle cx="22" cy="8" r="3" fill="white"/>
-                <line x1="8" y1="36" x2="36" y2="36" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="logo-title">صفوان استوديو</div>
-          </div>
-          <div class="logo-subtitle">SAFWAN STUDIO</div>
-        </div>
-        <p class="hero-tagline">
-          ارسم بحرية. <span>عبّر بإبداع</span>. احترف بأدوات<br>
-          يستخدمها <span>محترفو الرسم</span> حول العالم.
-        </p>
-        <div class="hero-cta">
-          <button class="btn-primary-hero" id="start-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            ابدأ الآن مجاناً
-          </button>
-          <a href="#" class="btn-secondary-hero" onclick="Navigation.showPage('projects');return false">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            مشاريعي
-          </a>
+
+      <!-- Logo Big -->
+      <div class="hero-logo animate__animated animate__zoomIn">
+        <div class="big-logo-wrap">
+          <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" class="big-logo-svg">
+            <defs>
+              <linearGradient id="bigLogoGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF6B35"/>
+                <stop offset="100%" style="stop-color:#F7C59F"/>
+              </linearGradient>
+              <linearGradient id="bigLogoGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#EFEFD0"/>
+                <stop offset="100%" style="stop-color:#FF6B35"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <!-- Outer ring -->
+            <circle cx="70" cy="70" r="65" stroke="url(#bigLogoGrad1)" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="8 4"/>
+            <circle cx="70" cy="70" r="58" stroke="url(#bigLogoGrad1)" stroke-width="2" fill="none" opacity="0.7"/>
+            <!-- Inner glow circle -->
+            <circle cx="70" cy="70" r="48" fill="url(#bigLogoGrad1)" opacity="0.08"/>
+            <!-- Brush stroke main -->
+            <path d="M42 90 Q46 55 60 44 Q72 34 84 40 Q96 46 96 62 Q96 78 82 86 Q68 94 54 88 Q45 84 42 78" stroke="url(#bigLogoGrad1)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+            <!-- Inner brush detail -->
+            <path d="M54 74 Q62 58 74 62 Q82 65 80 74 Q78 82 66 84" stroke="url(#bigLogoGrad2)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+            <!-- Accent dots -->
+            <circle cx="88" cy="45" r="6" fill="#FF6B35" opacity="0.9" filter="url(#glow)"/>
+            <circle cx="46" cy="86" r="4" fill="#F7C59F" opacity="0.8"/>
+            <circle cx="84" cy="88" r="3" fill="#EFEFD0" opacity="0.7"/>
+            <circle cx="54" cy="44" r="2.5" fill="#FF6B35" opacity="0.6"/>
+            <!-- Sparkle lines -->
+            <line x1="88" y1="38" x2="88" y2="34" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+            <line x1="84" y1="41" x2="81" y2="38" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+            <line x1="93" y1="45" x2="97" y2="43" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div class="logo-ring-1"></div>
+          <div class="logo-ring-2"></div>
         </div>
       </div>
-      <div class="stats-bar">
-        <div class="stat-item"><div class="stat-number">50+</div><div class="stat-label">فرشاة احترافية</div></div>
-        <div class="stat-divider"></div>
-        <div class="stat-item"><div class="stat-number">1000+</div><div class="stat-label">لون مخصص</div></div>
-        <div class="stat-divider"></div>
-        <div class="stat-item"><div class="stat-number">∞</div><div class="stat-label">طبقات</div></div>
-        <div class="stat-divider"></div>
-        <div class="stat-item"><div class="stat-number">20+</div><div class="stat-label">قياس جاهز</div></div>
+
+      <h1 class="hero-title animate__animated animate__fadeInUp">
+        <span class="title-line-1">صفوان</span>
+        <span class="title-line-2">ستوديو</span>
+      </h1>
+
+      <p class="hero-subtitle animate__animated animate__fadeInUp animate__delay-1s">
+        منصة الرسم الرقمي الاحترافية — ارسم، أبدع، وعبّر عن موهبتك بأدوات لا حدود لها
+      </p>
+
+      <div class="hero-actions animate__animated animate__fadeInUp animate__delay-1s">
+        <a href="studio.html" class="btn-primary-hero">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          ابدأ الآن
+        </a>
+        <a href="#features" class="btn-secondary-hero">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          اكتشف المميزات
+        </a>
       </div>
-    </section>
 
-    <!-- Art Types Section -->
-    <section class="section">
-      <div class="section-header">
-        <div class="section-tag">أنواع الرسم</div>
-        <h2 class="section-title">استكشف أسلوبك</h2>
-        <p class="section-desc">اضغط على أي نوع لمعرفة المزيد عنه</p>
+    </div>
+
+    <!-- Floating tools decoration -->
+    <div class="floating-tools">
+      <div class="float-item f1">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M6 26L20 8l4 4L10 28H6v-2z" stroke="#FF6B35" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="8" r="3" fill="#FF6B35" opacity="0.6"/></svg>
       </div>
-      <div class="art-types-grid"><!-- Rendered by JS --></div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="section" style="padding-top:20px">
-      <div class="section-header">
-        <div class="section-tag">الميزات</div>
-        <h2 class="section-title">أدوات تستحق الاحترافية</h2>
-        <p class="section-desc">كل ما تحتاجه لإنتاج أعمال فنية مذهلة</p>
+      <div class="float-item f2">
+        <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="10" stroke="#F7C59F" stroke-width="1.5"/><circle cx="16" cy="16" r="4" fill="#F7C59F" opacity="0.4"/></svg>
       </div>
-      <div class="features-grid">
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(255,107,53,0.12)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-          <div class="feature-title">50+ فرشاة احترافية</div>
-          <div class="feature-desc">فرش صفوان المميزة مع أكثر من 45 فرشاة متنوعة: الرصاص، الفحم، الألوان المائية، الزيتية، النيون، والمزيد.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(78,205,196,0.12)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ECDC4" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
-          </div>
-          <div class="feature-title">نظام طبقات متطور</div>
-          <div class="feature-desc">إضافة وحذف وقفل وإخفاء الطبقات، تغيير الشفافية، دمجها، و20+ وضع مزج احترافي.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(155,93,229,0.12)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9B5DE5" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          </div>
-          <div class="feature-title">رسوم متحركة فريم بفريم</div>
-          <div class="feature-desc">أنشئ رسوماً متحركة احترافية مع تحكم كامل بالإطارات والسرعة، وتصديرها فيديو أو GIF.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(247,201,72,0.12)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F7C948" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>
-          </div>
-          <div class="feature-title">1000+ لون مصنف</div>
-          <div class="feature-desc">لوحة ألوان ضخمة تشمل ألوان البشرة والطبيعية والنيون مع منتقي ألوان تفاعلي دقيق.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(241,91,181,0.12)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F15BB5" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
-          </div>
-          <div class="feature-title">أدوات تحديد متقدمة</div>
-          <div class="feature-desc">تحديد مستطيل ودائري ولاسو وعصا سحرية، نسخ ولصق، عكس التحديد، وتحويل المحتوى.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(0,187,249,0.12)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00BBF9" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </div>
-          <div class="feature-title">تصدير بصيغ متعددة</div>
-          <div class="feature-desc">تصدير بصيغ PNG شفافة وJPEG وWebP وGIF وفيديو WebM بجودة عالية.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(255,107,53,0.08)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
-          </div>
-          <div class="feature-title">قياسات منصات جاهزة</div>
-          <div class="feature-desc">قياسات TikTok وInstagram وYouTube وFacebook وجميع المنصات بنقرة واحدة.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(78,205,196,0.08)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ECDC4" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-          </div>
-          <div class="feature-title">وضع ليلي ونهاري</div>
-          <div class="feature-desc">تبديل سهل بين الوضعين مع حفظ التفضيلات تلقائياً لراحة عينيك.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" style="background:rgba(155,93,229,0.08)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9B5DE5" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          </div>
-          <div class="feature-title">مشاريع محفوظة مدى الحياة</div>
-          <div class="feature-desc">جميع مشاريعك محفوظة تلقائياً وتستطيع العودة إليها في أي وقت مع معاينة مصغرة.</div>
-        </div>
-
+      <div class="float-item f3">
+        <svg viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="20" height="20" rx="4" stroke="#EFEFD0" stroke-width="1.5"/><line x1="6" y1="16" x2="26" y2="16" stroke="#EFEFD0" stroke-width="1.5"/><line x1="16" y1="6" x2="16" y2="26" stroke="#EFEFD0" stroke-width="1.5"/></svg>
       </div>
-    </section>
-
-    <!-- CTA Section -->
-    <div style="padding: 0 40px 80px">
-      <div class="cta-section">
-        <h2 class="cta-title">جاهز لتبدأ مشروعك الأول؟</h2>
-        <p class="cta-desc">انضم لآلاف الرسامين الذين يستخدمون صفوان استوديو كل يوم</p>
-        <button class="btn-cta-white" id="cta-start-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          ابدأ الرسم الآن
-        </button>
+      <div class="float-item f4">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M16 6 L20 14 L28 16 L20 18 L16 26 L12 18 L4 16 L12 14 Z" stroke="#FF6B35" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="float-item f5">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M8 24 Q8 8 16 8 Q24 8 24 16 Q24 22 18 24" stroke="#F7C59F" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-logo">صفوان استوديو</div>
-      <p>منصة رسم رقمي احترافية مبنية بـ HTML، CSS، JavaScript</p>
-      <p style="margin-top:8px;font-size:0.78rem;opacity:0.6">جميع الحقوق محفوظة &copy; 2025 صفوان استوديو</p>
-    </footer>
-
-  </div><!-- end landing-page -->
-
-  <!-- PROJECTS PAGE -->
-  <div id="projects-page" style="display:none">
-    <div class="projects-header">
-      <div>
-        <h1 class="projects-title">مشاريعي</h1>
-        <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px">جميع مشاريعك محفوظة هنا</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="projects-search">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="بحث في المشاريع..." id="projects-search-input">
-        </div>
-        <button class="btn-cta-nav" onclick="NewProjectModal.open()">مشروع جديد</button>
-        <button class="btn-secondary-hero" style="padding:10px 20px;font-size:0.88rem" onclick="Navigation.showPage('landing')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          الرئيسية
-        </button>
-      </div>
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      <span>اسحب للأسفل</span>
     </div>
-    <div class="projects-grid" id="projects-grid"></div>
-  </div><!-- end projects-page -->
+  </section>
 
-  <!-- STUDIO PAGE (embedded) -->
-  <div id="studio-page" style="display:none">
-    <!-- Injected by studio.html content if needed, or inline -->
-  </div>
+  <!-- Gallery / Services Section -->
+  <section class="gallery-section" id="gallery">
+    <div class="section-header">
+      <span class="section-tag">أنواع الرسم</span>
+      <h2 class="section-title">ابدأ بما تحب</h2>
+    </div>
 
-  <!-- NEW PROJECT MODAL -->
-  <div class="modal-overlay" id="new-project-modal"></div>
+    <div class="cards-grid">
 
-  <!-- SETTINGS MODAL (injected by JS) -->
+      <div class="art-card" data-label="رسم كاريكاتير">
+        <div class="card-inner">
+          <div class="card-visual caricature-visual">
+            <svg viewBox="0 0 200 200" class="card-art" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="faceGrad" cx="50%" cy="40%" r="60%">
+                  <stop offset="0%" style="stop-color:#FFD89B"/>
+                  <stop offset="100%" style="stop-color:#F4A261"/>
+                </radialGradient>
+              </defs>
+              <circle cx="100" cy="90" r="65" fill="url(#faceGrad)" opacity="0.9"/>
+              <ellipse cx="76" cy="78" rx="14" ry="16" fill="white"/>
+              <ellipse cx="124" cy="78" rx="14" ry="16" fill="white"/>
+              <circle cx="76" cy="80" r="9" fill="#2D3436"/>
+              <circle cx="124" cy="80" r="9" fill="#2D3436"/>
+              <circle cx="79" cy="77" r="3" fill="white"/>
+              <circle cx="127" cy="77" r="3" fill="white"/>
+              <ellipse cx="100" cy="108" rx="22" ry="12" fill="#E17055" opacity="0.8"/>
+              <path d="M82 110 Q100 126 118 110" stroke="#C0392B" stroke-width="2" fill="none"/>
+              <path d="M60 50 Q70 30 100 28 Q130 26 145 48" stroke="#8B5E3C" stroke-width="6" fill="none" stroke-linecap="round"/>
+              <ellipse cx="73" cy="98" rx="8" ry="5" fill="#FF7675" opacity="0.6"/>
+              <ellipse cx="127" cy="98" rx="8" ry="5" fill="#FF7675" opacity="0.6"/>
+            </svg>
+          </div>
+          <div class="card-label">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="7" r="4"/><path d="M3 18a7 7 0 0114 0"/></svg>
+            رسم كاريكاتير
+          </div>
+        </div>
+      </div>
 
-  <!-- NOTIFICATION -->
-  <div class="notification" id="global-notification"></div>
+      <div class="art-card" data-label="رسم رقمي">
+        <div class="card-inner">
+          <div class="card-visual digital-visual">
+            <svg viewBox="0 0 200 200" class="card-art" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#667EEA"/>
+                  <stop offset="100%" style="stop-color:#764BA2"/>
+                </linearGradient>
+                <linearGradient id="mountGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#4ECDC4"/>
+                  <stop offset="100%" style="stop-color:#44A08D"/>
+                </linearGradient>
+              </defs>
+              <rect width="200" height="200" fill="url(#skyGrad)" rx="8"/>
+              <polygon points="0,200 60,80 120,130 160,60 200,100 200,200" fill="url(#mountGrad)" opacity="0.8"/>
+              <polygon points="0,200 40,120 80,160 100,140 140,100 200,150 200,200" fill="#2ECC71" opacity="0.6"/>
+              <circle cx="40" cy="40" r="20" fill="#F7DC6F" opacity="0.9"/>
+              <circle cx="38" cy="38" r="20" fill="#F9CA24" opacity="0.7"/>
+              <path d="M120 60 Q140 30 160 60 Q180 90 160 100 Q140 110 120 100 Q100 90 120 60" fill="white" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="card-label">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="16" height="12" rx="2"/><path d="M8 19h4M10 15v4"/></svg>
+            رسم رقمي
+          </div>
+        </div>
+      </div>
+
+      <div class="art-card" data-label="رسم سكيتش">
+        <div class="card-inner">
+          <div class="card-visual sketch-visual">
+            <svg viewBox="0 0 200 200" class="card-art" xmlns="http://www.w3.org/2000/svg">
+              <rect width="200" height="200" fill="#FAFAFA" rx="8"/>
+              <path d="M40 160 Q60 80 100 60 Q140 40 160 80 Q180 120 160 150" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+              <path d="M60 140 Q80 100 100 90 Q120 80 140 100" stroke="#555" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+              <line x1="30" y1="170" x2="170" y2="170" stroke="#888" stroke-width="1" opacity="0.3"/>
+              <path d="M50 50 L55 45 M60 48 L65 42 M70 52 L75 46" stroke="#999" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+              <circle cx="100" cy="95" r="3" fill="#333" opacity="0.6"/>
+              <path d="M90 95 Q100 75 110 95" stroke="#444" stroke-width="1.5" fill="none" opacity="0.4"/>
+              <path d="M65 160 Q85 120 100 110 Q115 100 135 115 Q155 130 165 155" stroke="#666" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4" stroke-dasharray="3 3"/>
+            </svg>
+          </div>
+          <div class="card-label">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 17l4-4 4 4 4-8 4 8"/></svg>
+            رسم سكيتش
+          </div>
+        </div>
+      </div>
+
+      <div class="art-card" data-label="رسم تجريدي">
+        <div class="card-inner">
+          <div class="card-visual abstract-visual">
+            <svg viewBox="0 0 200 200" class="card-art" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="absGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#FF6B9D"/>
+                  <stop offset="100%" style="stop-color:#C0392B"/>
+                </linearGradient>
+                <linearGradient id="absGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#3498DB"/>
+                  <stop offset="100%" style="stop-color:#8E44AD"/>
+                </linearGradient>
+              </defs>
+              <rect width="200" height="200" fill="#0F0F23" rx="8"/>
+              <ellipse cx="70" cy="80" rx="50" ry="60" fill="url(#absGrad1)" opacity="0.6" transform="rotate(-20 70 80)"/>
+              <ellipse cx="130" cy="120" rx="55" ry="45" fill="url(#absGrad2)" opacity="0.5" transform="rotate(15 130 120)"/>
+              <circle cx="100" cy="100" r="30" fill="none" stroke="#F7DC6F" stroke-width="2" opacity="0.4"/>
+              <circle cx="100" cy="100" r="15" fill="#F7DC6F" opacity="0.3"/>
+              <path d="M20 20 Q60 60 100 20 Q140 -20 180 20" stroke="#4ECDC4" stroke-width="2" fill="none" opacity="0.5"/>
+              <path d="M20 180 Q60 140 100 180 Q140 220 180 180" stroke="#4ECDC4" stroke-width="2" fill="none" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="card-label">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM11 11h5v5h-5z"/></svg>
+            رسم تجريدي
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section" id="features">
+    <div class="section-header">
+      <span class="section-tag">الإمكانيات</span>
+      <h2 class="section-title">كل ما تحتاجه في مكان واحد</h2>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <rect x="4" y="8" width="24" height="18" rx="2"/>
+            <line x1="4" y1="14" x2="28" y2="14"/>
+            <rect x="7" y="17" width="8" height="6" rx="1"/>
+            <line x1="18" y1="18" x2="24" y2="18"/>
+            <line x1="18" y1="21" x2="22" y2="21"/>
+          </svg>
+        </div>
+        <h3>نظام الطبقات</h3>
+        <p>إضافة وحذف وترتيب الطبقات، دمجها، تغيير شفافيتها وقفلها بسهولة تامة</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M6 24 L18 8 l4 3 L10 26 H6 z"/>
+            <circle cx="20" cy="7" r="3"/>
+            <path d="M22 18 Q26 14 27 20 Q28 26 22 26 Q18 26 17 22"/>
+          </svg>
+        </div>
+        <h3>فرش صفوان الاحترافية</h3>
+        <p>أكثر من 50 فرشاة احترافية بحساسية ضغط كاملة وتأثيرات ملمس طبيعي</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="16" cy="16" r="10"/>
+            <path d="M16 6 Q22 10 22 16 Q22 22 16 26 Q10 22 10 16 Q10 10 16 6"/>
+            <line x1="6" y1="16" x2="26" y2="16"/>
+          </svg>
+        </div>
+        <h3>500+ لون</h3>
+        <p>لوحة ألوان ضخمة مع منتقي احترافي وأكواد HEX وRGB وHSL</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M8 8 L8 24 L24 24"/>
+            <path d="M8 20 L13 14 L18 18 L22 10 L28 16"/>
+          </svg>
+        </div>
+        <h3>أوضاع المزج</h3>
+        <p>أكثر من 20 وضع مزج احترافي: Multiply، Screen، Overlay وغيرها</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <rect x="4" y="4" width="12" height="12" rx="2"/>
+            <rect x="16" y="4" width="12" height="12" rx="2"/>
+            <rect x="4" y="16" width="12" height="12" rx="2"/>
+            <rect x="16" y="16" width="12" height="12" rx="2"/>
+          </svg>
+        </div>
+        <h3>تصدير متعدد الصيغ</h3>
+        <p>تصدير بصيغ PNG وJPEG وWebP مع خيارات الدقة والشفافية</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="16" cy="12" r="6"/>
+            <path d="M6 28 Q6 20 16 20 Q26 20 26 28"/>
+            <path d="M22 8 L24 6"/>
+            <path d="M25 12 L28 12"/>
+            <path d="M22 16 L24 18"/>
+          </svg>
+        </div>
+        <h3>وضع ليلي / نهاري</h3>
+        <p>تبديل سلس بين الوضع الليلي الداكن والنهاري الفاتح لراحة عينيك</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-bg"></div>
+    <div class="cta-content">
+      <h2>جاهز لتبدأ رحلتك الإبداعية؟</h2>
+      <p>انضم لآلاف الرسامين الذين يستخدمون صفوان ستوديو كل يوم</p>
+      <a href="studio.html" class="btn-primary-hero">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+        ابدأ الرسم الآن — مجاناً
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-logo">
+      <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><circle cx="20" cy="20" r="18" stroke="#FF6B35" stroke-width="1.5" fill="none" opacity="0.5"/><path d="M12 28 Q14 16 20 14 Q26 12 28 20 Q30 26 23 30 Q17 32 13 26" stroke="#FF6B35" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+      <span>صفوان ستوديو</span>
+    </div>
+    <p>صنع بـ <svg viewBox="0 0 16 16" class="heart-icon" fill="#FF6B35"><path d="M8 14s-6-4.35-6-8a4 4 0 018 0 4 4 0 018 0c0 3.65-6 8-6 8z"/></svg> للفنانين الرقميين</p>
+  </footer>
 
   <script src="landing.js"></script>
-  <script src="studio.js"></script>
-  <script>
-    // Search projects
-    document.getElementById('projects-search-input')?.addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      document.querySelectorAll('#projects-grid .project-card').forEach(card => {
-        const name = card.querySelector('.project-name')?.textContent.toLowerCase() || '';
-        card.style.display = name.includes(q) || !q ? '' : 'none';
-      });
-    });
-  </script>
 </body>
 </html>
