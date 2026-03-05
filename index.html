@@ -1,193 +1,327 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفوان استوديو - Safwan Studio</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mo-js/0.288.2/mo.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnimForge — استوديو تحريك الشخصيات</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* RTL overrides for landing */
+    [data-tooltip]:hover::after { left: auto; right: calc(100% + 8px); }
+    .hero-stats { direction: ltr; }
+    .nav-links { direction: ltr; }
+    .nav-cta { direction: ltr; }
+    .footer-bottom { direction: ltr; }
+    .hero-badge { direction: ltr; }
+    .feature-tags { direction: ltr; }
+    .libs-grid .lib-badge { direction: ltr; }
+    .timeline-body, .timeline-ruler, canvas { direction: ltr; }
+  </style>
 </head>
-<body class="landing-page">
-    <div class="particles-container" id="particles"></div>
-    
-    <div class="landing-container">
-        <div class="logo-section">
-            <div class="logo-wrapper">
-                <svg class="main-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
-                        </linearGradient>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#logoGradient)" stroke-width="4" filter="url(#glow)"/>
-                    <path d="M60 100 Q80 60 100 100 T140 100" fill="none" stroke="url(#logoGradient)" stroke-width="6" stroke-linecap="round"/>
-                    <circle cx="100" cy="130" r="15" fill="url(#logoGradient)"/>
-                    <text x="100" y="175" text-anchor="middle" fill="url(#logoGradient)" font-family="Tajawal" font-weight="700" font-size="24">صفوان</text>
-                </svg>
-            </div>
-            <h1 class="studio-title">صفوان استوديو</h1>
-            <p class="studio-subtitle">استوديو الرسم الرقمي الاحترافي</p>
-        </div>
+<body>
 
-        <div class="art-categories">
-            <div class="category-card" data-type="realistic">
-                <div class="category-image">
-                    <img src="https://kimi-web-img.moonshot.cn/img/i0.wp.com/fe046e68db8c9735f71db07de4f7bd2a4f35856b.jpg" alt="رسم واقعي">
-                </div>
-                <div class="category-info">
-                    <h3>الرسم الواقعي</h3>
-                    <p>تقنيات رقمية متقدمة لإنتاج أعمال فنية واقعية بجودة استثنائية</p>
-                </div>
-            </div>
+<!-- ═══ LOADING SCREEN ═══════════════════════════ -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">ANIMFORGE</div>
+  <div class="loading-bar">
+    <div class="loading-progress" id="loadingProgress"></div>
+  </div>
+  <div class="loading-text" id="loadingText">جاري تحميل المحرك...</div>
+</div>
 
-            <div class="category-card" data-type="abstract">
-                <div class="category-image">
-                    <img src="https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/05904b4b6b7b6fe660d6866e2ec4330eb13b0e3f.jpg" alt="رسم تجريدي">
-                </div>
-                <div class="category-info">
-                    <h3>الرسم التجريدي</h3>
-                    <p>ألوان وتكوينات فنية معاصرة تخرج عن المألوف</p>
-                </div>
-            </div>
+<!-- ═══ NAV ══════════════════════════════════════ -->
+<nav class="landing-nav" id="mainNav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🔥</div>
+    <span class="nav-logo-text">ANIMFORGE</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">الميزات</a></li>
+    <li><a href="#libraries">المكتبات</a></li>
+    <li><a href="#projects">المشاريع</a></li>
+    <li><a href="#about">حول</a></li>
+  </ul>
+  <div class="nav-cta">
+    <button class="nav-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+    <a href="studio.html" class="btn btn-primary">
+      🚀 فتح الاستوديو
+    </a>
+  </div>
+</nav>
 
-            <div class="category-card" data-type="cartoon">
-                <div class="category-image">
-                    <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/c3e6d778a7726e5041a6353607f638531019b8ab.jpg" alt="رسم كرتوني">
-                </div>
-                <div class="category-info">
-                    <h3>الرسم الكرتوني</h3>
-                    <p>شخصيات وعوالم كرتونية بأسلوب فريد وجذاب</p>
-                </div>
-            </div>
+<!-- ═══ HERO ══════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-particles" id="heroParticles"></div>
+  </div>
 
-            <div class="category-card" data-type="sketch">
-                <div class="category-image">
-                    <img src="https://kimi-web-img.moonshot.cn/img/c8.alamy.com/86ac6d75b12b2b60bb59b0e7201f6446e9b26c1d.jpg" alt="رسم سكيتش">
-                </div>
-                <div class="category-info">
-                    <h3>الرسم السكيتش</h3>
-                    <p>لمسات يدوية سريعة بأسلوب احترافي</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="start-section">
-            <button class="start-btn" onclick="showProjectModal()">
-                <span>ابدأ الآن</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-            </button>
-        </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      <span>الإصدار 1.0 — متاح الآن</span>
     </div>
 
-    <div class="modal" id="projectModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeProjectModal()">&times;</span>
-            <h2>إنشاء مشروع جديد</h2>
-            <div class="project-types">
-                <div class="project-type-card" onclick="openStudio('static')">
-                    <div class="type-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <circle cx="8.5" cy="8.5" r="1.5"/>
-                            <path d="M21 15l-5-5L5 21"/>
-                        </svg>
-                    </div>
-                    <h3>رسم ثابت</h3>
-                    <p>لوحة رقمية عالية الجودة</p>
-                </div>
-                <div class="project-type-card" onclick="openStudio('animation')">
-                    <div class="type-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="2" width="20" height="20" rx="2.18"/>
-                            <line x1="7" y1="2" x2="7" y2="22"/>
-                            <line x1="17" y1="2" x2="17" y2="22"/>
-                            <line x1="2" y1="12" x2="22" y2="12"/>
-                            <line x1="2" y1="7" x2="7" y2="7"/>
-                            <line x1="2" y1="17" x2="7" y2="17"/>
-                            <line x1="17" y1="17" x2="22" y2="17"/>
-                            <line x1="17" y1="7" x2="22" y2="7"/>
-                        </svg>
-                    </div>
-                    <h3>رسم متحرك</h3>
-                    <p>فريم باي فريم احترافي</p>
-                </div>
-            </div>
-        </div>
+    <h1 class="hero-title">
+      <span class="title-line-1">اصنع شخصيتك</span>
+      <span class="title-line-2">ANIMFORGE</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      استوديو احترافي لرسم وتحريك شخصيات الأنيميشن بنظام العظام الكامل،
+      مباشرة في المتصفح — بدون تثبيت.
+    </p>
+
+    <div class="hero-actions">
+      <a href="studio.html" class="btn btn-primary btn-lg">
+        🎨 ابدأ الرسم الآن
+      </a>
+      <a href="#features" class="btn btn-outline btn-lg">
+        ✨ اكتشف الميزات
+      </a>
     </div>
 
-    <div class="modal" id="sizeModal">
-        <div class="modal-content size-modal">
-            <span class="close-modal" onclick="closeSizeModal()">&times;</span>
-            <h2>اختيار حجم اللوحة</h2>
-            <div class="preset-sizes">
-                <div class="size-preset" data-width="1080" data-height="1080">
-                    <div class="preset-icon">📱</div>
-                    <span>إنستغرام مربع</span>
-                    <small>1080 × 1080</small>
-                </div>
-                <div class="size-preset" data-width="1080" data-height="1350">
-                    <div class="preset-icon">📸</div>
-                    <span>إنستغرام عمودي</span>
-                    <small>1080 × 1350</small>
-                </div>
-                <div class="size-preset" data-width="1080" data-height="1920">
-                    <div class="preset-icon">🎵</div>
-                    <span>تيك توك</span>
-                    <small>1080 × 1920</small>
-                </div>
-                <div class="size-preset" data-width="1280" data-height="720">
-                    <div class="preset-icon">▶️</div>
-                    <span>يوتيوب</span>
-                    <small>1280 × 720</small>
-                </div>
-                <div class="size-preset" data-width="1920" data-height="1080">
-                    <div class="preset-icon">🎬</div>
-                    <span>فيديو عريض</span>
-                    <small>1920 × 1080</small>
-                </div>
-                <div class="size-preset" data-width="1200" data-height="630">
-                    <div class="preset-icon">f</div>
-                    <span>فيسبوك</span>
-                    <small>1200 × 630</small>
-                </div>
-                <div class="size-preset" data-width="1600" data-height="900">
-                    <div class="preset-icon">🐦</div>
-                    <span>تويتر</span>
-                    <small>1600 × 900</small>
-                </div>
-                <div class="size-preset" data-width="2480" data-height="3508">
-                    <div class="preset-icon">📄</div>
-                    <span>A4 طباعة</span>
-                    <small>2480 × 3508</small>
-                </div>
-            </div>
-            <div class="custom-size">
-                <h3>حجم مخصص</h3>
-                <div class="size-inputs">
-                    <input type="number" id="customWidth" placeholder="العرض" min="100" max="8000">
-                    <span>×</span>
-                    <input type="number" id="customHeight" placeholder="الارتفاع" min="100" max="8000">
-                </div>
-                <button class="create-btn" onclick="createProject()">إنشاء المشروع</button>
-            </div>
-        </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-value">54<span>+</span></span>
+        <span class="stat-label">مكتبة</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">7<span>+</span></span>
+        <span class="stat-label">حركات جاهزة</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">100<span>%</span></span>
+        <span class="stat-label">في المتصفح</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">0</span>
+        <span class="stat-label">تثبيت مطلوب</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ══════════════════════════════════ -->
+<section class="section" id="features">
+  <div class="section-header">
+    <span class="section-tag">الميزات</span>
+    <h2 class="section-title">كل ما تحتاجه في مكان واحد</h2>
+    <p class="section-desc">من الرسم إلى التصدير، AnimForge يوفر بيئة إنتاج متكاملة</p>
+  </div>
+
+  <div class="features-grid" id="featuresGrid">
+    <div class="feature-card" data-delay="0">
+      <div class="feature-icon">🦴</div>
+      <h3 class="feature-title">نظام العظام الكامل</h3>
+      <p class="feature-desc">
+        رسم العظام وربطها في تسلسل هرمي، مع دعم FK وIK الكاملين.
+        خوارزميات FABRIK وCCD للحركة الطبيعية.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">FK / IK</span>
+        <span class="tag">FABRIK</span>
+        <span class="tag">CCD</span>
+        <span class="tag">Constraints</span>
+      </div>
     </div>
 
-    <script src="landing.js"></script>
+    <div class="feature-card" data-delay="1">
+      <div class="feature-icon">🎨</div>
+      <h3 class="feature-title">أدوات رسم متكاملة</h3>
+      <p class="feature-desc">
+        قلم حر، فرشاة، Bezier Curves، أشكال هندسية. رسم Vector
+        قابل للتعديل مع نقاط تحكم وتصدير SVG.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Bezier</span>
+        <span class="tag">Vector</span>
+        <span class="tag">SVG Export</span>
+      </div>
+    </div>
+
+    <div class="feature-card" data-delay="2">
+      <div class="feature-icon">🎬</div>
+      <h3 class="feature-title">محرك تحريك متقدم</h3>
+      <p class="feature-desc">
+        Timeline متكامل مع Keyframes ومنحنيات التسهيل. Graph Editor،
+        Onion Skinning، وتصدير GIF وMP4.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Timeline</span>
+        <span class="tag">Keyframes</span>
+        <span class="tag">Easing</span>
+        <span class="tag">GIF / MP4</span>
+      </div>
+    </div>
+
+    <div class="feature-card" data-delay="3">
+      <div class="feature-icon">📚</div>
+      <h3 class="feature-title">نظام الطبقات</h3>
+      <p class="feature-desc">
+        طبقات متعددة مع خصائص كاملة: إخفاء، قفل، دمج، وأوضاع
+        الدمج Multiply وScreen وOverlay.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Multiply</span>
+        <span class="tag">Screen</span>
+        <span class="tag">Overlay</span>
+        <span class="tag">Merge</span>
+      </div>
+    </div>
+
+    <div class="feature-card" data-delay="4">
+      <div class="feature-icon">🏃</div>
+      <h3 class="feature-title">حركات جاهزة</h3>
+      <p class="feature-desc">
+        7 حركات مدمجة جاهزة للاستخدام: مشي، ركض، قفز، جلوس،
+        هجوم، ضربة، وحركة التنفس الهادئة.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Walk Cycle</span>
+        <span class="tag">Run</span>
+        <span class="tag">Jump</span>
+        <span class="tag">Idle</span>
+      </div>
+    </div>
+
+    <div class="feature-card" data-delay="5">
+      <div class="feature-icon">💾</div>
+      <h3 class="feature-title">حفظ وتصدير</h3>
+      <p class="feature-desc">
+        حفظ المشاريع محلياً بصيغة JSON. تصدير كـ GIF، MP4، PNG
+        Sprite Sheet، أو JSON بيانات الأنيميشن.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">JSON</span>
+        <span class="tag">GIF</span>
+        <span class="tag">MP4</span>
+        <span class="tag">Sprite Sheet</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LIBRARIES ═════════════════════════════════ -->
+<section class="section" id="libraries" style="background: linear-gradient(180deg, transparent, rgba(0,212,255,0.02));">
+  <div class="section-header">
+    <span class="section-tag">المكتبات</span>
+    <h2 class="section-title">مدعوم بأفضل المكتبات</h2>
+    <p class="section-desc">54+ مكتبة مختارة بعناية لأداء استثنائي</p>
+  </div>
+
+  <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:32px;" class="libs-filter" id="libsFilter">
+    <button class="btn btn-sm btn-primary lib-filter-btn active" data-filter="all">الكل</button>
+    <button class="btn btn-sm btn-outline lib-filter-btn" data-filter="drawing">رسم</button>
+    <button class="btn btn-sm btn-outline lib-filter-btn" data-filter="animation">تحريك</button>
+    <button class="btn btn-sm btn-outline lib-filter-btn" data-filter="skeleton">عظام</button>
+    <button class="btn btn-sm btn-outline lib-filter-btn" data-filter="physics">فيزياء</button>
+    <button class="btn btn-sm btn-outline lib-filter-btn" data-filter="threejs">3D</button>
+  </div>
+
+  <div class="libs-grid" id="libsGrid">
+    <!-- JS populated -->
+  </div>
+</section>
+
+<!-- ═══ PROJECTS ══════════════════════════════════ -->
+<section class="section" id="projects">
+  <div class="section-header">
+    <span class="section-tag">مشاريعك</span>
+    <h2 class="section-title">المشاريع المحفوظة</h2>
+    <p class="section-desc">استمر من حيث توقفت</p>
+  </div>
+
+  <div class="projects-grid" id="projectsGrid">
+    <!-- JS populated -->
+  </div>
+
+  <div id="noProjects" style="text-align:center; padding:60px; color:var(--text-dim); display:none;">
+    <div style="font-size:64px; margin-bottom:16px;">🎨</div>
+    <p style="font-size:18px; margin-bottom:12px;">لا توجد مشاريع محفوظة بعد</p>
+    <a href="studio.html" class="btn btn-primary">ابدأ مشروعاً جديداً</a>
+  </div>
+</section>
+
+<!-- ═══ ANIMATIONS SHOWCASE ══════════════════════ -->
+<section class="section" id="showcase">
+  <div class="section-header">
+    <span class="section-tag">معاينة</span>
+    <h2 class="section-title">الحركات الجاهزة</h2>
+    <p class="section-desc">انقر على أي حركة لمعاينتها مباشرة</p>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:16px;" id="animShowcase">
+  </div>
+</section>
+
+<!-- ═══ CTA ═══════════════════════════════════════ -->
+<div class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-content">
+    <h2 class="cta-title">جاهز للإبداع؟</h2>
+    <p class="cta-subtitle">ابدأ بإنشاء شخصيتك الأولى الآن — مجاناً وبدون تسجيل</p>
+    <a href="studio.html" class="btn btn-primary btn-lg">
+      🔥 افتح الاستوديو مجاناً
+    </a>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ════════════════════════════════════ -->
+<footer style="background: var(--bg-panel); border-top: 1px solid var(--border);">
+  <div class="footer" id="about">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <div class="nav-logo-icon">🔥</div>
+          <span class="nav-logo-text">ANIMFORGE</span>
+        </div>
+        <p>استوديو احترافي لرسم وتحريك شخصيات الأنيميشن مباشرة في المتصفح.</p>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">الاستوديو</h4>
+        <ul class="footer-links">
+          <li><a href="studio.html">فتح الاستوديو</a></li>
+          <li><a href="#features">الميزات</a></li>
+          <li><a href="#libraries">المكتبات</a></li>
+          <li><a href="#showcase">معاينة الحركات</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">المكتبات المستخدمة</h4>
+        <ul class="footer-links">
+          <li><a href="https://gsap.com" target="_blank">GSAP</a></li>
+          <li><a href="https://konvajs.org" target="_blank">Konva.js</a></li>
+          <li><a href="https://pixijs.com" target="_blank">Pixi.js</a></li>
+          <li><a href="https://brm.io/matter-js" target="_blank">Matter.js</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">المرحلة القادمة</h4>
+        <ul class="footer-links">
+          <li><a href="#">نظام سحابي</a></li>
+          <li><a href="#">Motion Capture</a></li>
+          <li><a href="#">تحريك بالذكاء الاصطناعي</a></li>
+          <li><a href="#">معرض الأعمال</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 AnimForge — كل الحقوق محفوظة</span>
+      <span style="font-family:var(--font-mono); font-size:12px; color:var(--text-dim);">v1.0.0 — الإصدار الأول</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ TOAST CONTAINER ═══════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="landing.js"></script>
 </body>
 </html>

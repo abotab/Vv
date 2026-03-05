@@ -1,364 +1,553 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفوان استوديو - لوحة الرسم</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/konva/9.2.0/konva.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnimForge Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow: hidden; }
+    /* Keep canvas and timeline always LTR */
+    .canvas-area, .timeline-panel, .canvas-toolbar, #mainCanvas { direction: ltr; }
+    .timeline-body { direction: ltr; }
+    .playback-controls { direction: ltr; }
+    .header-menu { direction: ltr; }
+    /* Tool sidebar keep LTR icons */
+    .tool-sidebar { direction: ltr; }
+    .studio-logo { direction: ltr; }
+  </style>
 </head>
-<body class="studio-page">
-    <div class="studio-container">
-        <!-- الشريط العلوي -->
-        <header class="studio-header">
-            <div class="header-left">
-                <div class="logo-small">
-                    <svg viewBox="0 0 40 40" width="40" height="40">
-                        <circle cx="20" cy="20" r="18" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
-                        <path d="M12 20 Q16 12 20 20 T28 20" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
-                    </svg>
-                    <span>صفوان استوديو</span>
-                </div>
-            </div>
-            
-            <div class="header-center">
-                <div class="project-info">
-                    <input type="text" id="projectName" placeholder="اسم المشروع" value="مشروع بدون عنوان">
-                    <span class="autosave-status">تم الحفظ تلقائياً</span>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <button class="header-btn" onclick="toggleTheme()" title="تبديل الوضع">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"/>
-                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </button>
-                <button class="header-btn" onclick="showProjects()" title="المشاريع المحفوظة">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                </button>
-                <button class="header-btn" onclick="exportProject()" title="تصدير">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                </button>
-                <button class="header-btn exit-btn" onclick="exitStudio()" title="خروج">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                </button>
-            </div>
-        </header>
+<body>
 
-        <!-- الجسم الرئيسي -->
-        <div class="studio-body">
-            <!-- الشريط الجانبي للأدوات -->
-            <aside class="tools-sidebar">
-                <div class="tool-group">
-                    <h4>أدوات الرسم</h4>
-                    <div class="tools-grid">
-                        <button class="tool-btn active" data-tool="brush" title="فرشاة الرسم">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 13.285a4 4 0 1 1-5.7-5.6 4 4 0 0 1 5.7 5.6z"/>
-                                <path d="M12 12L4 20"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="pencil" title="قلم رصاص">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="eraser" title="ممحاة">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z"/>
-                                <path d="M17 17L7 7"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="fill" title="دلو الطلاء">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M19 11l-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11z"/>
-                                <path d="M16 14l-4-4"/>
-                                <path d="M21 21l-1-1"/>
-                                <path d="M16 21l5-5"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="text" title="نص">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="4 7 4 4 20 4 20 7"/>
-                                <line x1="9" y1="20" x2="15" y2="20"/>
-                                <line x1="12" y1="4" x2="12" y2="20"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="picker" title="قطارة الألوان">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M19.4 14.6C21.6 12.4 21.6 9 19.4 6.7C17.2 4.5 13.8 4.5 11.6 6.7L5 13.3V19.3H11L19.4 14.6Z"/>
-                                <path d="M15 9L9 15"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+<!-- ═══ LOADING ═══════════════════════════════════ -->
+<div class="loading-screen" id="studioLoading">
+  <div class="loading-logo">ANIMFORGE</div>
+  <div class="loading-bar">
+    <div class="loading-progress" id="studioLoadProg"></div>
+  </div>
+  <div class="loading-text" id="studioLoadText">تحميل محرك الرسم...</div>
+</div>
 
-                <div class="tool-group">
-                    <h4>أدوات التحديد</h4>
-                    <div class="tools-grid">
-                        <button class="tool-btn" data-tool="select-rect" title="تحديد مستطيل">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="select-circle" title="تحديد دائري">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="9"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="select-lasso" title="تحديد حر">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M7 3L3 7L7 11L11 7L7 3Z"/>
-                                <path d="M17 13L13 17L17 21L21 17L17 13Z"/>
-                                <path d="M14 7L17 4"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="magic-wand" title="العصا السحرية">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+<!-- ═══ STUDIO LAYOUT ═════════════════════════════ -->
+<div class="studio-layout" id="studioLayout" style="opacity:0;">
 
-                <div class="tool-group">
-                    <h4>أدوات هندسية</h4>
-                    <div class="tools-grid">
-                        <button class="tool-btn" data-tool="line" title="خط مستقيم">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="19" x2="19" y2="5"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="rect" title="مستطيل">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="circle" title="دائرة">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="9"/>
-                            </svg>
-                        </button>
-                        <button class="tool-btn" data-tool="polygon" title="مضلع">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="12 2 2 7 2 17 12 22 22 17 22 7"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="tool-group">
-                    <h4>الفرش</h4>
-                    <div class="brushes-container">
-                        <div class="brush-category">
-                            <h5>فرش صفوان الاحترافية</h5>
-                            <div class="brush-list" id="safwanBrushes">
-                                <div class="brush-item active" data-brush="safwan-1">
-                                    <div class="brush-preview" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
-                                    <span>فرشاة صفوان 1</span>
-                                </div>
-                                <div class="brush-item" data-brush="safwan-2">
-                                    <div class="brush-preview" style="background: radial-gradient(circle, #f093fb, #f5576c);"></div>
-                                    <span>فرشاة صفوان 2</span>
-                                </div>
-                                <div class="brush-item" data-brush="safwan-3">
-                                    <div class="brush-preview" style="background: conic-gradient(from 0deg, #4facfe, #00f2fe);"></div>
-                                    <span>فرشاة صفوان 3</span>
-                                </div>
-                                <div class="brush-item" data-brush="safwan-4">
-                                    <div class="brush-preview" style="background: repeating-linear-gradient(45deg, #fa709a, #fee140 10px);"></div>
-                                    <span>فرشاة صفوان 4</span>
-                                </div>
-                                <div class="brush-item" data-brush="safwan-5">
-                                    <div class="brush-preview" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);"></div>
-                                    <span>فرشاة صفوان 5</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="brush-category">
-                            <h5>الفرش الاحترافية</h5>
-                            <div class="brush-list" id="proBrushes">
-                                <div class="brush-item" data-brush="oil">زيتية</div>
-                                <div class="brush-item" data-brush="watercolor">ألوان مائية</div>
-                                <div class="brush-item" data-brush="charcoal">فحم</div>
-                                <div class="brush-item" data-brush="ink">حبر</div>
-                                <div class="brush-item" data-brush="spray">بخاخ</div>
-                                <div class="brush-item" data-brush="texture">ملمس</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- منطقة الرسم -->
-            <main class="canvas-area">
-                <div class="canvas-container" id="canvasContainer">
-                    <canvas id="mainCanvas"></canvas>
-                    <div class="canvas-overlay" id="canvasOverlay"></div>
-                </div>
-                
-                <div class="canvas-controls">
-                    <div class="zoom-controls">
-                        <button onclick="zoomOut()">-</button>
-                        <span id="zoomLevel">100%</span>
-                        <button onclick="zoomIn()">+</button>
-                    </div>
-                    <div class="canvas-info">
-                        <span id="canvasSize">1080 × 1080 px</span>
-                    </div>
-                </div>
-            </main>
-
-            <!-- الشريط الجانبي الأيمن -->
-            <aside class="properties-sidebar">
-                <div class="panel">
-                    <h4>خصائص الأداة</h4>
-                    <div class="property-group">
-                        <label>حجم الفرشاة</label>
-                        <input type="range" id="brushSize" min="1" max="500" value="10">
-                        <span id="brushSizeValue">10px</span>
-                    </div>
-                    <div class="property-group">
-                        <label>الشفافية</label>
-                        <input type="range" id="opacity" min="0" max="100" value="100">
-                        <span id="opacityValue">100%</span>
-                    </div>
-                    <div class="property-group">
-                        <label>التنعيم</label>
-                        <input type="range" id="smoothing" min="0" max="100" value="50">
-                        <span id="smoothingValue">50%</span>
-                    </div>
-                    <div class="property-group">
-                        <label>التدفق</label>
-                        <input type="range" id="flow" min="0" max="100" value="100">
-                        <span id="flowValue">100%</span>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h4>الألوان</h4>
-                    <div class="color-picker-container">
-                        <input type="color" id="colorPicker" value="#000000">
-                        <div class="color-presets" id="colorPresets"></div>
-                    </div>
-                    <div class="color-palette" id="colorPalette"></div>
-                </div>
-
-                <div class="panel" id="layersPanel">
-                    <h4>الطبقات</h4>
-                    <div class="layer-controls">
-                        <button onclick="addLayer()" title="طبقة جديدة">+</button>
-                        <button onclick="deleteLayer()" title="حذف طبقة">-</button>
-                        <button onclick="duplicateLayer()" title="تكرار">⎘</button>
-                        <button onclick="mergeDown()" title="دمج للأسفل">⤓</button>
-                    </div>
-                    <div class="layers-list" id="layersList"></div>
-                </div>
-
-                <div class="panel" id="animationPanel" style="display: none;">
-                    <h4>الرسوم المتحركة</h4>
-                    <div class="timeline-controls">
-                        <button onclick="addFrame()" title="إضافة إطار">+ إطار</button>
-                        <button onclick="playAnimation()" title="تشغيل">▶</button>
-                        <button onclick="stopAnimation()" title="إيقاف">⏹</button>
-                    </div>
-                    <div class="timeline" id="timeline"></div>
-                    <div class="frame-rate">
-                        <label>معدل الإطارات:</label>
-                        <input type="number" id="fps" value="12" min="1" max="60">
-                        <span>FPS</span>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h4>أوضاع المزج</h4>
-                    <select id="blendMode">
-                        <option value="normal">عادي</option>
-                        <option value="multiply">تضاعف</option>
-                        <option value="screen">شاشة</option>
-                        <option value="overlay">تغطية</option>
-                        <option value="soft-light">ضوء ناعم</option>
-                        <option value="hard-light">ضوء قوي</option>
-                        <option value="color-dodge">تفادي اللون</option>
-                        <option value="color-burn">حرق اللون</option>
-                        <option value="difference">اختلاف</option>
-                        <option value="hue">تدرج</option>
-                        <option value="saturation">تشبع</option>
-                        <option value="luminosity">إضاءة</option>
-                    </select>
-                </div>
-
-                <div class="panel">
-                    <h4>المرجع</h4>
-                    <input type="file" id="refImage" accept="image/*" onchange="loadReferenceImage(event)">
-                    <div class="ref-controls" id="refControls" style="display: none;">
-                        <label>شفافية المرجع</label>
-                        <input type="range" id="refOpacity" min="0" max="100" value="50" onchange="updateRefOpacity()">
-                    </div>
-                </div>
-            </aside>
-        </div>
+  <!-- ── HEADER ── -->
+  <header class="studio-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="index.html" class="ctrl-btn" title="الرئيسية" style="text-decoration:none; font-size:14px;">🏠</a>
+      <div class="studio-logo">
+        <div class="studio-logo-icon">🔥</div>
+        <span>ANIMFORGE</span>
+      </div>
     </div>
 
-    <!-- نافذة المشاريع المحفوظة -->
-    <div class="modal" id="projectsModal">
-        <div class="modal-content projects-modal">
-            <span class="close-modal" onclick="closeProjectsModal()">&times;</span>
-            <h2>المشاريع المحفوظة</h2>
-            <div class="saved-projects" id="savedProjects"></div>
-        </div>
+    <div class="header-menu">
+      <button class="menu-btn" id="menuFile">ملف</button>
+      <button class="menu-btn" id="menuEdit">تحرير</button>
+      <button class="menu-btn" id="menuView">عرض</button>
+      <button class="menu-btn" id="menuAnimate">تحريك</button>
+      <button class="menu-btn" id="menuExport">تصدير</button>
     </div>
 
-    <!-- نافذة التصدير -->
-    <div class="modal" id="exportModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeExportModal()">&times;</span>
-            <h2>تصدير المشروع</h2>
-            <div class="export-options">
-                <div class="export-format" onclick="exportImage('png')">
-                    <h3>PNG</h3>
-                    <p>جودة عالية مع شفافية</p>
-                </div>
-                <div class="export-format" onclick="exportImage('jpg')">
-                    <h3>JPG</h3>
-                    <p>حجم صغير للويب</p>
-                </div>
-                <div class="export-format" onclick="exportImage('webp')">
-                    <h3>WebP</h3>
-                    <p>أفضل ضغط للويب</p>
-                </div>
-                <div class="export-format" id="gifExport" onclick="exportGIF()" style="display: none;">
-                    <h3>GIF</h3>
-                    <p>صورة متحركة</p>
-                </div>
-                <div class="export-format" id="videoExport" onclick="exportVideo()" style="display: none;">
-                    <h3>فيديو</h3>
-                    <p>WebM فيديو</p>
-                </div>
+    <div class="header-tools" style="direction:ltr;">
+      <input type="text" class="project-name-input" id="projectName" value="مشروع جديد" placeholder="اسم المشروع">
+      <div class="header-divider"></div>
+
+      <div class="playback-controls">
+        <button class="ctrl-btn" id="btnToStart" title="البداية" data-tooltip="البداية (Home)">⏮</button>
+        <button class="ctrl-btn" id="btnPrevFrame" title="إطار سابق">◀</button>
+        <button class="play-btn" id="btnPlay" title="تشغيل (Space)">▶</button>
+        <button class="ctrl-btn" id="btnNextFrame" title="إطار تالي">▶</button>
+        <button class="ctrl-btn" id="btnToEnd" title="النهاية">⏭</button>
+        <button class="ctrl-btn" id="btnLoop" title="تكرار" class="active">🔁</button>
+      </div>
+
+      <div class="header-divider"></div>
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);" id="frameDisplay">0 / 24</span>
+
+      <select class="fps-select" id="fpsSelect">
+        <option value="12">12 FPS</option>
+        <option value="24" selected>24 FPS</option>
+        <option value="30">30 FPS</option>
+        <option value="60">60 FPS</option>
+      </select>
+
+      <div class="header-divider"></div>
+      <button class="ctrl-btn" id="btnSave" title="حفظ (Ctrl+S)">💾</button>
+      <button class="btn btn-primary btn-sm" id="btnExport">تصدير</button>
+      <button class="ctrl-btn" id="btnTheme" title="تبديل الوضع">🌙</button>
+    </div>
+  </header>
+
+  <!-- ── STUDIO BODY ── -->
+  <div class="studio-body">
+
+    <!-- ── TOOL SIDEBAR ── -->
+    <aside class="tool-sidebar" id="toolSidebar">
+      <div class="tool-group">
+        <!-- Selection -->
+        <button class="tool-btn active" data-tool="select" data-tooltip="تحديد" title="تحديد (V)">
+          <span>↖</span>
+          <span class="tool-label">Select</span>
+          <span class="tool-shortcut">V</span>
+        </button>
+
+        <!-- Move -->
+        <button class="tool-btn" data-tool="move" data-tooltip="نقل" title="نقل (M)">
+          <span>✥</span>
+          <span class="tool-label">Move</span>
+          <span class="tool-shortcut">M</span>
+        </button>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group">
+        <!-- Pen -->
+        <button class="tool-btn" data-tool="pen" data-tooltip="قلم" title="قلم (P)">
+          <span>✒</span>
+          <span class="tool-label">Pen</span>
+          <span class="tool-shortcut">P</span>
+        </button>
+
+        <!-- Brush -->
+        <button class="tool-btn" data-tool="brush" data-tooltip="فرشاة" title="فرشاة (B)">
+          <span>🖌</span>
+          <span class="tool-label">Brush</span>
+          <span class="tool-shortcut">B</span>
+        </button>
+
+        <!-- Bezier -->
+        <button class="tool-btn" data-tool="bezier" data-tooltip="منحنى" title="Bezier (C)">
+          <span>〜</span>
+          <span class="tool-label">Bezier</span>
+          <span class="tool-shortcut">C</span>
+        </button>
+
+        <!-- Eraser -->
+        <button class="tool-btn" data-tool="eraser" data-tooltip="ممحاة" title="ممحاة (E)">
+          <span>🗑</span>
+          <span class="tool-label">Eraser</span>
+          <span class="tool-shortcut">E</span>
+        </button>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group">
+        <!-- Rectangle -->
+        <button class="tool-btn" data-tool="rect" data-tooltip="مستطيل" title="مستطيل (R)">
+          <span>▭</span>
+          <span class="tool-label">Rect</span>
+          <span class="tool-shortcut">R</span>
+        </button>
+
+        <!-- Circle -->
+        <button class="tool-btn" data-tool="circle" data-tooltip="دائرة" title="دائرة (O)">
+          <span>◯</span>
+          <span class="tool-label">Circle</span>
+          <span class="tool-shortcut">O</span>
+        </button>
+
+        <!-- Line -->
+        <button class="tool-btn" data-tool="line" data-tooltip="خط" title="خط (L)">
+          <span>╱</span>
+          <span class="tool-label">Line</span>
+          <span class="tool-shortcut">L</span>
+        </button>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group">
+        <!-- Bone -->
+        <button class="tool-btn" data-tool="bone" data-tooltip="رسم عظمة" title="رسم عظمة (N)" style="color:var(--purple)">
+          <span>🦴</span>
+          <span class="tool-label">Bone</span>
+          <span class="tool-shortcut">N</span>
+        </button>
+
+        <!-- IK Target -->
+        <button class="tool-btn" data-tool="ik" data-tooltip="IK Target" title="IK Target (I)" style="color:var(--accent2)">
+          <span>⊕</span>
+          <span class="tool-label">IK</span>
+          <span class="tool-shortcut">I</span>
+        </button>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group">
+        <!-- Fill -->
+        <button class="tool-btn" data-tool="fill" data-tooltip="تعبئة" title="تعبئة (F)">
+          <span>🪣</span>
+          <span class="tool-label">Fill</span>
+          <span class="tool-shortcut">F</span>
+        </button>
+
+        <!-- Eyedropper -->
+        <button class="tool-btn" data-tool="eyedropper" data-tooltip="قطارة" title="قطارة (Alt)">
+          <span>💉</span>
+          <span class="tool-label">Pick</span>
+          <span class="tool-shortcut">Alt</span>
+        </button>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group">
+        <!-- Zoom -->
+        <button class="tool-btn" data-tool="zoom" data-tooltip="تكبير/تصغير" title="تكبير (Z)">
+          <span>🔍</span>
+          <span class="tool-label">Zoom</span>
+          <span class="tool-shortcut">Z</span>
+        </button>
+
+        <!-- Pan -->
+        <button class="tool-btn" data-tool="pan" data-tooltip="تحريك العرض" title="تحريك (H)">
+          <span>✋</span>
+          <span class="tool-label">Pan</span>
+          <span class="tool-shortcut">H</span>
+        </button>
+      </div>
+
+      <!-- Color swatches -->
+      <div class="tool-divider"></div>
+      <div style="padding:6px; display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <div style="position:relative; width:36px; height:36px;">
+          <div id="bgColorSwatch" style="width:28px;height:28px;background:#000;border:2px solid var(--border);border-radius:4px;cursor:pointer;position:absolute;bottom:0;left:0;"></div>
+          <div id="fgColorSwatch" style="width:28px;height:28px;background:#00d4ff;border:2px solid var(--border-bright);border-radius:4px;cursor:pointer;position:absolute;top:0;right:0;" onclick="openColorPicker()"></div>
+        </div>
+        <button class="tool-btn" style="width:36px;height:20px;font-size:10px;" onclick="swapColors()" title="تبديل الألوان (X)">⇄</button>
+      </div>
+    </aside>
+
+    <!-- ── CANVAS AREA ── -->
+    <main class="canvas-area" id="canvasArea">
+      <!-- Canvas top toolbar -->
+      <div class="canvas-toolbar">
+        <span class="canvas-toolbar-label">تكبير:</span>
+        <button class="zoom-btn" id="zoomOut">−</button>
+        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button class="zoom-btn" id="zoomIn">+</button>
+        <button class="zoom-btn" id="zoomFit" title="ملاءمة الشاشة">⊡</button>
+
+        <div style="width:1px;height:20px;background:var(--border);margin:0 8px;"></div>
+
+        <span class="canvas-toolbar-label">الشبكة:</span>
+        <button class="overlay-toggle" id="toggleGrid">إيقاف</button>
+
+        <span class="canvas-toolbar-label" style="margin-right:8px;">تماثل:</span>
+        <button class="overlay-toggle" id="toggleSymmetry">إيقاف</button>
+
+        <span class="canvas-toolbar-label" style="margin-right:8px;">البصل:</span>
+        <button class="overlay-toggle" id="toggleOnion">إيقاف</button>
+
+        <span class="canvas-toolbar-label" style="margin-right:8px;">الأجزاء:</span>
+        <select id="canvasSizeSelect" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:3px 6px;font-size:12px;border-radius:var(--radius);font-family:var(--font-mono);">
+          <option value="800x600">800×600</option>
+          <option value="1280x720" selected>1280×720</option>
+          <option value="1920x1080">1920×1080</option>
+          <option value="512x512">512×512</option>
+        </select>
+      </div>
+
+      <!-- Canvas -->
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="mainCanvas" width="1280" height="720"></canvas>
+        <canvas id="overlayCanvas" width="1280" height="720"
+          style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></canvas>
+
+        <div class="canvas-coords" id="canvasCoords">X: 0  Y: 0</div>
+
+        <div class="canvas-overlay-btn">
+          <button class="overlay-toggle active" id="toggleBones">عظام</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── RIGHT PANELS ── -->
+    <aside class="right-panels" id="rightPanels">
+
+      <!-- Layers Panel -->
+      <div class="panel" id="layersPanel" style="flex:0 0 auto; max-height:260px;">
+        <div class="panel-header" onclick="togglePanel('layersPanel')">
+          <span class="panel-title"><span class="panel-title-icon">📚</span>الطبقات</span>
+          <div class="panel-actions">
+            <button class="panel-action-btn" id="addLayerBtn" title="إضافة طبقة" onclick="event.stopPropagation(); addLayer()">+</button>
+            <button class="panel-action-btn" id="deleteLayerBtn" title="حذف الطبقة" onclick="event.stopPropagation(); deleteActiveLayer()">🗑</button>
+            <span class="panel-collapse-icon">▾</span>
+          </div>
+        </div>
+        <div class="panel-body" id="layersList">
+          <!-- JS populated -->
+        </div>
+      </div>
+
+      <!-- Bones Panel -->
+      <div class="panel" id="bonesPanel" style="flex:0 0 auto; max-height:220px;">
+        <div class="panel-header" onclick="togglePanel('bonesPanel')">
+          <span class="panel-title"><span class="panel-title-icon">🦴</span>العظام</span>
+          <div class="panel-actions">
+            <button class="panel-action-btn" title="إضافة عظمة" onclick="event.stopPropagation(); startAddBone()">+</button>
+            <button class="panel-action-btn" title="حذف عظمة" onclick="event.stopPropagation(); deleteSelectedBone()">🗑</button>
+            <span class="panel-collapse-icon">▾</span>
+          </div>
+        </div>
+        <div class="panel-body" id="boneTree">
+          <!-- JS populated -->
+        </div>
+      </div>
+
+      <!-- Properties Panel -->
+      <div class="panel" id="propsPanel" style="flex:1;">
+        <div class="panel-header" onclick="togglePanel('propsPanel')">
+          <span class="panel-title"><span class="panel-title-icon">⚙</span>الخصائص</span>
+          <div class="panel-actions">
+            <span class="panel-collapse-icon">▾</span>
+          </div>
+        </div>
+        <div class="panel-body" id="propsBody">
+
+          <!-- Transform -->
+          <div class="prop-section">
+            <div class="prop-section-title">تحويل</div>
+
+            <div class="prop-row">
+              <span class="prop-label">X / Y</span>
+              <input type="number" class="prop-input-half" id="propX" value="0" step="1">
+              <input type="number" class="prop-input-half" id="propY" value="0" step="1">
             </div>
+            <div class="prop-row">
+              <span class="prop-label">العرض</span>
+              <input type="number" class="prop-input" id="propW" value="100" step="1">
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">الارتفاع</span>
+              <input type="number" class="prop-input" id="propH" value="100" step="1">
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">دوران</span>
+              <div class="slider-row" style="flex:1;">
+                <input type="range" id="propRotation" min="-180" max="180" value="0">
+                <input type="number" class="prop-input" id="propRotVal" value="0" style="width:55px;flex:none;" step="1">
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance -->
+          <div class="prop-section">
+            <div class="prop-section-title">المظهر</div>
+
+            <div class="prop-row">
+              <span class="prop-label">الشفافية</span>
+              <div class="slider-row" style="flex:1;">
+                <input type="range" id="propOpacity" min="0" max="100" value="100">
+                <input type="number" class="prop-input" id="propOpVal" value="100" style="width:50px;flex:none;" min="0" max="100">
+              </div>
+            </div>
+
+            <div class="prop-row">
+              <span class="prop-label">اللون</span>
+              <div class="color-input-row" style="flex:1;">
+                <div class="color-preview" id="propColorPrev" style="background:#00d4ff;" onclick="openColorPicker()"></div>
+                <input type="text" class="prop-input" id="propColorHex" value="#00d4ff" style="font-family:var(--font-mono); font-size:13px;">
+              </div>
+            </div>
+
+            <div class="prop-row">
+              <span class="prop-label">وضع الدمج</span>
+              <select class="blend-select" id="propBlend">
+                <option value="normal">Normal</option>
+                <option value="multiply">Multiply</option>
+                <option value="screen">Screen</option>
+                <option value="overlay">Overlay</option>
+                <option value="darken">Darken</option>
+                <option value="lighten">Lighten</option>
+                <option value="color-dodge">Color Dodge</option>
+                <option value="color-burn">Color Burn</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Stroke -->
+          <div class="prop-section">
+            <div class="prop-section-title">الخط</div>
+            <div class="prop-row">
+              <span class="prop-label">اللون</span>
+              <div class="color-input-row" style="flex:1;">
+                <div class="color-preview" id="strokeColorPrev" style="background:#ffffff;" onclick="openStrokeColorPicker()"></div>
+                <input type="text" class="prop-input" id="strokeColorHex" value="#ffffff" style="font-family:var(--font-mono); font-size:13px;">
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">السماكة</span>
+              <div class="slider-row" style="flex:1;">
+                <input type="range" id="propStrokeW" min="0" max="20" value="2">
+                <input type="number" class="prop-input" id="propStrokeVal" value="2" style="width:50px;flex:none;" min="0" max="20">
+              </div>
+            </div>
+          </div>
+
+          <!-- Bone Properties (shown when bone selected) -->
+          <div class="prop-section" id="bonePropSection" style="display:none;">
+            <div class="prop-section-title">خصائص العظمة</div>
+            <div class="prop-row">
+              <span class="prop-label">الطول</span>
+              <input type="number" class="prop-input" id="boneLength" value="50" step="1">
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">الزاوية</span>
+              <input type="number" class="prop-input" id="boneAngle" value="0" step="1">
+            </div>
+            <div class="prop-row">
+              <span class="prop-label">نظام IK</span>
+              <select class="blend-select" id="boneIKType">
+                <option value="none">لا يوجد</option>
+                <option value="fk">FK</option>
+                <option value="ik">IK</option>
+              </select>
+            </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="boneVisible" checked>
+              <label class="checkbox-label" for="boneVisible">ظاهر في التصدير</label>
+            </div>
+          </div>
+
+          <!-- Prebuilt Animations -->
+          <div class="prop-section">
+            <div class="prop-section-title">حركات جاهزة</div>
+            <div style="display:flex; flex-direction:column; gap:6px;" id="prebuiltAnims">
+              <!-- JS populated -->
+            </div>
+          </div>
         </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ── TIMELINE ── -->
+  <div class="timeline-panel" id="timelinePanel">
+    <div class="timeline-header">
+      <span class="timeline-title">📊 Timeline</span>
+      <div class="playback-controls" style="gap:4px;">
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">إطار:</span>
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-primary);" id="tlFrameNum">0</span>
+      </div>
+      <div class="timeline-spacer"></div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <span style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim);">الطول:</span>
+        <input type="number" id="tlDuration" value="48" min="1" max="9999"
+          style="width:60px;padding:3px 6px;font-size:12px;font-family:var(--font-mono);">
+        <button class="ctrl-btn" id="addKeyframeBtn" title="إضافة Keyframe (K)" style="width:auto;padding:0 8px;font-size:11px;">+ KF</button>
+      </div>
     </div>
 
-    <script src="studio.js"></script>
+    <div class="timeline-body">
+      <!-- Track labels -->
+      <div class="timeline-labels" id="tlLabels">
+        <div class="timeline-label-header">الطبقة / العظمة</div>
+        <!-- JS populated -->
+      </div>
+
+      <!-- Timeline main area -->
+      <div class="timeline-main" id="tlMain">
+        <canvas id="tlRuler" class="timeline-ruler" height="24"></canvas>
+        <div class="timeline-tracks" id="tlTracks">
+          <!-- JS populated -->
+        </div>
+        <div class="playhead" id="playhead" style="left:0;"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /studio-layout -->
+
+<!-- ═══ COLOR PICKER POPUP ════════════════════════ -->
+<div id="colorPickerPopup" class="color-picker-popup" style="display:none; position:fixed; z-index:1000; top:200px; left:100px;">
+  <div style="margin-bottom:8px;">
+    <canvas id="colorSpectrum" class="color-spectrum" width="208" height="150"></canvas>
+  </div>
+  <canvas id="hueSlider" class="color-hue-slider" width="208" height="12"></canvas>
+  <div style="display:flex; gap:8px; margin-top:8px;">
+    <div id="colorPickerPreview" style="width:32px;height:32px;border-radius:4px;border:2px solid var(--border);background:#00d4ff;flex-shrink:0;"></div>
+    <input type="text" class="color-hex-input" id="colorPickerHex" value="#00d4ff">
+  </div>
+  <div style="display:flex; gap:6px; margin-top:10px;">
+    <button class="btn btn-primary btn-sm" onclick="applyColor()" style="flex:1;">تطبيق</button>
+    <button class="btn btn-outline btn-sm" onclick="closeColorPicker()" style="flex:1;">إلغاء</button>
+  </div>
+</div>
+
+<!-- ═══ EXPORT MODAL ══════════════════════════════ -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">تصدير المشروع</span>
+      <button class="modal-close" onclick="closeExportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="export-option selected" data-format="gif" onclick="selectExport(this,'gif')">
+        <span class="export-icon">🎞</span>
+        <div class="export-info">
+          <h4>GIF متحرك</h4>
+          <p>مناسب للمشاركة ووسائل التواصل</p>
+        </div>
+      </div>
+      <div class="export-option" data-format="mp4" onclick="selectExport(this,'mp4')">
+        <span class="export-icon">🎬</span>
+        <div class="export-info">
+          <h4>فيديو MP4</h4>
+          <p>جودة عالية بمكتبة ffmpeg.wasm</p>
+        </div>
+      </div>
+      <div class="export-option" data-format="spritesheet" onclick="selectExport(this,'spritesheet')">
+        <span class="export-icon">🗃</span>
+        <div class="export-info">
+          <h4>PNG Sprite Sheet</h4>
+          <p>مناسب للألعاب والتطوير</p>
+        </div>
+      </div>
+      <div class="export-option" data-format="json" onclick="selectExport(this,'json')">
+        <span class="export-icon">📄</span>
+        <div class="export-info">
+          <h4>JSON بيانات الأنيميشن</h4>
+          <p>لاستخدامه في مشاريع أخرى</p>
+        </div>
+      </div>
+      <div class="export-option" data-format="svg" onclick="selectExport(this,'svg')">
+        <span class="export-icon">🎨</span>
+        <div class="export-info">
+          <h4>SVG Vector</h4>
+          <p>رسوميات قابلة للتحجيم</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeExportModal()">إلغاء</button>
+      <button class="btn btn-primary btn-sm" onclick="doExport()">🚀 تصدير الآن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTEXT MENU ═══════════════════════════════ -->
+<div class="context-menu" id="contextMenu">
+  <div class="context-item" onclick="ctxAction('copy')"><span class="context-item-icon">📋</span>نسخ<span class="context-item-shortcut">Ctrl+C</span></div>
+  <div class="context-item" onclick="ctxAction('paste')"><span class="context-item-icon">📌</span>لصق<span class="context-item-shortcut">Ctrl+V</span></div>
+  <div class="context-item" onclick="ctxAction('duplicate')"><span class="context-item-icon">⧉</span>تكرار<span class="context-item-shortcut">Ctrl+D</span></div>
+  <div class="context-separator"></div>
+  <div class="context-item" onclick="ctxAction('bringFront')"><span class="context-item-icon">⬆</span>إلى الأمام</div>
+  <div class="context-item" onclick="ctxAction('sendBack')"><span class="context-item-icon">⬇</span>إلى الخلف</div>
+  <div class="context-separator"></div>
+  <div class="context-item" onclick="ctxAction('addKeyframe')"><span class="context-item-icon">🔑</span>إضافة Keyframe<span class="context-item-shortcut">K</span></div>
+  <div class="context-separator"></div>
+  <div class="context-item danger" onclick="ctxAction('delete')"><span class="context-item-icon">🗑</span>حذف<span class="context-item-shortcut">Del</span></div>
+</div>
+
+<!-- ═══ TOAST ══════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="studio.js"></script>
 </body>
 </html>
