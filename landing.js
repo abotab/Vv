@@ -1,117 +1,504 @@
-/* landing.js — Safwan Studio v2 */
+/* ==========================================
+   صفوان ستوديو - JavaScript الصفحة الرئيسية
+   landing.js
+   ========================================== */
+
 'use strict';
 
-// ── Canvas Background ──
-(function(){
-  const canvas = document.getElementById('bgCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let W, H;
-  const particles = [];
-  const N = 90;
+// ====================================
+// حالة الصفحة الرئيسية
+// ====================================
+const حالة_الرئيسية = {
+  بطاقة_مفتوحة: null,
+  لون_محدد: null,
+  قياس_محدد: null,
+  جسيمات: [],
+  canvas_جسيمات: null,
+  ctx_جسيمات: null,
+  تحميل_منتهي: false,
+  رقم_حركة: null
+};
 
-  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize);
-  resize();
+const إعدادات_المشروع = {
+  لون_خلفية: '#1a1a2e',
+  قياس_عرض: 1080,
+  قياس_ارتفاع: 1920,
+  اسم_قياس: 'TikTok عمودي',
+  اسم_مشروع: ''
+};
 
-  class P {
-    constructor(){ this.reset(); }
-    reset(){
-      this.x = Math.random() * W;
-      this.y = Math.random() * H;
-      this.r = Math.random() * 1.4 + 0.3;
-      this.vx = (Math.random() - .5) * .38;
-      this.vy = (Math.random() - .5) * .38;
-      this.a = Math.random() * .38 + .05;
-      const t = Math.random();
-      this.c = t > .6 ? `rgba(255,107,53,${this.a})` : t > .35 ? `rgba(247,197,159,${this.a})` : `rgba(239,239,208,${this.a})`;
-    }
-    update(){ this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); }
-    draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=this.c; ctx.fill(); }
-  }
-  for(let i=0;i<N;i++) particles.push(new P());
-
-  function lines(){
-    for(let i=0;i<particles.length;i++){
-      for(let j=i+1;j<particles.length;j++){
-        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y, d=Math.sqrt(dx*dx+dy*dy);
-        if(d<110){ ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle=`rgba(255,107,53,${.05*(1-d/110)})`; ctx.lineWidth=.45; ctx.stroke(); }
-      }
-    }
-  }
-
-  (function animate(){
-    ctx.clearRect(0,0,W,H);
-    const g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.65);
-    g.addColorStop(0,'rgba(255,107,53,.025)'); g.addColorStop(1,'transparent');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    lines();
-    particles.forEach(p=>{ p.update(); p.draw(); });
-    requestAnimationFrame(animate);
-  })();
-})();
-
-// ── Nav Scroll Effect ──
-(function(){
-  const nav = document.getElementById('landingNav');
-  if(!nav) return;
-  window.addEventListener('scroll',()=>{ nav.style.background = window.scrollY>50 ? 'rgba(13,14,19,.92)' : 'rgba(13,14,19,.6)'; });
-})();
-
-// ── Scroll Reveal ──
-(function(){
-  const obs = new IntersectionObserver(entries=>{
-    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
-  },{threshold:.1});
-  document.querySelectorAll('.feat-card,.art-card-big,.section-header').forEach(el=>{
-    el.classList.add('reveal'); obs.observe(el);
-  });
-  const s = document.createElement('style');
-  s.textContent = `.reveal{opacity:0;transform:translateY(26px);transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1)}.reveal.visible{opacity:1;transform:translateY(0)}.feat-card:nth-child(1){transition-delay:0s}.feat-card:nth-child(2){transition-delay:.08s}.feat-card:nth-child(3){transition-delay:.16s}.feat-card:nth-child(4){transition-delay:.24s}.feat-card:nth-child(5){transition-delay:.32s}.feat-card:nth-child(6){transition-delay:.4s}.art-card-big:nth-child(1){transition-delay:0s}.art-card-big:nth-child(2){transition-delay:.1s}.art-card-big:nth-child(3){transition-delay:.2s}.art-card-big:nth-child(4){transition-delay:.3s}`;
-  document.head.appendChild(s);
-})();
-
-// ── Art Cards: Click to Reveal Label, Click Outside to Hide ──
-(function(){
-  const cards = document.querySelectorAll('.art-card-big');
-  if(!cards.length) return;
-
-  cards.forEach(card=>{
-    card.addEventListener('click', e=>{
-      e.stopPropagation();
-      const wasRevealed = card.classList.contains('revealed');
-      // Hide all
-      cards.forEach(c=>c.classList.remove('revealed'));
-      // Toggle current
-      if(!wasRevealed) card.classList.add('revealed');
-    });
-    // Keyboard support
-    card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); card.click(); } });
-  });
-
-  // Click anywhere else to hide all
-  document.addEventListener('click',()=>{ cards.forEach(c=>c.classList.remove('revealed')); });
-})();
-
-// ── Smooth Scroll ──
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    e.preventDefault();
-    const t = document.querySelector(a.getAttribute('href'));
-    if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
-  });
+// ====================================
+// بدء التشغيل عند تحميل الصفحة
+// ====================================
+document.addEventListener('DOMContentLoaded', () => {
+  بدء_التحميل();
 });
 
-// ── Hero Mouse Parallax ──
-(function(){
-  const floats = document.querySelectorAll('.float-item');
-  if(!floats.length) return;
-  document.addEventListener('mousemove',e=>{
-    const cx=window.innerWidth/2, cy=window.innerHeight/2;
-    const dx=(e.clientX-cx)/cx, dy=(e.clientY-cy)/cy;
-    floats.forEach((item,i)=>{
-      const d=(i+1)*.35;
-      item.style.transform=`translateY(0) rotate(0deg) translate(${dx*d*7}px,${dy*d*7}px)`;
+// ====================================
+// نظام شاشة التحميل
+// ====================================
+function بدء_التحميل() {
+  const شريط_تقدم = document.querySelector('.تحميل-تقدم');
+  const نسبة = document.querySelector('.تحميل-نسبة');
+  let تقدم = 0;
+  const مدة_كل_خطوة = 30;
+
+  const زيادة_تقدم = setInterval(() => {
+    const زيادة = Math.random() * 8 + 3;
+    تقدم = Math.min(تقدم + زيادة, 100);
+
+    if (شريط_تقدم) شريط_تقدم.style.width = تقدم + '%';
+    if (نسبة) نسبة.textContent = Math.floor(تقدم) + '%';
+
+    if (تقدم >= 100) {
+      clearInterval(زيادة_تقدم);
+      setTimeout(إنهاء_التحميل, 500);
+    }
+  }, مدة_كل_خطوة);
+}
+
+function إنهاء_التحميل() {
+  const شاشة = document.getElementById('شاشة-التحميل');
+  const موقع = document.getElementById('الموقع-الرئيسي');
+
+  if (شاشة) {
+    شاشة.classList.add('منتهي');
+    setTimeout(() => {
+      if (شاشة) شاشة.style.display = 'none';
+    }, 800);
+  }
+
+  if (موقع) {
+    موقع.classList.remove('مخفي');
+    بدء_الموقع();
+  }
+}
+
+// ====================================
+// تهيئة الموقع الرئيسي
+// ====================================
+function بدء_الموقع() {
+  تهيئة_canvas_جسيمات();
+  إنشاء_ذرات_عائمة();
+  بدء_عداد_إحصائيات();
+  تطبيق_تأثيرات_دخول();
+}
+
+// ====================================
+// نظام الجسيمات الخلفية
+// ====================================
+function تهيئة_canvas_جسيمات() {
+  const canvas = document.getElementById('canvas-جسيمات');
+  if (!canvas) return;
+
+  حالة_الرئيسية.canvas_جسيمات = canvas;
+  حالة_الرئيسية.ctx_جسيمات = canvas.getContext('2d');
+
+  const تحديث_حجم = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  تحديث_حجم();
+  window.addEventListener('resize', تحديث_حجم);
+
+  // إنشاء الجسيمات
+  const عدد_جسيمات = 80;
+  حالة_الرئيسية.جسيمات = [];
+
+  for (let i = 0; i < عدد_جسيمات; i++) {
+    حالة_الرئيسية.جسيمات.push(إنشاء_جسيمة(canvas.width, canvas.height));
+  }
+
+  رسم_جسيمات();
+}
+
+function إنشاء_جسيمة(عرض, ارتفاع) {
+  return {
+    x: Math.random() * عرض,
+    y: Math.random() * ارتفاع,
+    حجم: Math.random() * 2.5 + 0.5,
+    سرعة_x: (Math.random() - 0.5) * 0.4,
+    سرعة_y: (Math.random() - 0.5) * 0.4,
+    شفافية: Math.random() * 0.6 + 0.1,
+    لون: الألوان_جسيمات[Math.floor(Math.random() * الألوان_جسيمات.length)],
+    طور: Math.random() * Math.PI * 2,
+    سرعة_طور: (Math.random() - 0.5) * 0.02
+  };
+}
+
+const الألوان_جسيمات = ['#ff6b35', '#ffd700', '#00d4ff', '#7b2ff7', '#ff3366', '#00ff88'];
+
+function رسم_جسيمات() {
+  const canvas = حالة_الرئيسية.canvas_جسيمات;
+  const ctx = حالة_الرئيسية.ctx_جسيمات;
+  if (!canvas || !ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  حالة_الرئيسية.جسيمات.forEach((ج, i) => {
+    // تحريك
+    ج.x += ج.سرعة_x;
+    ج.y += ج.سرعة_y;
+    ج.طور += ج.سرعة_طور;
+
+    // ارتداد من الحواف
+    if (ج.x < 0) ج.x = canvas.width;
+    if (ج.x > canvas.width) ج.x = 0;
+    if (ج.y < 0) ج.y = canvas.height;
+    if (ج.y > canvas.height) ج.y = 0;
+
+    // رسم الجسيمة
+    const شفافية_فعلية = ج.شفافية * (0.5 + Math.sin(ج.طور) * 0.5);
+    ctx.beginPath();
+    ctx.arc(ج.x, ج.y, ج.حجم, 0, Math.PI * 2);
+    ctx.fillStyle = ج.لون + Math.floor(شفافية_فعلية * 255).toString(16).padStart(2, '0');
+    ctx.fill();
+
+    // رسم خطوط الاتصال
+    حالة_الرئيسية.جسيمات.forEach((ج2, j) => {
+      if (j <= i) return;
+      const مسافة = Math.hypot(ج2.x - ج.x, ج2.y - ج.y);
+      if (مسافة < 100) {
+        ctx.beginPath();
+        ctx.moveTo(ج.x, ج.y);
+        ctx.lineTo(ج2.x, ج2.y);
+        const شفافية_خط = (1 - مسافة / 100) * 0.15;
+        ctx.strokeStyle = `rgba(255,107,53,${شفافية_خط})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
     });
   });
-})();
+
+  حالة_الرئيسية.رقم_حركة = requestAnimationFrame(رسم_جسيمات);
+}
+
+// ====================================
+// إنشاء الذرات العائمة
+// ====================================
+function إنشاء_ذرات_عائمة() {
+  const حاوية = document.getElementById('حاوية-ذرات');
+  if (!حاوية) return;
+
+  const عدد_ذرات = 30;
+  const ألوان = ['#ff6b35', '#ffd700', '#00d4ff', '#7b2ff7', '#ff3366'];
+
+  for (let i = 0; i < عدد_ذرات; i++) {
+    const ذرة = document.createElement('div');
+    ذرة.className = 'ذرة';
+
+    const حجم = Math.random() * 4 + 2;
+    const موضع_x = Math.random() * 100;
+    const موضع_y = Math.random() * 100;
+    const لون = ألوان[Math.floor(Math.random() * ألوان.length)];
+    const مدة = (Math.random() * 8 + 6) + 's';
+    const تأخير = (Math.random() * 6) + 's';
+
+    const ارتفاع_y = (Math.random() - 0.5) * 60;
+    const مسافة_x = (Math.random() - 0.5) * 80;
+    const مقياس = Math.random() * 0.8 + 0.4;
+
+    ذرة.style.cssText = `
+      width: ${حجم}px;
+      height: ${حجم}px;
+      background: ${لون};
+      left: ${موضع_x}%;
+      top: ${موضع_y}%;
+      box-shadow: 0 0 ${حجم * 2}px ${لون};
+      --مدة: ${مدة};
+      --تأخير: ${تأخير};
+      --ارتفاع-y: ${ارتفاع_y}px;
+      --مسافة-x: ${مسافة_x}px;
+      --حجم: ${مقياس};
+      animation: عوم-ذرة ${مدة} ease-in-out ${تأخير} infinite alternate;
+    `;
+
+    حاوية.appendChild(ذرة);
+  }
+}
+
+// ====================================
+// عداد الإحصائيات
+// ====================================
+function بدء_عداد_إحصائيات() {
+  const عناصر = document.querySelectorAll('.رقم-إحصائية');
+
+  عناصر.forEach(عنصر => {
+    const هدف = parseInt(عنصر.getAttribute('data-هدف'));
+    let حالي = 0;
+    const مدة_الكل = 1500;
+    const خطوة_وقت = 30;
+    const خطوة = هدف / (مدة_الكل / خطوة_وقت);
+
+    setTimeout(() => {
+      const مؤقت = setInterval(() => {
+        حالي = Math.min(حالي + خطوة, هدف);
+        عنصر.textContent = Math.floor(حالي);
+        if (حالي >= هدف) clearInterval(مؤقت);
+      }, خطوة_وقت);
+    }, 500);
+  });
+}
+
+// ====================================
+// تأثيرات الدخول
+// ====================================
+function تطبيق_تأثيرات_دخول() {
+  const عناصر_للظهور = [
+    '.حاوية-شعار-رئيسي',
+    '.مجموعة-العنوان',
+    '.وصف-رئيسي',
+    '.شبكة-ميزات',
+    '.أزرار-رئيسية',
+    '.قسم-إحصائيات'
+  ];
+
+  عناصر_للظهور.forEach((محدد, i) => {
+    const عنصر = document.querySelector(محدد);
+    if (!عنصر) return;
+
+    عنصر.style.opacity = '0';
+    عنصر.style.transform = 'translateY(20px)';
+    عنصر.style.transition = `opacity 0.6s ease ${i * 0.15}s, transform 0.6s ease ${i * 0.15}s`;
+
+    setTimeout(() => {
+      عنصر.style.opacity = '1';
+      عنصر.style.transform = 'translateY(0)';
+    }, 100);
+  });
+}
+
+// ====================================
+// تبديل شرح البطاقات
+// ====================================
+function تبديل_شرح(بطاقة) {
+  const بطاقة_مفتوحة_حالياً = حالة_الرئيسية.بطاقة_مفتوحة;
+
+  // إغلاق البطاقة المفتوحة
+  if (بطاقة_مفتوحة_حالياً && بطاقة_مفتوحة_حالياً !== بطاقة) {
+    بطاقة_مفتوحة_حالياً.classList.remove('مفتوح');
+  }
+
+  // تبديل البطاقة الحالية
+  if (بطاقة.classList.contains('مفتوح')) {
+    بطاقة.classList.remove('مفتوح');
+    حالة_الرئيسية.بطاقة_مفتوحة = null;
+  } else {
+    بطاقة.classList.add('مفتوح');
+    حالة_الرئيسية.بطاقة_مفتوحة = بطاقة;
+  }
+}
+
+// إغلاق البطاقات عند النقر خارجها
+document.addEventListener('click', (ح) => {
+  const بطاقة = ح.target.closest('.بطاقة-ميزة');
+  if (!بطاقة && حالة_الرئيسية.بطاقة_مفتوحة) {
+    حالة_الرئيسية.بطاقة_مفتوحة.classList.remove('مفتوح');
+    حالة_الرئيسية.بطاقة_مفتوحة = null;
+  }
+});
+
+// ====================================
+// نافذة إعدادات المشروع
+// ====================================
+function ابدا_الآن() {
+  const نافذة = document.getElementById('نافذة-مشروع');
+  if (نافذة) {
+    نافذة.classList.remove('مخفية');
+    إضافة_تأثير_زر();
+  }
+}
+
+function إغلاق_نافذة() {
+  const نافذة = document.getElementById('نافذة-مشروع');
+  if (نافذة) نافذة.classList.add('مخفية');
+}
+
+// إغلاق النافذة بالنقر على الخلفية
+document.addEventListener('click', (ح) => {
+  const نافذة = document.getElementById('نافذة-مشروع');
+  if (نافذة && ح.target === نافذة) {
+    إغلاق_نافذة();
+  }
+});
+
+// ====================================
+// اختيار لون الخلفية
+// ====================================
+function اختيار_لون(زر) {
+  document.querySelectorAll('.خيار-لون').forEach(ز => ز.classList.remove('محدد'));
+  زر.classList.add('محدد');
+  إعدادات_المشروع.لون_خلفية = زر.getAttribute('data-لون');
+  إعدادات_المشروع.اسم_لون = زر.getAttribute('data-اسم');
+}
+
+// ====================================
+// اختيار قياس المشروع
+// ====================================
+function اختيار_قياس(زر) {
+  document.querySelectorAll('.خيار-قياس').forEach(ز => ز.classList.remove('محدد'));
+  زر.classList.add('محدد');
+  إعدادات_المشروع.قياس_عرض = parseInt(زر.getAttribute('data-عرض'));
+  إعدادات_المشروع.قياس_ارتفاع = parseInt(زر.getAttribute('data-ارتفاع'));
+  إعدادات_المشروع.اسم_قياس = زر.getAttribute('data-اسم');
+}
+
+// ====================================
+// بدء المشروع والانتقال للاستوديو
+// ====================================
+function بدء_مشروع() {
+  const حقل_اسم = document.getElementById('حقل-اسم-مشروع');
+
+  if (!حقل_اسم || !حقل_اسم.value.trim()) {
+    تأثير_خطأ_حقل(حقل_اسم);
+    return;
+  }
+
+  if (!إعدادات_المشروع.لون_خلفية) {
+    // اختيار افتراضي
+    إعدادات_المشروع.لون_خلفية = '#1a1a2e';
+  }
+
+  إعدادات_المشروع.اسم_مشروع = حقل_اسم.value.trim();
+
+  // حفظ في sessionStorage
+  sessionStorage.setItem('إعدادات_صفوان', JSON.stringify(إعدادات_المشروع));
+
+  // تأثير الانتقال
+  const زر = document.querySelector('.زر-بدء-مشروع');
+  if (زر) {
+    زر.textContent = '...جاري التحضير';
+    زر.style.opacity = '0.7';
+    زر.style.cursor = 'not-allowed';
+  }
+
+  setTimeout(() => {
+    window.location.href = 'studio.html';
+  }, 800);
+}
+
+function تأثير_خطأ_حقل(حقل) {
+  if (!حقل) return;
+  حقل.style.borderColor = 'var(--لون-خطأ)';
+  حقل.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.2)';
+  حقل.classList.add('هزة');
+
+  حقل.addEventListener('input', () => {
+    حقل.style.borderColor = '';
+    حقل.style.boxShadow = '';
+  }, { once: true });
+
+  // هزة CSS
+  حقل.animate([
+    { transform: 'translateX(0)' },
+    { transform: 'translateX(-6px)' },
+    { transform: 'translateX(6px)' },
+    { transform: 'translateX(-4px)' },
+    { transform: 'translateX(4px)' },
+    { transform: 'translateX(0)' }
+  ], { duration: 400, easing: 'ease-out' });
+}
+
+// ====================================
+// زر العرض التوضيحي
+// ====================================
+function عرض_توضيحي() {
+  // فتح الاستوديو بمشروع تجريبي
+  const إعدادات_تجريبية = {
+    لون_خلفية: '#1a1a2e',
+    قياس_عرض: 1080,
+    قياس_ارتفاع: 1920,
+    اسم_قياس: 'TikTok عمودي',
+    اسم_مشروع: 'مشروع التجربة'
+  };
+  sessionStorage.setItem('إعدادات_صفوان', JSON.stringify(إعدادات_تجريبية));
+  window.location.href = 'studio.html';
+}
+
+// ====================================
+// تأثيرات الزر الرئيسي
+// ====================================
+function إضافة_تأثير_زر() {
+  const زر = document.querySelector('.زر-ابدا-الآن');
+  if (!زر) return;
+
+  زر.addEventListener('mouseenter', () => {
+    const تأثير = زر.querySelector('.زر-تأثير-ضوء');
+    if (تأثير) {
+      تأثير.style.animation = 'none';
+      void تأثير.offsetWidth;
+      تأثير.style.animation = 'بريق-زر 0.6s ease';
+    }
+  });
+}
+
+// ====================================
+// اختصارات لوحة المفاتيح
+// ====================================
+document.addEventListener('keydown', (ح) => {
+  if (ح.key === 'Escape') {
+    إغلاق_نافذة();
+  }
+  if (ح.key === 'Enter') {
+    const نافذة = document.getElementById('نافذة-مشروع');
+    if (نافذة && !نافذة.classList.contains('مخفية')) {
+      بدء_مشروع();
+    }
+  }
+});
+
+// ====================================
+// تأثيرات hover للشعار
+// ====================================
+const الشعار = document.getElementById('شعار-رئيسي');
+if (الشعار) {
+  document.querySelector('.حاوية-شعار-رئيسي')?.addEventListener('mouseenter', () => {
+    الشعار.style.filter = 'drop-shadow(0 0 50px rgba(255,107,53,0.8))';
+    الشعار.style.transition = 'filter 0.3s ease';
+  });
+
+  document.querySelector('.حاوية-شعار-رئيسي')?.addEventListener('mouseleave', () => {
+    الشعار.style.filter = 'drop-shadow(0 0 30px rgba(255,107,53,0.5))';
+  });
+}
+
+// ====================================
+// تأثيرات متابعة الماوس للجسيمات
+// ====================================
+document.addEventListener('mousemove', (ح) => {
+  const { clientX, clientY } = ح;
+  const عرض_نصف = window.innerWidth / 2;
+  const ارتفاع_نصف = window.innerHeight / 2;
+
+  const x_إزاحة = (clientX - عرض_نصف) / عرض_نصف;
+  const y_إزاحة = (clientY - ارتفاع_نصف) / ارتفاع_نصف;
+
+  // تأثير parallax على الشعار
+  const حاوية_شعار = document.querySelector('.حاوية-شعار-رئيسي');
+  if (حاوية_شعار) {
+    حاوية_شعار.style.transform = `translate(${x_إزاحة * -8}px, ${y_إزاحة * -8}px)`;
+    حاوية_شعار.style.transition = 'transform 0.3s ease';
+  }
+
+  // تأثير جذب الجسيمات نحو الماوس
+  if (حالة_الرئيسية.جسيمات) {
+    حالة_الرئيسية.جسيمات.forEach(ج => {
+      const مسافة = Math.hypot(clientX - ج.x, clientY - ج.y);
+      if (مسافة < 150) {
+        const زاوية = Math.atan2(ج.y - clientY, ج.x - clientX);
+        const قوة = (150 - مسافة) / 150 * 0.5;
+        ج.سرعة_x += Math.cos(زاوية) * قوة;
+        ج.سرعة_y += Math.sin(زاوية) * قوة;
+        // تحديد سرعة قصوى
+        const سرعة = Math.hypot(ج.سرعة_x, ج.سرعة_y);
+        if (سرعة > 3) {
+          ج.سرعة_x = (ج.سرعة_x / سرعة) * 3;
+          ج.سرعة_y = (ج.سرعة_y / سرعة) * 3;
+        }
+      }
+    });
+  }
+});
+
+// تهيئة البطاقة الأولى من المحدد
+document.querySelector('.خيار-قياس')?.classList.add('محدد');

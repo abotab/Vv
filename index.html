@@ -1,205 +1,529 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>صفوان ستوديو</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>صفوان ستوديو - منصة التحريك المتقدمة</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Cairo:wght@200;300;400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body class="landing-body">
-<canvas id="bgCanvas"></canvas>
-<div class="noise-overlay"></div>
 
-<nav class="landing-nav" id="landingNav">
-  <div class="nav-logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 60 60" fill="none">
-        <defs><linearGradient id="nlg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FF6B35"/><stop offset="100%" style="stop-color:#F7C59F"/></linearGradient></defs>
-        <circle cx="30" cy="30" r="28" stroke="url(#nlg)" stroke-width="2" fill="none" opacity="0.6"/>
-        <path d="M18 38 Q22 20 30 18 Q38 16 40 28 Q42 36 34 40 Q26 44 20 36" stroke="url(#nlg)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <circle cx="38" cy="22" r="3" fill="#FF6B35" opacity="0.9"/>
+<!-- شاشة التحميل -->
+<div id="شاشة-التحميل" class="شاشة-التحميل">
+  <div class="تحميل-محتوى">
+    <div class="تحميل-شعار">
+      <svg viewBox="0 0 120 120" class="شعار-svg-تحميل">
+        <defs>
+          <linearGradient id="gradTahmel" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#ff6b35"/>
+            <stop offset="50%" style="stop-color:#f7c59f"/>
+            <stop offset="100%" style="stop-color:#ff6b35"/>
+          </linearGradient>
+          <filter id="glowTahmel">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle cx="60" cy="60" r="55" fill="none" stroke="url(#gradTahmel)" stroke-width="2" opacity="0.3" class="دائرة-خارجية"/>
+        <circle cx="60" cy="60" r="42" fill="none" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.5" class="دائرة-وسطى"/>
+        <polygon points="60,15 105,82 15,82" fill="none" stroke="url(#gradTahmel)" stroke-width="2" filter="url(#glowTahmel)" class="مثلث-شعار"/>
+        <circle cx="60" cy="60" r="8" fill="url(#gradTahmel)" filter="url(#glowTahmel)" class="نقطة-مركز"/>
+        <line x1="60" y1="15" x2="60" y2="52" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.7"/>
+        <line x1="105" y1="82" x2="68" y2="64" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.7"/>
+        <line x1="15" y1="82" x2="52" y2="64" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.7"/>
       </svg>
     </div>
-    <span class="logo-text">صفوان ستوديو</span>
-  </div>
-  <div class="nav-links">
-    <a href="#gallery" class="nav-link">الأعمال</a>
-    <a href="#features" class="nav-link">المميزات</a>
-    <a href="studio.html" class="nav-cta">ابدأ الرسم</a>
-  </div>
-</nav>
-
-<!-- Hero -->
-<section class="hero-section">
-  <div class="hero-content">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      <span>ستوديو الرسم الرقمي — رسم ثابت ومتحرك احترافي</span>
+    <div class="تحميل-نص">صفوان ستوديو</div>
+    <div class="تحميل-شريط">
+      <div class="تحميل-تقدم"></div>
     </div>
-    <div class="hero-logo">
-      <div class="big-logo-wrap">
-        <svg viewBox="0 0 140 140" fill="none" class="big-logo-svg">
-          <defs>
-            <linearGradient id="hlg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FF6B35"/><stop offset="100%" style="stop-color:#F7C59F"/></linearGradient>
-            <linearGradient id="hlg2" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#EFEFD0"/><stop offset="100%" style="stop-color:#FF6B35"/></linearGradient>
-            <filter id="hglow"><feGaussianBlur stdDeviation="3" result="cb"/><feMerge><feMergeNode in="cb"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <circle cx="70" cy="70" r="65" stroke="url(#hlg1)" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="8 4"/>
-          <circle cx="70" cy="70" r="58" stroke="url(#hlg1)" stroke-width="2" fill="none" opacity="0.7"/>
-          <circle cx="70" cy="70" r="48" fill="url(#hlg1)" opacity="0.08"/>
-          <path d="M42 90 Q46 55 60 44 Q72 34 84 40 Q96 46 96 62 Q96 78 82 86 Q68 94 54 88 Q45 84 42 78" stroke="url(#hlg1)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#hglow)"/>
-          <path d="M54 74 Q62 58 74 62 Q82 65 80 74 Q78 82 66 84" stroke="url(#hlg2)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#hglow)"/>
-          <circle cx="88" cy="45" r="6" fill="#FF6B35" opacity="0.9" filter="url(#hglow)"/>
-          <line x1="88" y1="38" x2="88" y2="34" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
-          <line x1="84" y1="41" x2="81" y2="38" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
-          <line x1="93" y1="45" x2="97" y2="43" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+    <div class="تحميل-نسبة">0%</div>
+  </div>
+</div>
+
+<!-- الموقع الرئيسي -->
+<div id="الموقع-الرئيسي" class="موقع-رئيسي مخفي">
+
+  <!-- قسم الهيرو الرئيسي -->
+  <section class="قسم-رئيسي">
+    <!-- خلفية جسيمات متحركة -->
+    <canvas id="canvas-جسيمات" class="خلفية-جسيمات"></canvas>
+
+    <!-- خطوط شبكية متحركة -->
+    <div class="شبكة-خلفية">
+      <div class="خط-شبكة خط-أفقي" style="--تأخير: 0s; --موضع: 20%"></div>
+      <div class="خط-شبكة خط-أفقي" style="--تأخير: 0.5s; --موضع: 40%"></div>
+      <div class="خط-شبكة خط-أفقي" style="--تأخير: 1s; --موضع: 60%"></div>
+      <div class="خط-شبكة خط-أفقي" style="--تأخير: 1.5s; --موضع: 80%"></div>
+      <div class="خط-شبكة خط-عمودي" style="--تأخير: 0.2s; --موضع: 20%"></div>
+      <div class="خط-شبكة خط-عمودي" style="--تأخير: 0.7s; --موضع: 40%"></div>
+      <div class="خط-شبكة خط-عمودي" style="--تأخير: 1.2s; --موضع: 60%"></div>
+      <div class="خط-شبكة خط-عمودي" style="--تأخير: 1.7s; --موضع: 80%"></div>
+    </div>
+
+    <!-- ذرات ضوئية عائمة -->
+    <div class="حاوية-ذرات" id="حاوية-ذرات"></div>
+
+    <!-- محتوى الهيرو -->
+    <div class="محتوى-رئيسي">
+      <!-- شعار متحرك -->
+      <div class="حاوية-شعار-رئيسي">
+        <div class="شعار-نابض">
+          <svg viewBox="0 0 200 200" class="شعار-svg-رئيسي" id="شعار-رئيسي">
+            <defs>
+              <linearGradient id="gradMain1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1"/>
+                <stop offset="50%" style="stop-color:#ffd700;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#ff3366;stop-opacity:1"/>
+              </linearGradient>
+              <linearGradient id="gradMain2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#7b2ff7;stop-opacity:1"/>
+              </linearGradient>
+              <filter id="glowMain" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="6" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+              <filter id="superGlow">
+                <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#ff6b35;stop-opacity:0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- حلقات دوارة -->
+            <circle cx="100" cy="100" r="90" fill="none" stroke="url(#gradMain1)" stroke-width="1" stroke-dasharray="8 4" opacity="0.4" class="حلقة-دوارة-1"/>
+            <circle cx="100" cy="100" r="75" fill="none" stroke="url(#gradMain2)" stroke-width="1.5" stroke-dasharray="12 6" opacity="0.5" class="حلقة-دوارة-2"/>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#gradMain1)" stroke-width="1" stroke-dasharray="4 8" opacity="0.3" class="حلقة-دوارة-3"/>
+
+            <!-- شكل عظمة مركزي -->
+            <g class="هيكل-عظمي-مركزي" filter="url(#glowMain)">
+              <!-- جذع رئيسي -->
+              <line x1="100" y1="45" x2="100" y2="155" stroke="url(#gradMain1)" stroke-width="3" stroke-linecap="round"/>
+              <!-- أكتاف -->
+              <line x1="60" y1="75" x2="140" y2="75" stroke="url(#gradMain1)" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- ورك -->
+              <line x1="68" y1="125" x2="132" y2="125" stroke="url(#gradMain1)" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- رأس -->
+              <circle cx="100" cy="38" r="12" fill="none" stroke="url(#gradMain1)" stroke-width="2"/>
+              <!-- مفاصل -->
+              <circle cx="60" cy="75" r="5" fill="url(#gradMain1)" filter="url(#superGlow)"/>
+              <circle cx="140" cy="75" r="5" fill="url(#gradMain1)" filter="url(#superGlow)"/>
+              <circle cx="68" cy="125" r="5" fill="url(#gradMain2)" filter="url(#superGlow)"/>
+              <circle cx="132" cy="125" r="5" fill="url(#gradMain2)" filter="url(#superGlow)"/>
+              <!-- ذراعان -->
+              <line x1="60" y1="75" x2="45" y2="105" stroke="url(#gradMain2)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="140" y1="75" x2="155" y2="105" stroke="url(#gradMain2)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="45" cy="105" r="4" fill="url(#gradMain2)" filter="url(#superGlow)"/>
+              <circle cx="155" cy="105" r="4" fill="url(#gradMain2)" filter="url(#superGlow)"/>
+              <!-- أرجل -->
+              <line x1="68" y1="125" x2="60" y2="155" stroke="url(#gradMain1)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="132" y1="125" x2="140" y2="155" stroke="url(#gradMain1)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="60" cy="155" r="4" fill="url(#gradMain1)" filter="url(#superGlow)"/>
+              <circle cx="140" cy="155" r="4" fill="url(#gradMain1)" filter="url(#superGlow)"/>
+            </g>
+
+            <!-- نقطة مضيئة مركزية -->
+            <circle cx="100" cy="100" r="6" fill="url(#centerGrad)" filter="url(#superGlow)" class="نقطة-وسط-نابضة"/>
+
+            <!-- نجوم صغيرة -->
+            <circle cx="30" cy="30" r="2" fill="#ffd700" opacity="0.8" class="نجمة-عائمة" style="--تأخير: 0s"/>
+            <circle cx="170" cy="25" r="1.5" fill="#00d4ff" opacity="0.7" class="نجمة-عائمة" style="--تأخير: 0.8s"/>
+            <circle cx="175" cy="170" r="2" fill="#ff6b35" opacity="0.8" class="نجمة-عائمة" style="--تأخير: 1.6s"/>
+            <circle cx="25" cy="165" r="1.5" fill="#7b2ff7" opacity="0.7" class="نجمة-عائمة" style="--تأخير: 2.4s"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- اسم الموقع -->
+      <div class="مجموعة-العنوان">
+        <div class="خط-زخرفي-علوي">
+          <span class="خط-ديناميكي"></span>
+          <span class="نجمة-زخرفية">✦</span>
+          <span class="خط-ديناميكي"></span>
+        </div>
+        <h1 class="اسم-الموقع-رئيسي">
+          <span class="كلمة-صفوان" data-text="صفوان">صفوان</span>
+          <span class="فاصل-عنوان"> </span>
+          <span class="كلمة-ستوديو" data-text="ستوديو">ستوديو</span>
+        </h1>
+        <div class="شعار-نصي-فرعي">منصة التحريك والأنميشن المتقدمة</div>
+        <div class="خط-زخرفي-سفلي">
+          <span class="خط-ديناميكي"></span>
+          <span class="نجمة-زخرفية">✦</span>
+          <span class="خط-ديناميكي"></span>
+        </div>
+      </div>
+
+      <!-- وصف الموقع -->
+      <p class="وصف-رئيسي">
+        أدوات تحريك احترافية مدعومة بأحدث تقنيات الذكاء الاصطناعي
+        <br>
+        <span class="تمييز-نص">نظام العظام — الفيزياء الواقعية — تصدير احترافي</span>
+      </p>
+
+      <!-- بطاقات الميزات الأربع -->
+      <div class="شبكة-ميزات">
+        <!-- بطاقة الرسم -->
+        <div class="بطاقة-ميزة" data-ميزة="رسم" onclick="تبديل_شرح(this)">
+          <div class="بطاقة-ميزة-داخل">
+            <div class="بطاقة-أيقونة">
+              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
+                <defs>
+                  <linearGradient id="gDrawCard" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ff6b35"/>
+                    <stop offset="100%" style="stop-color:#ffd700"/>
+                  </linearGradient>
+                </defs>
+                <path d="M10,45 Q15,20 30,15 Q45,10 50,30 Q55,48 40,52 Q25,56 10,45Z" fill="none" stroke="url(#gDrawCard)" stroke-width="2"/>
+                <path d="M20,40 Q25,25 35,22 Q42,20 44,32" fill="none" stroke="url(#gDrawCard)" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <circle cx="35" cy="22" r="3" fill="url(#gDrawCard)"/>
+                <line x1="44" y1="32" x2="52" y2="24" stroke="url(#gDrawCard)" stroke-width="2" stroke-linecap="round"/>
+                <rect x="50" y="20" width="6" height="2" rx="1" fill="url(#gDrawCard)" transform="rotate(-45 53 21)"/>
+              </svg>
+            </div>
+            <h3 class="بطاقة-عنوان">أدوات الرسم</h3>
+            <p class="بطاقة-ملخص">فرش احترافية وأقلام رسم متقدمة</p>
+            <div class="بطاقة-شرح">
+              <p>أكثر من 20 نوع من الفرش المتقدمة تشمل فرش الرسم الطبيعي، أقلام الرصاص، فرش السكتش الاحترافية، وأقلام الرسم بتأثيرات ضغط وشفافية قابلة للتخصيص. نظام طبقات متقدم مع خاصية التراكب.</p>
+            </div>
+            <div class="بطاقة-مؤشر">
+              <svg viewBox="0 0 20 20" width="16" height="16">
+                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- بطاقة تحريك العظام -->
+        <div class="بطاقة-ميزة" data-ميزة="عظام" onclick="تبديل_شرح(this)">
+          <div class="بطاقة-ميزة-داخل">
+            <div class="بطاقة-أيقونة">
+              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
+                <defs>
+                  <linearGradient id="gBoneCard" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#7b2ff7"/>
+                    <stop offset="100%" style="stop-color:#00d4ff"/>
+                  </linearGradient>
+                </defs>
+                <line x1="30" y1="8" x2="30" y2="52" stroke="url(#gBoneCard)" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="15" y1="22" x2="45" y2="22" stroke="url(#gBoneCard)" stroke-width="2" stroke-linecap="round"/>
+                <line x1="18" y1="38" x2="42" y2="38" stroke="url(#gBoneCard)" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="30" cy="6" r="5" fill="none" stroke="url(#gBoneCard)" stroke-width="1.5"/>
+                <circle cx="15" cy="22" r="3.5" fill="url(#gBoneCard)" opacity="0.9"/>
+                <circle cx="45" cy="22" r="3.5" fill="url(#gBoneCard)" opacity="0.9"/>
+                <circle cx="18" cy="38" r="3" fill="url(#gBoneCard)" opacity="0.7"/>
+                <circle cx="42" cy="38" r="3" fill="url(#gBoneCard)" opacity="0.7"/>
+                <circle cx="22" cy="52" r="2.5" fill="url(#gBoneCard)" opacity="0.5"/>
+                <circle cx="38" cy="52" r="2.5" fill="url(#gBoneCard)" opacity="0.5"/>
+                <line x1="15" y1="22" x2="12" y2="36" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="45" y1="22" x2="48" y2="36" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="18" y1="38" x2="22" y2="52" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="42" y1="38" x2="38" y2="52" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="بطاقة-عنوان">نظام العظام</h3>
+            <p class="بطاقة-ملخص">ربط العظام وتحريك الشخصيات</p>
+            <div class="بطاقة-شرح">
+              <p>نظام ربط عظام متكامل مبني على DragonBones مع دعم الحركة العكسية IK والحركة الأمامية FK. أربط العظام بسحب وإفلات بسيط وشاهد الشخصية تتحرك بطريقة طبيعية وواقعية مع فيزياء حقيقية.</p>
+            </div>
+            <div class="بطاقة-مؤشر">
+              <svg viewBox="0 0 20 20" width="16" height="16">
+                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- بطاقة الفيزياء -->
+        <div class="بطاقة-ميزة" data-ميزة="فيزياء" onclick="تبديل_شرح(this)">
+          <div class="بطاقة-ميزة-داخل">
+            <div class="بطاقة-أيقونة">
+              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
+                <defs>
+                  <linearGradient id="gPhysCard" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#00d4ff"/>
+                    <stop offset="100%" style="stop-color:#ff3366"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="30" cy="15" r="8" fill="none" stroke="url(#gPhysCard)" stroke-width="2"/>
+                <path d="M30,23 Q20,35 25,50" stroke="url(#gPhysCard)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <path d="M30,23 Q40,35 35,50" stroke="url(#gPhysCard)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="3 2"/>
+                <circle cx="25" cy="50" r="4" fill="url(#gPhysCard)" opacity="0.8"/>
+                <circle cx="35" cy="50" r="4" fill="url(#gPhysCard)" opacity="0.5"/>
+                <line x1="5" y1="54" x2="55" y2="54" stroke="url(#gPhysCard)" stroke-width="1.5"/>
+                <path d="M18,30 L14,26 M18,30 L22,26" stroke="url(#gPhysCard)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="بطاقة-عنوان">الفيزياء الواقعية</h3>
+            <p class="بطاقة-ملخص">محاكاة فيزيائية متقدمة</p>
+            <div class="بطاقة-شرح">
+              <p>محرك فيزياء واقعي مدمج يعتمد على Matter.js وRapier.js. جاذبية، اصطدام، مرونة، واحتكاك. الشعر والملابس والإكسسوارات تتحرك بشكل طبيعي تماماً مع كل حركة للشخصية.</p>
+            </div>
+            <div class="بطاقة-مؤشر">
+              <svg viewBox="0 0 20 20" width="16" height="16">
+                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- بطاقة التصدير -->
+        <div class="بطاقة-ميزة" data-ميزة="تصدير" onclick="تبديل_شرح(this)">
+          <div class="بطاقة-ميزة-داخل">
+            <div class="بطاقة-أيقونة">
+              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
+                <defs>
+                  <linearGradient id="gExportCard" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ffd700"/>
+                    <stop offset="100%" style="stop-color:#ff6b35"/>
+                  </linearGradient>
+                </defs>
+                <rect x="12" y="8" width="36" height="44" rx="4" fill="none" stroke="url(#gExportCard)" stroke-width="2"/>
+                <line x1="20" y1="20" x2="40" y2="20" stroke="url(#gExportCard)" stroke-width="1.5"/>
+                <line x1="20" y1="28" x2="36" y2="28" stroke="url(#gExportCard)" stroke-width="1.5"/>
+                <line x1="20" y1="36" x2="32" y2="36" stroke="url(#gExportCard)" stroke-width="1.5"/>
+                <path d="M32,42 L38,48 L44,42" stroke="url(#gExportCard)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="38" y1="32" x2="38" y2="48" stroke="url(#gExportCard)" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="بطاقة-عنوان">التصدير والنشر</h3>
+            <p class="بطاقة-ملخص">تصدير لكل منصات التواصل</p>
+            <div class="بطاقة-شرح">
+              <p>تصدير الفيديو لمنصات TikTok وYouTube وInstagram وTwitter وFacebook بالأبعاد المثالية لكل منصة. دعم MP4، GIF، WebM، وتصدير إطار بإطار. جودة 4K مع معالجة سريعة.</p>
+            </div>
+            <div class="بطاقة-مؤشر">
+              <svg viewBox="0 0 20 20" width="16" height="16">
+                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- أزرار الدعوة للعمل -->
+      <div class="أزرار-رئيسية">
+        <button class="زر-ابدا-الآن" onclick="ابدا_الآن()">
+          <span class="زر-تأثير-ضوء"></span>
+          <span class="زر-محتوى">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+            ابدأ الآن
+          </span>
+        </button>
+        <button class="زر-عرض-توضيحي" onclick="عرض_توضيحي()">
+          <span class="زر-محتوى">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            شاهد العرض
+          </span>
+        </button>
+      </div>
+
+      <!-- إحصائيات -->
+      <div class="قسم-إحصائيات">
+        <div class="إحصائية">
+          <span class="رقم-إحصائية" data-هدف="50">0</span>
+          <span class="وحدة-إحصائية">+</span>
+          <span class="وصف-إحصائية">أداة رسم</span>
+        </div>
+        <div class="فاصل-إحصائيات"></div>
+        <div class="إحصائية">
+          <span class="رقم-إحصائية" data-هدف="100">0</span>
+          <span class="وحدة-إحصائية">%</span>
+          <span class="وصف-إحصائية">فيزياء واقعية</span>
+        </div>
+        <div class="فاصل-إحصائيات"></div>
+        <div class="إحصائية">
+          <span class="رقم-إحصائية" data-هدف="6">0</span>
+          <span class="وحدة-إحصائية">+</span>
+          <span class="وصف-إحصائية">منصات تصدير</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- نافذة اختيار إعدادات المشروع -->
+  <div id="نافذة-مشروع" class="نافذة-خلفية مخفية">
+    <div class="نافذة-محتوى">
+      <div class="نافذة-رأس">
+        <h2 class="نافذة-عنوان">مشروع جديد</h2>
+        <button class="زر-إغلاق-نافذة" onclick="إغلاق_نافذة()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- اختيار لون الخلفية -->
+      <div class="قسم-إعداد">
+        <h3 class="عنوان-إعداد">لون الخلفية</h3>
+        <div class="خيارات-ألوان">
+          <button class="خيار-لون" data-لون="#dc2626" data-اسم="أحمر" onclick="اختيار_لون(this)">
+            <div class="دائرة-لون" style="background:#dc2626; box-shadow:0 0 15px #dc262680"></div>
+            <span>أحمر</span>
+          </button>
+          <button class="خيار-لون" data-لون="#f5f5f5" data-اسم="أبيض" onclick="اختيار_لون(this)">
+            <div class="دائرة-لون" style="background:#f5f5f5; box-shadow:0 0 15px #ffffff60; border:1px solid #33333340"></div>
+            <span>أبيض</span>
+          </button>
+          <button class="خيار-لون" data-لون="#eab308" data-اسم="أصفر" onclick="اختيار_لون(this)">
+            <div class="دائرة-لون" style="background:#eab308; box-shadow:0 0 15px #eab30880"></div>
+            <span>أصفر</span>
+          </button>
+          <button class="خيار-لون" data-لون="#16a34a" data-اسم="أخضر" onclick="اختيار_لون(this)">
+            <div class="دائرة-لون" style="background:#16a34a; box-shadow:0 0 15px #16a34a80"></div>
+            <span>أخضر</span>
+          </button>
+          <button class="خيار-لون" data-لون="#7c3aed" data-اسم="بنفسجي" onclick="اختيار_لون(this)">
+            <div class="دائرة-لون" style="background:#7c3aed; box-shadow:0 0 15px #7c3aed80"></div>
+            <span>بنفسجي</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- اختيار القياسات -->
+      <div class="قسم-إعداد">
+        <h3 class="عنوان-إعداد">قياسات المشروع</h3>
+        <div class="شبكة-قياسات">
+          <!-- تيك توك -->
+          <button class="خيار-قياس" data-عرض="1080" data-ارتفاع="1920" data-اسم="TikTok عمودي" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 40 60" width="30" height="45">
+                <rect x="2" y="2" width="36" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="20" cy="52" r="3" fill="currentColor" opacity="0.5"/>
+                <rect x="14" y="8" width="12" height="2" rx="1" fill="currentColor" opacity="0.5"/>
+              </svg>
+            </div>
+            <span class="اسم-قياس">TikTok</span>
+            <span class="أبعاد-قياس">1080×1920</span>
+          </button>
+
+          <!-- يوتيوب -->
+          <button class="خيار-قياس" data-عرض="1920" data-ارتفاع="1080" data-اسم="YouTube" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 60 40" width="45" height="30">
+                <rect x="2" y="2" width="56" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <polygon points="22,12 22,28 38,20" fill="currentColor" opacity="0.7"/>
+              </svg>
+            </div>
+            <span class="اسم-قياس">YouTube</span>
+            <span class="أبعاد-قياس">1920×1080</span>
+          </button>
+
+          <!-- فيسبوك -->
+          <button class="خيار-قياس" data-عرض="1200" data-ارتفاع="630" data-اسم="Facebook" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 60 32" width="48" height="26">
+                <rect x="2" y="2" width="56" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="16" font-weight="bold" opacity="0.7">f</text>
+              </svg>
+            </div>
+            <span class="اسم-قياس">Facebook</span>
+            <span class="أبعاد-قياس">1200×630</span>
+          </button>
+
+          <!-- تويتر -->
+          <button class="خيار-قياس" data-عرض="1600" data-ارتفاع="900" data-اسم="Twitter/X" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 60 34" width="46" height="26">
+                <rect x="2" y="2" width="56" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12,22 L28,8 M28,8 L44,22 M20,15 L40,15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="اسم-قياس">Twitter/X</span>
+            <span class="أبعاد-قياس">1600×900</span>
+          </button>
+
+          <!-- A4 -->
+          <button class="خيار-قياس" data-عرض="2480" data-ارتفاع="3508" data-اسم="A4 طباعة" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 34 48" width="26" height="36">
+                <rect x="2" y="2" width="30" height="44" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="12" font-weight="bold" opacity="0.7">A4</text>
+              </svg>
+            </div>
+            <span class="اسم-قياس">A4</span>
+            <span class="أبعاد-قياس">2480×3508</span>
+          </button>
+
+          <!-- مربع -->
+          <button class="خيار-قياس" data-عرض="1080" data-ارتفاع="1080" data-اسم="مربع Instagram" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 44 44" width="33" height="33">
+                <rect x="2" y="2" width="40" height="40" rx="8" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="12" y="12" width="20" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+              </svg>
+            </div>
+            <span class="اسم-قياس">Instagram</span>
+            <span class="أبعاد-قياس">1080×1080</span>
+          </button>
+
+          <!-- حجم مخصص -->
+          <button class="خيار-قياس" data-عرض="1280" data-ارتفاع="720" data-اسم="HD 720p" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 60 36" width="45" height="27">
+                <rect x="2" y="2" width="56" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="10" font-weight="bold" opacity="0.7">HD</text>
+              </svg>
+            </div>
+            <span class="اسم-قياس">HD 720p</span>
+            <span class="أبعاد-قياس">1280×720</span>
+          </button>
+
+          <!-- 4K -->
+          <button class="خيار-قياس" data-عرض="3840" data-ارتفاع="2160" data-اسم="4K UHD" onclick="اختيار_قياس(this)">
+            <div class="أيقونة-قياس">
+              <svg viewBox="0 0 60 34" width="45" height="26">
+                <rect x="2" y="2" width="56" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="10" font-weight="bold" opacity="0.7">4K</text>
+              </svg>
+            </div>
+            <span class="اسم-قياس">4K UHD</span>
+            <span class="أبعاد-قياس">3840×2160</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- اسم المشروع -->
+      <div class="قسم-إعداد">
+        <h3 class="عنوان-إعداد">اسم المشروع</h3>
+        <input type="text" id="حقل-اسم-مشروع" class="حقل-نصي" placeholder="أدخل اسم مشروعك..." maxlength="50">
+      </div>
+
+      <!-- زر البدء -->
+      <button class="زر-بدء-مشروع" onclick="بدء_مشروع()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5,3 19,12 5,21"/>
         </svg>
-        <div class="logo-ring-1"></div><div class="logo-ring-2"></div>
-      </div>
-    </div>
-    <h1 class="hero-title">
-      <span class="title-line-1">صفوان</span>
-      <span class="title-line-2">ستوديو</span>
-    </h1>
-    <p class="hero-subtitle">منصة الرسم الرقمي الاحترافية — ارسم ثابتاً أو متحركاً، أبدع بلا حدود</p>
-    <div class="hero-actions">
-      <a href="studio.html" class="btn-primary-hero">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-        ابدأ الآن
-      </a>
-      <a href="#gallery" class="btn-secondary-hero">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-        اكتشف المميزات
-      </a>
+        ابدأ المشروع
+      </button>
     </div>
   </div>
-  <div class="floating-tools">
-    <div class="float-item f1"><svg viewBox="0 0 32 32" fill="none"><path d="M6 26L20 8l4 4L10 28H6v-2z" stroke="#FF6B35" stroke-width="1.5" stroke-linecap="round"/><circle cx="24" cy="8" r="3" fill="#FF6B35" opacity="0.6"/></svg></div>
-    <div class="float-item f2"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="10" stroke="#F7C59F" stroke-width="1.5"/></svg></div>
-    <div class="float-item f3"><svg viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="20" height="20" rx="4" stroke="#EFEFD0" stroke-width="1.5"/></svg></div>
-    <div class="float-item f4"><svg viewBox="0 0 32 32" fill="none"><path d="M16 6L20 14L28 16L20 18L16 26L12 18L4 16L12 14Z" stroke="#FF6B35" stroke-width="1.5" fill="none"/></svg></div>
-    <div class="float-item f5"><svg viewBox="0 0 32 32" fill="none"><path d="M8 24 Q8 8 16 8 Q24 8 24 16 Q24 22 18 24" stroke="#F7C59F" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-  </div>
-  <div class="scroll-hint"><div class="scroll-line"></div><span>اسحب للأسفل</span></div>
-</section>
 
-<!-- Gallery — 4 real art images, click to reveal label -->
-<section class="gallery-section" id="gallery">
-  <div class="section-header">
-    <span class="section-tag">أنواع الرسم</span>
-    <h2 class="section-title">اختر أسلوبك</h2>
-    <p class="section-sub">انقر على أي صورة لمعرفة المزيد</p>
-  </div>
-  <div class="art-grid" id="artGrid">
-
-    <div class="art-card-big" tabindex="0">
-      <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=700&q=80&auto=format" alt="رسم واقعي" loading="lazy"/>
-      <div class="art-overlay">
-        <span class="art-tag">الرسم الواقعي</span>
-        <p>فن يحاكي الواقع بدقة في التفاصيل والظلال والألوان ليُعطي إحساساً بالعمق</p>
-      </div>
-    </div>
-
-    <div class="art-card-big" tabindex="0">
-      <img src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=700&q=80&auto=format" alt="رسم تجريدي" loading="lazy"/>
-      <div class="art-overlay">
-        <span class="art-tag">الرسم التجريدي</span>
-        <p>تعبير فني حر يتجاوز الشكل الواقعي نحو عالم الألوان والحركة والمشاعر</p>
-      </div>
-    </div>
-
-    <div class="art-card-big" tabindex="0">
-      <img src="https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=700&q=80&auto=format" alt="رسم كرتوني" loading="lazy"/>
-      <div class="art-overlay">
-        <span class="art-tag">الرسم الكرتوني</span>
-        <p>أسلوب مبسط وممتع يعتمد الخطوط الجريئة والألوان الزاهية لخلق شخصيات حية</p>
-      </div>
-    </div>
-
-    <div class="art-card-big" tabindex="0">
-      <img src="https://images.unsplash.com/photo-1619410283995-43d9134e7656?w=700&q=80&auto=format" alt="سكيتش" loading="lazy"/>
-      <div class="art-overlay">
-        <span class="art-tag">رسم السكيتش</span>
-        <p>خطوط سريعة وتلقائية تلتقط جوهر اللحظة وتمنح العمل الفني روحاً عفوية</p>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- Features -->
-<section class="features-section" id="features">
-  <div class="section-header">
-    <span class="section-tag">الإمكانيات</span>
-    <h2 class="section-title">كل ما تحتاجه في مكان واحد</h2>
-  </div>
-  <div class="features-grid">
-    <div class="feat-card">
-      <div class="feat-icon">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="8" width="24" height="18" rx="2"/><line x1="4" y1="14" x2="28" y2="14"/><rect x="7" y="17" width="8" height="6" rx="1"/></svg>
-      </div>
-      <h3>نظام الطبقات المتقدم</h3>
-      <p>أضف، احذف، رتب واندمج الطبقات مع تحكم كامل بالشفافية والقفل</p>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 24 L18 8 l4 3 L10 26 H6 z"/><circle cx="20" cy="7" r="3"/></svg>
-      </div>
-      <h3>فرش صفوان الاحترافية</h3>
-      <p>5 فرش حصرية لصفوان + 45 فرشاة احترافية بحساسية ضغط وملمس طبيعي</p>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="16,4 20,12 28,14 22,20 24,28 16,24 8,28 10,20 4,14 12,12"/></svg>
-      </div>
-      <h3>أنيميشن فريم باي فريم</h3>
-      <p>أنشئ رسوماً متحركة احترافية وصدّرها فيديو أو GIF مباشرة لجهازك</p>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="16" cy="16" r="10"/><path d="M16 6 Q22 10 22 16 Q22 22 16 26 Q10 22 10 16 Q10 10 16 6"/><line x1="6" y1="16" x2="26" y2="16"/></svg>
-      </div>
-      <h3>1000+ لون</h3>
-      <p>لوحة ألوان ضخمة تشمل ألوان البشرة وكل درجة مع منتقي HEX/RGB/HSL</p>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 20 l8 8 16-16"/></svg>
-      </div>
-      <h3>قياسات جميع المنصات</h3>
-      <p>قياسات جاهزة لتيك توك، يوتيوب، انستغرام، تويتر وأكثر من 20 منصة</p>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 24 l6-6 4 4 6-7 8 9"/><rect x="4" y="4" width="24" height="20" rx="2"/></svg>
-      </div>
-      <h3>تصدير شامل</h3>
-      <p>PNG شفاف، JPEG، WebP، GIF متحرك، فيديو — جميعها بجودة عالية</p>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-bg"></div>
-  <div class="cta-content">
-    <h2>جاهز لتبدأ رحلتك الإبداعية؟</h2>
-    <p>ارسم ثابتاً أو متحركاً — كل الأدوات احترافية وجاهزة</p>
-    <a href="studio.html" class="btn-primary-hero">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-      ابدأ الرسم الآن — مجاناً
-    </a>
-  </div>
-</section>
-
-<footer class="landing-footer">
-  <div class="footer-logo">
-    <svg viewBox="0 0 40 40" fill="none" width="28" height="28"><circle cx="20" cy="20" r="17" stroke="#FF6B35" stroke-width="1.5" fill="none" opacity="0.5"/><path d="M12 28 Q14 16 20 14 Q26 12 28 20 Q30 26 23 30 Q17 32 13 26" stroke="#FF6B35" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
-    <span>صفوان ستوديو</span>
-  </div>
-  <p>صنع بـ <svg viewBox="0 0 16 16" class="heart-icon" fill="#FF6B35"><path d="M8 14s-6-4.35-6-8a4 4 0 018 0 4 4 0 018 0c0 3.65-6 8-6 8z"/></svg> للفنانين الرقميين</p>
-</footer>
+</div>
 
 <script src="landing.js"></script>
 </body>
