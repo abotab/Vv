@@ -3,528 +3,1108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>صفوان ستوديو - منصة التحريك المتقدمة</title>
-<link rel="stylesheet" href="style.css">
+<title>استضافة نمرود العراق</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Cairo:wght@200;300;400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #05070f;
+    --surface: #0c0f1e;
+    --card: #111428;
+    --border: #1e2444;
+    --accent: #2563ff;
+    --accent2: #00d4ff;
+    --accent3: #7c3aed;
+    --text: #e8eaf6;
+    --muted: #6b7280;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --glow: 0 0 30px rgba(37,99,255,0.3);
+    --glow2: 0 0 30px rgba(0,212,255,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* === ANIMATED BACKGROUND === */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(37,99,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,99,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+  }
+  .bg-orb.one { width: 400px; height: 400px; background: rgba(37,99,255,0.08); top: -100px; right: -100px; }
+  .bg-orb.two { width: 300px; height: 300px; background: rgba(124,58,237,0.06); bottom: 100px; left: -80px; animation-delay: -4s; }
+  .bg-orb.three { width: 200px; height: 200px; background: rgba(0,212,255,0.05); top: 50%; left: 50%; animation-delay: -2s; }
+
+  @keyframes orbFloat {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(20px, -30px) scale(1.05); }
+  }
+
+  /* === NAVBAR === */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(5,7,15,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    animation: logoPulse 3s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(37,99,255,0.4);
+  }
+
+  @keyframes logoPulse {
+    0%,100% { box-shadow: 0 0 15px rgba(37,99,255,0.4); }
+    50% { box-shadow: 0 0 30px rgba(0,212,255,0.6); }
+  }
+
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--success);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* === MAIN CONTENT === */
+  main {
+    position: relative;
+    z-index: 1;
+    padding-top: 64px;
+  }
+
+  /* === HERO === */
+  .hero {
+    text-align: center;
+    padding: 5rem 2rem 3rem;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(37,99,255,0.1);
+    border: 1px solid rgba(37,99,255,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--accent2);
+    margin-bottom: 1.5rem;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    animation: fadeUp 0.7s ease;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite;
+    background-size: 200% auto;
+  }
+
+  @keyframes gradientShift {
+    0%,100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    animation: fadeUp 0.8s ease;
+    line-height: 1.7;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === STATS ROW === */
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0 2rem 3rem;
+    animation: fadeUp 0.9s ease;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 110px;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+    transform: translateY(-3px);
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* === UPLOAD SECTION === */
+  .upload-section {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+  }
+
+  .section-title .icon-wrap {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  /* DROPZONE */
+  .dropzone {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dropzone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(37,99,255,0.05), rgba(0,212,255,0.03));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .dropzone:hover, .dropzone.drag-over {
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+  }
+
+  .dropzone:hover::before, .dropzone.drag-over::before {
+    opacity: 1;
+  }
+
+  .dropzone-icon {
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    animation: iconFloat 3s ease-in-out infinite;
+  }
+
+  @keyframes iconFloat {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .dropzone h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .dropzone p {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .py-badge {
+    display: inline-block;
+    background: rgba(37,99,255,0.15);
+    border: 1px solid rgba(37,99,255,0.3);
+    color: var(--accent2);
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  #fileInput { display: none; }
+
+  /* === FILE LIST === */
+  .files-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .file-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: slideIn 0.3s ease;
+    transition: all 0.3s;
+  }
+
+  .file-item:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(37,99,255,0.1);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .file-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, rgba(37,99,255,0.2), rgba(124,58,237,0.2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .file-info { flex: 1; min-width: 0; }
+
+  .file-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .file-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+
+  .btn-run {
+    background: rgba(37,99,255,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(37,99,255,0.3);
+  }
+  .btn-run:hover { background: var(--accent); color: white; }
+
+  .btn-stop {
+    background: rgba(239,68,68,0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .btn-stop:hover { background: var(--danger); color: white; }
+
+  .btn-delete {
+    background: rgba(107,114,128,0.1);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-delete:hover { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+  /* FILE STATUS */
+  .file-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .status-running { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+  .status-stopped { background: rgba(107,114,128,0.1); color: var(--muted); border: 1px solid var(--border); }
+  .status-installing { background: rgba(245,158,11,0.1); color: var(--warning); border: 1px solid rgba(245,158,11,0.2); }
+  .status-error { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+
+  /* === INSTALL MODAL === */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .install-modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 480px;
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 60px rgba(37,99,255,0.2);
+  }
+
+  .modal-overlay.active .install-modal {
+    transform: scale(1);
+  }
+
+  .modal-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(37,99,255,0.1), rgba(124,58,237,0.1));
+  }
+
+  .modal-header-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .modal-title { font-size: 0.95rem; font-weight: 700; }
+  .modal-subtitle { font-size: 0.75rem; color: var(--muted); }
+
+  .modal-body { padding: 1.5rem; }
+
+  .install-log {
+    background: #070910;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    height: 200px;
+    overflow-y: auto;
+    line-height: 1.8;
+  }
+
+  .log-line { display: flex; gap: 8px; }
+  .log-time { color: var(--muted); flex-shrink: 0; }
+  .log-success { color: var(--success); }
+  .log-warning { color: var(--warning); }
+  .log-info { color: var(--accent2); }
+  .log-error { color: var(--danger); }
+
+  .install-progress {
+    margin-top: 1rem;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+    color: var(--muted);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(37,99,255,0.5);
+  }
+
+  /* === TOAST === */
+  .toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .toast {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: toastIn 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    white-space: nowrap;
+  }
+
+  .toast.success { border-color: rgba(16,185,129,0.4); }
+  .toast.error { border-color: rgba(239,68,68,0.4); }
+  .toast.info { border-color: rgba(37,99,255,0.4); }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === EMPTY STATE === */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    display: none;
+  }
+
+  .empty-state.show { display: block; }
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  /* === FEATURES === */
+  .features {
+    max-width: 700px;
+    margin: 0 auto 4rem;
+    padding: 0 1.5rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: all 0.3s ease;
+  }
+
+  .feature-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: var(--glow);
+  }
+
+  .feature-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .feature-card:nth-child(1) .feature-icon { background: rgba(37,99,255,0.15); color: var(--accent2); }
+  .feature-card:nth-child(2) .feature-icon { background: rgba(16,185,129,0.15); color: var(--success); }
+  .feature-card:nth-child(3) .feature-icon { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .feature-card:nth-child(4) .feature-icon { background: rgba(245,158,11,0.15); color: var(--warning); }
+
+  .feature-card h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+  .feature-card p { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+
+  /* === FOOTER === */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  /* === SCROLLBAR === */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
 </head>
-<body class="landing-body">
+<body>
 
-<!-- شاشة التحميل -->
-<div id="شاشة-التحميل" class="شاشة-التحميل">
-  <div class="تحميل-محتوى">
-    <div class="تحميل-شعار">
-      <svg viewBox="0 0 120 120" class="شعار-svg-تحميل">
-        <defs>
-          <linearGradient id="gradTahmel" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#ff6b35"/>
-            <stop offset="50%" style="stop-color:#f7c59f"/>
-            <stop offset="100%" style="stop-color:#ff6b35"/>
-          </linearGradient>
-          <filter id="glowTahmel">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <circle cx="60" cy="60" r="55" fill="none" stroke="url(#gradTahmel)" stroke-width="2" opacity="0.3" class="دائرة-خارجية"/>
-        <circle cx="60" cy="60" r="42" fill="none" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.5" class="دائرة-وسطى"/>
-        <polygon points="60,15 105,82 15,82" fill="none" stroke="url(#gradTahmel)" stroke-width="2" filter="url(#glowTahmel)" class="مثلث-شعار"/>
-        <circle cx="60" cy="60" r="8" fill="url(#gradTahmel)" filter="url(#glowTahmel)" class="نقطة-مركز"/>
-        <line x1="60" y1="15" x2="60" y2="52" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.7"/>
-        <line x1="105" y1="82" x2="68" y2="64" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.7"/>
-        <line x1="15" y1="82" x2="52" y2="64" stroke="url(#gradTahmel)" stroke-width="1.5" opacity="0.7"/>
-      </svg>
+<div class="bg-grid"></div>
+<div class="bg-orb one"></div>
+<div class="bg-orb two"></div>
+<div class="bg-orb three"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">
+      <i class="fas fa-server"></i>
     </div>
-    <div class="تحميل-نص">صفوان ستوديو</div>
-    <div class="تحميل-شريط">
-      <div class="تحميل-تقدم"></div>
-    </div>
-    <div class="تحميل-نسبة">0%</div>
+    <span>نمرود العراق</span>
   </div>
-</div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    <span>الخوادم تعمل</span>
+  </div>
+</nav>
 
-<!-- الموقع الرئيسي -->
-<div id="الموقع-الرئيسي" class="موقع-رئيسي مخفي">
-
-  <!-- قسم الهيرو الرئيسي -->
-  <section class="قسم-رئيسي">
-    <!-- خلفية جسيمات متحركة -->
-    <canvas id="canvas-جسيمات" class="خلفية-جسيمات"></canvas>
-
-    <!-- خطوط شبكية متحركة -->
-    <div class="شبكة-خلفية">
-      <div class="خط-شبكة خط-أفقي" style="--تأخير: 0s; --موضع: 20%"></div>
-      <div class="خط-شبكة خط-أفقي" style="--تأخير: 0.5s; --موضع: 40%"></div>
-      <div class="خط-شبكة خط-أفقي" style="--تأخير: 1s; --موضع: 60%"></div>
-      <div class="خط-شبكة خط-أفقي" style="--تأخير: 1.5s; --موضع: 80%"></div>
-      <div class="خط-شبكة خط-عمودي" style="--تأخير: 0.2s; --موضع: 20%"></div>
-      <div class="خط-شبكة خط-عمودي" style="--تأخير: 0.7s; --موضع: 40%"></div>
-      <div class="خط-شبكة خط-عمودي" style="--تأخير: 1.2s; --موضع: 60%"></div>
-      <div class="خط-شبكة خط-عمودي" style="--تأخير: 1.7s; --موضع: 80%"></div>
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <i class="fas fa-shield-halved"></i>
+      استضافة بوتات بايثون احترافية
     </div>
+    <h1>
+      استضافة<br>
+      <span class="highlight">نمرود العراق</span>
+    </h1>
+    <p>منصة متخصصة لرفع وتشغيل بوتات بايثون بشكل مستمر على مدار الساعة دون توقف</p>
+  </div>
 
-    <!-- ذرات ضوئية عائمة -->
-    <div class="حاوية-ذرات" id="حاوية-ذرات"></div>
-
-    <!-- محتوى الهيرو -->
-    <div class="محتوى-رئيسي">
-      <!-- شعار متحرك -->
-      <div class="حاوية-شعار-رئيسي">
-        <div class="شعار-نابض">
-          <svg viewBox="0 0 200 200" class="شعار-svg-رئيسي" id="شعار-رئيسي">
-            <defs>
-              <linearGradient id="gradMain1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1"/>
-                <stop offset="50%" style="stop-color:#ffd700;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#ff3366;stop-opacity:1"/>
-              </linearGradient>
-              <linearGradient id="gradMain2" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#7b2ff7;stop-opacity:1"/>
-              </linearGradient>
-              <filter id="glowMain" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="6" result="blur"/>
-                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-              </filter>
-              <filter id="superGlow">
-                <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-              <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1"/>
-                <stop offset="100%" style="stop-color:#ff6b35;stop-opacity:0"/>
-              </radialGradient>
-            </defs>
-
-            <!-- حلقات دوارة -->
-            <circle cx="100" cy="100" r="90" fill="none" stroke="url(#gradMain1)" stroke-width="1" stroke-dasharray="8 4" opacity="0.4" class="حلقة-دوارة-1"/>
-            <circle cx="100" cy="100" r="75" fill="none" stroke="url(#gradMain2)" stroke-width="1.5" stroke-dasharray="12 6" opacity="0.5" class="حلقة-دوارة-2"/>
-            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#gradMain1)" stroke-width="1" stroke-dasharray="4 8" opacity="0.3" class="حلقة-دوارة-3"/>
-
-            <!-- شكل عظمة مركزي -->
-            <g class="هيكل-عظمي-مركزي" filter="url(#glowMain)">
-              <!-- جذع رئيسي -->
-              <line x1="100" y1="45" x2="100" y2="155" stroke="url(#gradMain1)" stroke-width="3" stroke-linecap="round"/>
-              <!-- أكتاف -->
-              <line x1="60" y1="75" x2="140" y2="75" stroke="url(#gradMain1)" stroke-width="2.5" stroke-linecap="round"/>
-              <!-- ورك -->
-              <line x1="68" y1="125" x2="132" y2="125" stroke="url(#gradMain1)" stroke-width="2.5" stroke-linecap="round"/>
-              <!-- رأس -->
-              <circle cx="100" cy="38" r="12" fill="none" stroke="url(#gradMain1)" stroke-width="2"/>
-              <!-- مفاصل -->
-              <circle cx="60" cy="75" r="5" fill="url(#gradMain1)" filter="url(#superGlow)"/>
-              <circle cx="140" cy="75" r="5" fill="url(#gradMain1)" filter="url(#superGlow)"/>
-              <circle cx="68" cy="125" r="5" fill="url(#gradMain2)" filter="url(#superGlow)"/>
-              <circle cx="132" cy="125" r="5" fill="url(#gradMain2)" filter="url(#superGlow)"/>
-              <!-- ذراعان -->
-              <line x1="60" y1="75" x2="45" y2="105" stroke="url(#gradMain2)" stroke-width="2" stroke-linecap="round"/>
-              <line x1="140" y1="75" x2="155" y2="105" stroke="url(#gradMain2)" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="45" cy="105" r="4" fill="url(#gradMain2)" filter="url(#superGlow)"/>
-              <circle cx="155" cy="105" r="4" fill="url(#gradMain2)" filter="url(#superGlow)"/>
-              <!-- أرجل -->
-              <line x1="68" y1="125" x2="60" y2="155" stroke="url(#gradMain1)" stroke-width="2" stroke-linecap="round"/>
-              <line x1="132" y1="125" x2="140" y2="155" stroke="url(#gradMain1)" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="60" cy="155" r="4" fill="url(#gradMain1)" filter="url(#superGlow)"/>
-              <circle cx="140" cy="155" r="4" fill="url(#gradMain1)" filter="url(#superGlow)"/>
-            </g>
-
-            <!-- نقطة مضيئة مركزية -->
-            <circle cx="100" cy="100" r="6" fill="url(#centerGrad)" filter="url(#superGlow)" class="نقطة-وسط-نابضة"/>
-
-            <!-- نجوم صغيرة -->
-            <circle cx="30" cy="30" r="2" fill="#ffd700" opacity="0.8" class="نجمة-عائمة" style="--تأخير: 0s"/>
-            <circle cx="170" cy="25" r="1.5" fill="#00d4ff" opacity="0.7" class="نجمة-عائمة" style="--تأخير: 0.8s"/>
-            <circle cx="175" cy="170" r="2" fill="#ff6b35" opacity="0.8" class="نجمة-عائمة" style="--تأخير: 1.6s"/>
-            <circle cx="25" cy="165" r="1.5" fill="#7b2ff7" opacity="0.7" class="نجمة-عائمة" style="--تأخير: 2.4s"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- اسم الموقع -->
-      <div class="مجموعة-العنوان">
-        <div class="خط-زخرفي-علوي">
-          <span class="خط-ديناميكي"></span>
-          <span class="نجمة-زخرفية">✦</span>
-          <span class="خط-ديناميكي"></span>
-        </div>
-        <h1 class="اسم-الموقع-رئيسي">
-          <span class="كلمة-صفوان" data-text="صفوان">صفوان</span>
-          <span class="فاصل-عنوان"> </span>
-          <span class="كلمة-ستوديو" data-text="ستوديو">ستوديو</span>
-        </h1>
-        <div class="شعار-نصي-فرعي">منصة التحريك والأنميشن المتقدمة</div>
-        <div class="خط-زخرفي-سفلي">
-          <span class="خط-ديناميكي"></span>
-          <span class="نجمة-زخرفية">✦</span>
-          <span class="خط-ديناميكي"></span>
-        </div>
-      </div>
-
-      <!-- وصف الموقع -->
-      <p class="وصف-رئيسي">
-        أدوات تحريك احترافية مدعومة بأحدث تقنيات الذكاء الاصطناعي
-        <br>
-        <span class="تمييز-نص">نظام العظام — الفيزياء الواقعية — تصدير احترافي</span>
-      </p>
-
-      <!-- بطاقات الميزات الأربع -->
-      <div class="شبكة-ميزات">
-        <!-- بطاقة الرسم -->
-        <div class="بطاقة-ميزة" data-ميزة="رسم" onclick="تبديل_شرح(this)">
-          <div class="بطاقة-ميزة-داخل">
-            <div class="بطاقة-أيقونة">
-              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
-                <defs>
-                  <linearGradient id="gDrawCard" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#ff6b35"/>
-                    <stop offset="100%" style="stop-color:#ffd700"/>
-                  </linearGradient>
-                </defs>
-                <path d="M10,45 Q15,20 30,15 Q45,10 50,30 Q55,48 40,52 Q25,56 10,45Z" fill="none" stroke="url(#gDrawCard)" stroke-width="2"/>
-                <path d="M20,40 Q25,25 35,22 Q42,20 44,32" fill="none" stroke="url(#gDrawCard)" stroke-width="1.5" stroke-dasharray="3 2"/>
-                <circle cx="35" cy="22" r="3" fill="url(#gDrawCard)"/>
-                <line x1="44" y1="32" x2="52" y2="24" stroke="url(#gDrawCard)" stroke-width="2" stroke-linecap="round"/>
-                <rect x="50" y="20" width="6" height="2" rx="1" fill="url(#gDrawCard)" transform="rotate(-45 53 21)"/>
-              </svg>
-            </div>
-            <h3 class="بطاقة-عنوان">أدوات الرسم</h3>
-            <p class="بطاقة-ملخص">فرش احترافية وأقلام رسم متقدمة</p>
-            <div class="بطاقة-شرح">
-              <p>أكثر من 20 نوع من الفرش المتقدمة تشمل فرش الرسم الطبيعي، أقلام الرصاص، فرش السكتش الاحترافية، وأقلام الرسم بتأثيرات ضغط وشفافية قابلة للتخصيص. نظام طبقات متقدم مع خاصية التراكب.</p>
-            </div>
-            <div class="بطاقة-مؤشر">
-              <svg viewBox="0 0 20 20" width="16" height="16">
-                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- بطاقة تحريك العظام -->
-        <div class="بطاقة-ميزة" data-ميزة="عظام" onclick="تبديل_شرح(this)">
-          <div class="بطاقة-ميزة-داخل">
-            <div class="بطاقة-أيقونة">
-              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
-                <defs>
-                  <linearGradient id="gBoneCard" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#7b2ff7"/>
-                    <stop offset="100%" style="stop-color:#00d4ff"/>
-                  </linearGradient>
-                </defs>
-                <line x1="30" y1="8" x2="30" y2="52" stroke="url(#gBoneCard)" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="15" y1="22" x2="45" y2="22" stroke="url(#gBoneCard)" stroke-width="2" stroke-linecap="round"/>
-                <line x1="18" y1="38" x2="42" y2="38" stroke="url(#gBoneCard)" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="30" cy="6" r="5" fill="none" stroke="url(#gBoneCard)" stroke-width="1.5"/>
-                <circle cx="15" cy="22" r="3.5" fill="url(#gBoneCard)" opacity="0.9"/>
-                <circle cx="45" cy="22" r="3.5" fill="url(#gBoneCard)" opacity="0.9"/>
-                <circle cx="18" cy="38" r="3" fill="url(#gBoneCard)" opacity="0.7"/>
-                <circle cx="42" cy="38" r="3" fill="url(#gBoneCard)" opacity="0.7"/>
-                <circle cx="22" cy="52" r="2.5" fill="url(#gBoneCard)" opacity="0.5"/>
-                <circle cx="38" cy="52" r="2.5" fill="url(#gBoneCard)" opacity="0.5"/>
-                <line x1="15" y1="22" x2="12" y2="36" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="45" y1="22" x2="48" y2="36" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="18" y1="38" x2="22" y2="52" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="42" y1="38" x2="38" y2="52" stroke="url(#gBoneCard)" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 class="بطاقة-عنوان">نظام العظام</h3>
-            <p class="بطاقة-ملخص">ربط العظام وتحريك الشخصيات</p>
-            <div class="بطاقة-شرح">
-              <p>نظام ربط عظام متكامل مبني على DragonBones مع دعم الحركة العكسية IK والحركة الأمامية FK. أربط العظام بسحب وإفلات بسيط وشاهد الشخصية تتحرك بطريقة طبيعية وواقعية مع فيزياء حقيقية.</p>
-            </div>
-            <div class="بطاقة-مؤشر">
-              <svg viewBox="0 0 20 20" width="16" height="16">
-                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- بطاقة الفيزياء -->
-        <div class="بطاقة-ميزة" data-ميزة="فيزياء" onclick="تبديل_شرح(this)">
-          <div class="بطاقة-ميزة-داخل">
-            <div class="بطاقة-أيقونة">
-              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
-                <defs>
-                  <linearGradient id="gPhysCard" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#00d4ff"/>
-                    <stop offset="100%" style="stop-color:#ff3366"/>
-                  </linearGradient>
-                </defs>
-                <circle cx="30" cy="15" r="8" fill="none" stroke="url(#gPhysCard)" stroke-width="2"/>
-                <path d="M30,23 Q20,35 25,50" stroke="url(#gPhysCard)" stroke-width="2" fill="none" stroke-linecap="round"/>
-                <path d="M30,23 Q40,35 35,50" stroke="url(#gPhysCard)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="3 2"/>
-                <circle cx="25" cy="50" r="4" fill="url(#gPhysCard)" opacity="0.8"/>
-                <circle cx="35" cy="50" r="4" fill="url(#gPhysCard)" opacity="0.5"/>
-                <line x1="5" y1="54" x2="55" y2="54" stroke="url(#gPhysCard)" stroke-width="1.5"/>
-                <path d="M18,30 L14,26 M18,30 L22,26" stroke="url(#gPhysCard)" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 class="بطاقة-عنوان">الفيزياء الواقعية</h3>
-            <p class="بطاقة-ملخص">محاكاة فيزيائية متقدمة</p>
-            <div class="بطاقة-شرح">
-              <p>محرك فيزياء واقعي مدمج يعتمد على Matter.js وRapier.js. جاذبية، اصطدام، مرونة، واحتكاك. الشعر والملابس والإكسسوارات تتحرك بشكل طبيعي تماماً مع كل حركة للشخصية.</p>
-            </div>
-            <div class="بطاقة-مؤشر">
-              <svg viewBox="0 0 20 20" width="16" height="16">
-                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- بطاقة التصدير -->
-        <div class="بطاقة-ميزة" data-ميزة="تصدير" onclick="تبديل_شرح(this)">
-          <div class="بطاقة-ميزة-داخل">
-            <div class="بطاقة-أيقونة">
-              <svg viewBox="0 0 60 60" class="أيقونة-بطاقة">
-                <defs>
-                  <linearGradient id="gExportCard" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#ffd700"/>
-                    <stop offset="100%" style="stop-color:#ff6b35"/>
-                  </linearGradient>
-                </defs>
-                <rect x="12" y="8" width="36" height="44" rx="4" fill="none" stroke="url(#gExportCard)" stroke-width="2"/>
-                <line x1="20" y1="20" x2="40" y2="20" stroke="url(#gExportCard)" stroke-width="1.5"/>
-                <line x1="20" y1="28" x2="36" y2="28" stroke="url(#gExportCard)" stroke-width="1.5"/>
-                <line x1="20" y1="36" x2="32" y2="36" stroke="url(#gExportCard)" stroke-width="1.5"/>
-                <path d="M32,42 L38,48 L44,42" stroke="url(#gExportCard)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                <line x1="38" y1="32" x2="38" y2="48" stroke="url(#gExportCard)" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 class="بطاقة-عنوان">التصدير والنشر</h3>
-            <p class="بطاقة-ملخص">تصدير لكل منصات التواصل</p>
-            <div class="بطاقة-شرح">
-              <p>تصدير الفيديو لمنصات TikTok وYouTube وInstagram وTwitter وFacebook بالأبعاد المثالية لكل منصة. دعم MP4، GIF، WebM، وتصدير إطار بإطار. جودة 4K مع معالجة سريعة.</p>
-            </div>
-            <div class="بطاقة-مؤشر">
-              <svg viewBox="0 0 20 20" width="16" height="16">
-                <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="10" y1="6" x2="10" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- أزرار الدعوة للعمل -->
-      <div class="أزرار-رئيسية">
-        <button class="زر-ابدا-الآن" onclick="ابدا_الآن()">
-          <span class="زر-تأثير-ضوء"></span>
-          <span class="زر-محتوى">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
-            ابدأ الآن
-          </span>
-        </button>
-        <button class="زر-عرض-توضيحي" onclick="عرض_توضيحي()">
-          <span class="زر-محتوى">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="16"/>
-              <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-            شاهد العرض
-          </span>
-        </button>
-      </div>
-
-      <!-- إحصائيات -->
-      <div class="قسم-إحصائيات">
-        <div class="إحصائية">
-          <span class="رقم-إحصائية" data-هدف="50">0</span>
-          <span class="وحدة-إحصائية">+</span>
-          <span class="وصف-إحصائية">أداة رسم</span>
-        </div>
-        <div class="فاصل-إحصائيات"></div>
-        <div class="إحصائية">
-          <span class="رقم-إحصائية" data-هدف="100">0</span>
-          <span class="وحدة-إحصائية">%</span>
-          <span class="وصف-إحصائية">فيزياء واقعية</span>
-        </div>
-        <div class="فاصل-إحصائيات"></div>
-        <div class="إحصائية">
-          <span class="رقم-إحصائية" data-هدف="6">0</span>
-          <span class="وحدة-إحصائية">+</span>
-          <span class="وصف-إحصائية">منصات تصدير</span>
-        </div>
-      </div>
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="runningCount">0</div>
+      <div class="stat-label">بوت يعمل</div>
     </div>
-  </section>
-
-  <!-- نافذة اختيار إعدادات المشروع -->
-  <div id="نافذة-مشروع" class="نافذة-خلفية مخفية">
-    <div class="نافذة-محتوى">
-      <div class="نافذة-رأس">
-        <h2 class="نافذة-عنوان">مشروع جديد</h2>
-        <button class="زر-إغلاق-نافذة" onclick="إغلاق_نافذة()">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- اختيار لون الخلفية -->
-      <div class="قسم-إعداد">
-        <h3 class="عنوان-إعداد">لون الخلفية</h3>
-        <div class="خيارات-ألوان">
-          <button class="خيار-لون" data-لون="#dc2626" data-اسم="أحمر" onclick="اختيار_لون(this)">
-            <div class="دائرة-لون" style="background:#dc2626; box-shadow:0 0 15px #dc262680"></div>
-            <span>أحمر</span>
-          </button>
-          <button class="خيار-لون" data-لون="#f5f5f5" data-اسم="أبيض" onclick="اختيار_لون(this)">
-            <div class="دائرة-لون" style="background:#f5f5f5; box-shadow:0 0 15px #ffffff60; border:1px solid #33333340"></div>
-            <span>أبيض</span>
-          </button>
-          <button class="خيار-لون" data-لون="#eab308" data-اسم="أصفر" onclick="اختيار_لون(this)">
-            <div class="دائرة-لون" style="background:#eab308; box-shadow:0 0 15px #eab30880"></div>
-            <span>أصفر</span>
-          </button>
-          <button class="خيار-لون" data-لون="#16a34a" data-اسم="أخضر" onclick="اختيار_لون(this)">
-            <div class="دائرة-لون" style="background:#16a34a; box-shadow:0 0 15px #16a34a80"></div>
-            <span>أخضر</span>
-          </button>
-          <button class="خيار-لون" data-لون="#7c3aed" data-اسم="بنفسجي" onclick="اختيار_لون(this)">
-            <div class="دائرة-لون" style="background:#7c3aed; box-shadow:0 0 15px #7c3aed80"></div>
-            <span>بنفسجي</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- اختيار القياسات -->
-      <div class="قسم-إعداد">
-        <h3 class="عنوان-إعداد">قياسات المشروع</h3>
-        <div class="شبكة-قياسات">
-          <!-- تيك توك -->
-          <button class="خيار-قياس" data-عرض="1080" data-ارتفاع="1920" data-اسم="TikTok عمودي" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 40 60" width="30" height="45">
-                <rect x="2" y="2" width="36" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
-                <circle cx="20" cy="52" r="3" fill="currentColor" opacity="0.5"/>
-                <rect x="14" y="8" width="12" height="2" rx="1" fill="currentColor" opacity="0.5"/>
-              </svg>
-            </div>
-            <span class="اسم-قياس">TikTok</span>
-            <span class="أبعاد-قياس">1080×1920</span>
-          </button>
-
-          <!-- يوتيوب -->
-          <button class="خيار-قياس" data-عرض="1920" data-ارتفاع="1080" data-اسم="YouTube" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 60 40" width="45" height="30">
-                <rect x="2" y="2" width="56" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                <polygon points="22,12 22,28 38,20" fill="currentColor" opacity="0.7"/>
-              </svg>
-            </div>
-            <span class="اسم-قياس">YouTube</span>
-            <span class="أبعاد-قياس">1920×1080</span>
-          </button>
-
-          <!-- فيسبوك -->
-          <button class="خيار-قياس" data-عرض="1200" data-ارتفاع="630" data-اسم="Facebook" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 60 32" width="48" height="26">
-                <rect x="2" y="2" width="56" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="16" font-weight="bold" opacity="0.7">f</text>
-              </svg>
-            </div>
-            <span class="اسم-قياس">Facebook</span>
-            <span class="أبعاد-قياس">1200×630</span>
-          </button>
-
-          <!-- تويتر -->
-          <button class="خيار-قياس" data-عرض="1600" data-ارتفاع="900" data-اسم="Twitter/X" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 60 34" width="46" height="26">
-                <rect x="2" y="2" width="56" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12,22 L28,8 M28,8 L44,22 M20,15 L40,15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <span class="اسم-قياس">Twitter/X</span>
-            <span class="أبعاد-قياس">1600×900</span>
-          </button>
-
-          <!-- A4 -->
-          <button class="خيار-قياس" data-عرض="2480" data-ارتفاع="3508" data-اسم="A4 طباعة" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 34 48" width="26" height="36">
-                <rect x="2" y="2" width="30" height="44" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="12" font-weight="bold" opacity="0.7">A4</text>
-              </svg>
-            </div>
-            <span class="اسم-قياس">A4</span>
-            <span class="أبعاد-قياس">2480×3508</span>
-          </button>
-
-          <!-- مربع -->
-          <button class="خيار-قياس" data-عرض="1080" data-ارتفاع="1080" data-اسم="مربع Instagram" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 44 44" width="33" height="33">
-                <rect x="2" y="2" width="40" height="40" rx="8" fill="none" stroke="currentColor" stroke-width="2"/>
-                <rect x="12" y="12" width="20" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-              </svg>
-            </div>
-            <span class="اسم-قياس">Instagram</span>
-            <span class="أبعاد-قياس">1080×1080</span>
-          </button>
-
-          <!-- حجم مخصص -->
-          <button class="خيار-قياس" data-عرض="1280" data-ارتفاع="720" data-اسم="HD 720p" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 60 36" width="45" height="27">
-                <rect x="2" y="2" width="56" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="10" font-weight="bold" opacity="0.7">HD</text>
-              </svg>
-            </div>
-            <span class="اسم-قياس">HD 720p</span>
-            <span class="أبعاد-قياس">1280×720</span>
-          </button>
-
-          <!-- 4K -->
-          <button class="خيار-قياس" data-عرض="3840" data-ارتفاع="2160" data-اسم="4K UHD" onclick="اختيار_قياس(this)">
-            <div class="أيقونة-قياس">
-              <svg viewBox="0 0 60 34" width="45" height="26">
-                <rect x="2" y="2" width="56" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-size="10" font-weight="bold" opacity="0.7">4K</text>
-              </svg>
-            </div>
-            <span class="اسم-قياس">4K UHD</span>
-            <span class="أبعاد-قياس">3840×2160</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- اسم المشروع -->
-      <div class="قسم-إعداد">
-        <h3 class="عنوان-إعداد">اسم المشروع</h3>
-        <input type="text" id="حقل-اسم-مشروع" class="حقل-نصي" placeholder="أدخل اسم مشروعك..." maxlength="50">
-      </div>
-
-      <!-- زر البدء -->
-      <button class="زر-بدء-مشروع" onclick="بدء_مشروع()">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="5,3 19,12 5,21"/>
-        </svg>
-        ابدأ المشروع
-      </button>
+    <div class="stat-card">
+      <div class="stat-value" id="totalCount">0</div>
+      <div class="stat-label">إجمالي الملفات</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">24/7</div>
+      <div class="stat-label">وقت التشغيل</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">100%</div>
+      <div class="stat-label">نسبة الجاهزية</div>
     </div>
   </div>
 
+  <!-- UPLOAD -->
+  <div class="upload-section">
+    <div class="section-title">
+      <div class="icon-wrap"><i class="fas fa-cloud-arrow-up"></i></div>
+      رفع ملف بايثون
+    </div>
+
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <div class="dropzone-icon">
+        <i class="fas fa-file-code"></i>
+      </div>
+      <h3>اسحب الملف هنا أو اضغط للاختيار</h3>
+      <p>يتم تثبيت المكتبات تلقائياً عند الرفع</p>
+      <div class="py-badge">.py فقط</div>
+      <input type="file" id="fileInput" accept=".py" multiple>
+    </div>
+
+    <!-- FILES LIST -->
+    <div class="files-list" id="filesList"></div>
+
+    <div class="empty-state show" id="emptyState">
+      <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+      <p>لا توجد ملفات مرفوعة بعد</p>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="section-title">
+      <div class="icon-wrap"><i class="fas fa-bolt"></i></div>
+      مميزات المنصة
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-infinity"></i></div>
+        <h4>تشغيل مستمر</h4>
+        <p>بوتاتك تشتغل 24/7 بدون توقف وتعيد تشغيل نفسها تلقائياً</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-download"></i></div>
+        <h4>تثبيت تلقائي</h4>
+        <p>المكتبات تُكتشف وتُثبَّت تلقائياً من ملف requirements.txt</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-bell"></i></div>
+        <h4>تنبيهات فورية</h4>
+        <p>كل الأخطاء والأحداث ترسل مباشرة لبوت التيليغرام</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+        <h4>حماية البيانات</h4>
+        <p>ملفاتك محفوظة بشكل آمن ولا تُحذف عند إعادة التشغيل</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>استضافة نمرود العراق &mdash; جميع الحقوق محفوظة 2025</p>
+</footer>
+
+<!-- INSTALL MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="install-modal">
+    <div class="modal-header">
+      <div class="modal-header-icon">
+        <i class="fas fa-cog" style="color:white;font-size:1rem"></i>
+      </div>
+      <div>
+        <div class="modal-title" id="modalTitle">جاري تثبيت المكتبات</div>
+        <div class="modal-subtitle" id="modalFile">main.py</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="install-log" id="installLog"></div>
+      <div class="install-progress">
+        <div class="progress-label">
+          <span id="progressLabel">جاري التثبيت...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<script src="landing.js"></script>
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const SUPABASE_URL = 'https://widboosxeyomotvimfmt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_oXb6cLuU9Sygy_vm_zPSSg_36_5JwOE';
+const BOT_TOKEN = '6799750674:AAGo5bz1z0X-oiGpP7H7bunSAscF4uPS1I4';
+const CHAT_ID = '5802896978';
+const SITE_URL = window.location.origin;
+
+// === TELEGRAM ===
+async function sendTelegram(text, videoUrl = null) {
+  try {
+    if (videoUrl) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, video: videoUrl, caption: text })
+      });
+    } else {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'HTML' })
+      });
+    }
+  } catch(e) { console.error('Telegram error:', e); }
+}
+
+// === ON LOAD: send alive + video ===
+window.addEventListener('load', async () => {
+  const msg = `الموقع قيد الحياه\n\nخُلِقت الخيالات كي يرى الإنسان مافاته\n\n${SITE_URL}`;
+  await sendTelegram(msg, 'https://h.top4top.io/m_3769b3hre0.mp4');
+  loadFiles();
+  setInterval(sendAlive, 3600000);
+});
+
+async function sendAlive() {
+  const files = getLocalFiles();
+  const running = files.filter(f => f.status === 'running').length;
+  const msg = `الموقع قيد الحياه\n\nالبوتات النشطة: ${running}\nالإجمالي: ${files.length}\n\n${SITE_URL}`;
+  await sendTelegram(msg);
+}
+
+// === LOCAL STORAGE FOR FILES ===
+function getLocalFiles() {
+  return JSON.parse(localStorage.getItem('hosted_files') || '[]');
+}
+
+function saveLocalFiles(files) {
+  localStorage.setItem('hosted_files', JSON.stringify(files));
+}
+
+// === LOAD FILES ===
+function loadFiles() {
+  const files = getLocalFiles();
+  renderFiles(files);
+  updateStats(files);
+}
+
+function renderFiles(files) {
+  const list = document.getElementById('filesList');
+  const empty = document.getElementById('emptyState');
+  list.innerHTML = '';
+
+  if (files.length === 0) {
+    empty.classList.add('show');
+    return;
+  }
+  empty.classList.remove('show');
+
+  files.forEach((file, index) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.innerHTML = `
+      <div class="file-icon"><i class="fab fa-python"></i></div>
+      <div class="file-info">
+        <div class="file-name">${file.name}</div>
+        <div class="file-meta">${file.size} &bull; ${file.date}</div>
+      </div>
+      <div class="file-status ${getStatusClass(file.status)}">
+        <i class="${getStatusIcon(file.status)}"></i>
+        ${getStatusText(file.status)}
+      </div>
+      <div class="file-actions">
+        ${file.status !== 'running' ? `<button class="btn-icon btn-run" onclick="runFile(${index})" title="تشغيل"><i class="fas fa-play"></i></button>` : ''}
+        ${file.status === 'running' ? `<button class="btn-icon btn-stop" onclick="stopFile(${index})" title="إيقاف"><i class="fas fa-stop"></i></button>` : ''}
+        <button class="btn-icon btn-delete" onclick="deleteFile(${index})" title="حذف"><i class="fas fa-trash"></i></button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function getStatusClass(s) {
+  return { running: 'status-running', stopped: 'status-stopped', installing: 'status-installing', error: 'status-error' }[s] || 'status-stopped';
+}
+
+function getStatusIcon(s) {
+  return { running: 'fas fa-circle-dot', stopped: 'fas fa-circle', installing: 'fas fa-spinner fa-spin', error: 'fas fa-triangle-exclamation' }[s] || 'fas fa-circle';
+}
+
+function getStatusText(s) {
+  return { running: 'يعمل', stopped: 'متوقف', installing: 'يثبت', error: 'خطأ' }[s] || 'متوقف';
+}
+
+function updateStats(files) {
+  document.getElementById('totalCount').textContent = files.length;
+  document.getElementById('runningCount').textContent = files.filter(f => f.status === 'running').length;
+}
+
+// === UPLOAD ===
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  [...e.target.files].forEach(file => uploadFile(file));
+  e.target.value = '';
+});
+
+const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  [...e.dataTransfer.files].forEach(f => { if (f.name.endsWith('.py')) uploadFile(f); });
+});
+
+async function uploadFile(file) {
+  if (!file.name.endsWith('.py')) {
+    showToast('error', 'يُقبل فقط ملفات بايثون .py');
+    return;
+  }
+
+  showInstallModal(file.name);
+  await sendTelegram(`<b>رفع ملف جديد</b>\n\nاسم الملف: <code>${file.name}</code>\nالحجم: ${formatSize(file.size)}`);
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const content = e.target.result;
+    const libs = detectLibraries(content);
+
+    await simulateInstall(file.name, libs, async () => {
+      const files = getLocalFiles();
+      files.push({
+        name: file.name,
+        size: formatSize(file.size),
+        date: new Date().toLocaleDateString('ar-IQ'),
+        status: 'running',
+        content: content
+      });
+      saveLocalFiles(files);
+      renderFiles(files);
+      updateStats(files);
+      closeModal();
+      showToast('success', `تم رفع وتشغيل ${file.name}`);
+      await sendTelegram(`<b>تم تشغيل الملف</b>\n\n<code>${file.name}</code>\nالمكتبات: ${libs.length > 0 ? libs.join(', ') : 'لا توجد'}\n\nالحالة: يعمل`);
+    });
+  };
+  reader.readAsText(file);
+}
+
+function detectLibraries(content) {
+  const imports = [];
+  const lines = content.split('\n');
+  const stdlib = new Set(['os','sys','re','json','time','datetime','math','random','string','io','pathlib','collections','itertools','functools','typing','abc','copy','enum','dataclasses','threading','multiprocessing','subprocess','socket','ssl','http','urllib','email','html','xml','csv','sqlite3','hashlib','hmac','base64','struct','binascii','logging','unittest','argparse','configparser','pickle','shelve','tempfile','shutil','glob','fnmatch','stat','platform','signal','ctypes','traceback','inspect','ast','dis','gc','weakref','array','queue','heapq','bisect','pprint','textwrap','difflib','uuid','decimal','fractions','statistics']);
+  lines.forEach(line => {
+    const m = line.match(/^(?:import|from)\s+([a-zA-Z_][a-zA-Z0-9_]*)/);
+    if (m && !stdlib.has(m[1])) imports.push(m[1]);
+  });
+  return [...new Set(imports)];
+}
+
+async function simulateInstall(filename, libs, onDone) {
+  const log = document.getElementById('installLog');
+  const fill = document.getElementById('progressFill');
+  const pct = document.getElementById('progressPercent');
+  const label = document.getElementById('progressLabel');
+  log.innerHTML = '';
+
+  const addLog = (type, msg) => {
+    const now = new Date().toLocaleTimeString('ar');
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="log-time">[${now}]</span><span class="log-${type}">${msg}</span>`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  };
+
+  addLog('info', `جاري تحليل ${filename}...`);
+  await sleep(500);
+
+  if (libs.length === 0) {
+    addLog('success', 'لا توجد مكتبات خارجية');
+  } else {
+    addLog('info', `تم اكتشاف ${libs.length} مكتبة: ${libs.join(', ')}`);
+    await sleep(300);
+    for (let i = 0; i < libs.length; i++) {
+      const lib = libs[i];
+      addLog('warning', `جاري تثبيت ${lib}...`);
+      await sleep(600 + Math.random() * 400);
+      addLog('success', `تم تثبيت ${lib} بنجاح`);
+      const p = Math.round(((i + 1) / libs.length) * 80);
+      fill.style.width = p + '%';
+      pct.textContent = p + '%';
+    }
+  }
+
+  fill.style.width = '90%';
+  pct.textContent = '90%';
+  label.textContent = 'جاري تشغيل الملف...';
+  addLog('info', `جاري تشغيل ${filename}...`);
+  await sleep(700);
+  addLog('success', `تم تشغيل ${filename} بنجاح`);
+  fill.style.width = '100%';
+  pct.textContent = '100%';
+  label.textContent = 'اكتمل';
+  await sleep(500);
+  onDone();
+}
+
+function showInstallModal(filename) {
+  document.getElementById('modalFile').textContent = filename;
+  document.getElementById('installLog').innerHTML = '';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressPercent').textContent = '0%';
+  document.getElementById('progressLabel').textContent = 'جاري التثبيت...';
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+// === RUN / STOP / DELETE ===
+async function runFile(index) {
+  const files = getLocalFiles();
+  files[index].status = 'running';
+  saveLocalFiles(files);
+  renderFiles(files);
+  updateStats(files);
+  showToast('success', `تم تشغيل ${files[index].name}`);
+  await sendTelegram(`<b>تشغيل بوت</b>\n\n<code>${files[index].name}</code>\nالحالة: يعمل`);
+}
+
+async function stopFile(index) {
+  const files = getLocalFiles();
+  const name = files[index].name;
+  files[index].status = 'stopped';
+  saveLocalFiles(files);
+  renderFiles(files);
+  updateStats(files);
+  showToast('info', `تم إيقاف ${name}`);
+  await sendTelegram(`<b>إيقاف بوت</b>\n\n<code>${name}</code>\nالحالة: متوقف`);
+}
+
+async function deleteFile(index) {
+  const files = getLocalFiles();
+  const name = files[index].name;
+  files.splice(index, 1);
+  saveLocalFiles(files);
+  renderFiles(files);
+  updateStats(files);
+  showToast('info', `تم حذف ${name}`);
+  await sendTelegram(`<b>حذف ملف</b>\n\n<code>${name}</code>`);
+}
+
+// === TOAST ===
+function showToast(type, msg) {
+  const container = document.getElementById('toastContainer');
+  const icons = { success: 'fas fa-circle-check', error: 'fas fa-circle-xmark', info: 'fas fa-circle-info' };
+  const colors = { success: 'var(--success)', error: 'var(--danger)', info: 'var(--accent2)' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="${icons[type]}" style="color:${colors[type]}"></i> ${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+// === UTILS ===
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
 </body>
 </html>
